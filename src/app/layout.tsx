@@ -16,8 +16,35 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Fuerza del Pueblo · Secretaría de Energía",
-  description: "Portal de la Secretaría de Energía de Fuerza del Pueblo — Propuestas, análisis y visión estratégica para el futuro energético de la República Dominicana.",
+  title: "Secretaría de Energía · Fuerza del Pueblo",
+  description: "Propuestas, análisis y visión estratégica para el futuro energético de la República Dominicana. Portal oficial de la Secretaría de Energía de Fuerza del Pueblo.",
+  metadataBase: new URL("https://energia-fp.netlify.app"),
+  openGraph: {
+    title: "Secretaría de Energía · Fuerza del Pueblo",
+    description: "Propuestas, análisis y visión estratégica para el futuro energético de la República Dominicana.",
+    url: "https://energia-fp.netlify.app",
+    siteName: "Secretaría de Energía FP",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1344,
+        height: 768,
+        alt: "Secretaría de Energía — Fuerza del Pueblo",
+      },
+    ],
+    locale: "es_DO",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Secretaría de Energía · Fuerza del Pueblo",
+    description: "Propuestas, análisis y visión estratégica para el futuro energético de la República Dominicana.",
+    images: ["/og-image.jpg"],
+  },
+  icons: {
+    icon: "/fp-logo.png",
+    apple: "/fp-logo.png",
+  },
 };
 
 export default function RootLayout({
