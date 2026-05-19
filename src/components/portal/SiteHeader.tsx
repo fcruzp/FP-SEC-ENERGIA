@@ -77,9 +77,9 @@ export default function SiteHeader({ onMenuToggle, isMenuOpen }: SiteHeaderProps
         </nav>
 
         {/* CTA + Hamburger */}
-        <div className="header-cta">
+        <div className={`header-cta ${isMenuOpen ? 'menu-open' : ''}`}>
           <a href="#news" className="btn btn-ghost">Comunicados</a>
-          <a href="#subscribe" className="btn btn-primary">Suscribirse</a>
+          <a href="#subscribe" className="btn btn-primary header-suscribirse">Suscribirse</a>
           <button
             className={`hamburger ${isMenuOpen ? 'open' : ''}`}
             onClick={onMenuToggle}
