@@ -951,8 +951,8 @@ footer {
 /* Desktop & iPad landscape only — hero separator line */
 @media (min-width: 1024px) {
   .hero-stats {
-    padding: 28px 2rem 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 48px 2rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
   }
 }
 
