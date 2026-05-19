@@ -1,13 +1,24 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Three.js scene
+  // Detect mobile on mount and resize
   useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Three.js scene — only on desktop
+  useEffect(() => {
+    if (isMobile) return;
     const canvas = canvasRef.current;
     if (!canvas || typeof (window as any).THREE === 'undefined') return;
 
@@ -171,15 +182,23 @@ export default function Hero() {
       <canvas ref={canvasRef} id="hero-canvas"></canvas>
       <div className="hero-overlay"></div>
 
-      {/* Sketchfab Thermal Power Plant 3D Model */}
+      {/* Sketchfab Thermal Power Plant 3D Model — placeholder on mobile, iframe on desktop */}
       <div className="hero-model-wrap">
-        <iframe
-          ref={iframeRef}
-          id="sketchfab-iframe"
-          title="Thermal Power Plant – Infraestructura energética"
-          allow="autoplay; fullscreen; xr-spatial-tracking"
-          src="https://sketchfab.com/models/b6cdd73f754a4d739ed40da287038e40/embed?autostart=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_watermark_link=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&preload=1&camera=0&transparent=0&dnt=1&autospin=0.3&scrollwheel=0&double_click=0&ui_theme=dark&background=000000&shading=lit&annotations_visible=0&orbit_constraint_zoom_in=2&orbit_constraint_zoom_out=8"
-        ></iframe>
+        {isMobile ? (
+          <img
+            className="hero-model-placeholder"
+            src="/hero-model-placeholder.png"
+            alt="Infraestructura energética – Planta térmica"
+          />
+        ) : (
+          <iframe
+            ref={iframeRef}
+            id="sketchfab-iframe"
+            title="Thermal Power Plant – Infraestructura energética"
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            src="https://sketchfab.com/models/b6cdd73f754a4d739ed40da287038e40/embed?autostart=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_watermark_link=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&preload=1&camera=0&transparent=0&dnt=1&autospin=0.3&scrollwheel=0&double_click=0&ui_theme=dark&background=000000&shading=lit&annotations_visible=0&orbit_constraint_zoom_in=2&orbit_constraint_zoom_out=8"
+          ></iframe>
+        )}
         <div className="hero-model-mask"></div>
         <div className="hero-model-glow"></div>
       </div>
