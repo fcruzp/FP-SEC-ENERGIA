@@ -2,7 +2,7 @@
 
 export default function Leadership() {
   const team = [
-    { initials: 'JR', name: 'Dr. José Ramírez', pos: 'Secretario de Energía', badge: 'Titular', bg: 'linear-gradient(135deg,#0a2e19,#1a6b3c)', desc: 'Doctor en Ingeniería Eléctrica con más de 20 años de experiencia en política energética regional. Ex-director de la CDEEE y consultor de organismos multilaterales en materia de transición energética.' },
+    { initials: 'JR', name: 'Ing. Juan Gomez', pos: 'Secretario de Energía', badge: 'Titular', bg: 'linear-gradient(135deg,#0a2e19,#1a6b3c)', desc: 'Doctor en Ingeniería Eléctrica con más de 20 años de experiencia en política energética regional. Ex-director de la CDEEE y consultor de organismos multilaterales en materia de transición energética.' },
     { initials: 'MA', name: 'Ing. María Alonzo', pos: 'Directora de Energías Renovables', badge: 'Directora técnica', bg: 'linear-gradient(135deg,#0f4526,#2d9e5f)', desc: 'Especialista en sistemas fotovoltaicos y eólicos. Máster en Energías Renovables por la Universidad de Chile. Autora de múltiples estudios sobre potencial solar dominicano.' },
     { initials: 'CP', name: 'Lic. Carlos Pimentel', pos: 'Director de Política Tarifaria', badge: 'Economista', bg: 'linear-gradient(135deg,#134e2a,#3db870)', desc: 'Economista energético con especialización en regulación de mercados eléctricos. Investigador asociado al INTEC y consultor del Banco Interamericano de Desarrollo.' },
     { initials: 'LG', name: 'Dra. Laura Guerrero', pos: 'Directora de Sostenibilidad', badge: 'Analista', bg: 'linear-gradient(135deg,#0a2e19,#2d9e5f)', desc: 'Doctora en Ciencias Ambientales con enfoque en transición energética justa. Experta en financiamiento climático y mecanismos de carbono para economías emergentes.' },
