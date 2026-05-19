@@ -196,16 +196,15 @@ export default function Hero() {
           <a href="#areas" className="btn btn-primary btn-large">Ver propuestas</a>
           <a href="#news" className="btn btn-ghost btn-large">Leer comunicados</a>
         </div>
-      </div>
-
-      <div className="hero-stats">
-        <div className="hero-stat fade-up"><div className="val" data-count="40">0</div><div className="lbl">% Pérdidas eléctricas</div></div>
-        <div className="hero-divider"></div>
-        <div className="hero-stat fade-up"><div className="val" data-count="4200">0</div><div className="lbl">MW Capacidad instalada</div></div>
-        <div className="hero-divider"></div>
-        <div className="hero-stat fade-up"><div className="val" data-count="28">0</div><div className="lbl">% Energía renovable</div></div>
-        <div className="hero-divider"></div>
-        <div className="hero-stat fade-up"><div className="val" data-count="12">0</div><div className="lbl">Propuestas de ley</div></div>
+        <div className="hero-stats">
+          <div className="hero-stat fade-up"><div className="val" data-count="40">0</div><div className="lbl">% Pérdidas eléctricas</div></div>
+          <div className="hero-divider"></div>
+          <div className="hero-stat fade-up"><div className="val" data-count="4200">0</div><div className="lbl">MW Capacidad instalada</div></div>
+          <div className="hero-divider"></div>
+          <div className="hero-stat fade-up"><div className="val" data-count="28">0</div><div className="lbl">% Energía renovable</div></div>
+          <div className="hero-divider"></div>
+          <div className="hero-stat fade-up"><div className="val" data-count="12">0</div><div className="lbl">Propuestas de ley</div></div>
+        </div>
       </div>
 
       <div className="scroll-indicator">
