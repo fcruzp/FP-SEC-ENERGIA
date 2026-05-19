@@ -1,23 +1,25 @@
 ---
 Task ID: 1
-Agent: Main Agent
-Task: Convert FP-SEC-ENERGIA portal from Vite/vanilla JS to Next.js 16 with React components
+Agent: main
+Task: Refactor header with logo and mobile-friendly navigation
 
 Work Log:
-- Read all source files from the Vite project (12 components, 5 scripts, 16 CSS files)
-- Initialized Next.js 16 project using fullstack-dev skill
-- Created 13 React component files in src/components/portal/
-- Updated layout.tsx with Inter + Playfair Display fonts and Three.js CDN
-- Updated page.tsx with dynamic Hero import (SSR disabled for Three.js)
-- Appended ~1000 lines of portal CSS to globals.css
+- Copied fp-logo.png from /upload/ to /public/ for Next.js serving
+- Rewrote SiteHeader.tsx: replaced "FP" badge with actual logo image, added active section tracking, centered nav layout, animated hamburger button
+- Rewrote MobileNav.tsx: converted from DOM manipulation to React props (isOpen/onClose), implemented slide-in drawer with overlay, added icons to nav links, active section indicators, CTA buttons section, body scroll lock, Escape key close
+- Updated page.tsx: moved mobile nav state management to page level, passed toggle/close callbacks to both SiteHeader and MobileNav
+- Updated SiteFooter.tsx: replaced logo-badge with logo image
+- Updated globals.css: new header styles (centered nav, animated hamburger X transform, overlay + drawer pattern), responsive breakpoints (1200px for nav hide, 768px for compact header), removed old .mobile-nav full-screen takeover
+- Verified build succeeds (next build - compiled successfully)
 - Verified dev server returns HTTP 200
-- Created download zips for both Next.js and original Vite versions
+- Verified fp-logo.png is accessible at /fp-logo.png
 
 Stage Summary:
-- Portal fully converted to Next.js 16 with React components
-- 13 component files: Hero, SiteHeader, MobileNav, About, Leadership, Areas, Observatory, News, Documents, Events, Multimedia, Subscribe, SiteFooter
-- Three.js scene renders client-side via dynamic import
-- Sketchfab 3D models embedded via iframes
-- All CSS preserved and functional
-- Preview available via web preview link
-- Downloadable zips created in /home/z/my-project/download/
+- Header now shows real fp-logo.png image in upper-left corner
+- Mobile nav uses modern slide-in drawer pattern with overlay backdrop
+- Hamburger button animates to X when menu is open
+- All nav links show active section highlighting
+- Mobile drawer includes icons, CTA buttons, and active indicators
+- Body scroll is locked when mobile menu is open
+- Escape key closes the mobile menu
+- Footer also updated with the real logo image

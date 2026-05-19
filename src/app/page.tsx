@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import SiteHeader from '@/components/portal/SiteHeader';
 import MobileNav from '@/components/portal/MobileNav';
@@ -19,11 +20,21 @@ import AnimationObserver from '@/components/portal/AnimationObserver';
 const Hero = dynamic(() => import('@/components/portal/Hero'), { ssr: false });
 
 export default function Home() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen((prev) => !prev);
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    setIsMenuOpen(false);
+  }, []);
+
   return (
     <>
       <AnimationObserver />
-      <MobileNav />
-      <SiteHeader />
+      <MobileNav isOpen={isMenuOpen} onClose={closeMenu} />
+      <SiteHeader onMenuToggle={toggleMenu} isMenuOpen={isMenuOpen} />
       <Hero />
       <About />
       <Leadership />

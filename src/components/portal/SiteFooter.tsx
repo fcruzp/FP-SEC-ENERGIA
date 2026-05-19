@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function SiteFooter() {
   return (
     <footer>
@@ -5,7 +7,13 @@ export default function SiteFooter() {
         <div className="footer-top">
           <div className="footer-brand">
             <a className="logo-area" href="#hero">
-              <div className="logo-badge">FP</div>
+              <Image
+                src="/fp-logo.png"
+                alt="Fuerza del Pueblo"
+                width={44}
+                height={44}
+                className="logo-img"
+              />
               <div className="logo-text">
                 <div className="line1">Fuerza del Pueblo</div>
                 <div className="line2">Secretaría de Energía</div>
