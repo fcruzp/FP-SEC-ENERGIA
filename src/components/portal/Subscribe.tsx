@@ -16,7 +16,7 @@ export default function Subscribe() {
         <div className="subscribe-grid">
           <div className="subscribe-left fade-up">
             <div className="subscribe-form">
-              <h3 style={{fontSize:'1.1rem',fontWeight:700,color:'var(--graphite)',marginBottom:24}}>Envíanos un mensaje</h3>
+              <h3 className="subscribe-form-title">Envíanos un mensaje</h3>
               <div className="form-row">
                 <div className="form-group"><label>Nombre</label><input type="text" placeholder="Su nombre"/></div>
                 <div className="form-group"><label>Apellido</label><input type="text" placeholder="Su apellido"/></div>
@@ -31,16 +31,22 @@ export default function Subscribe() {
                 <select><option>Seleccione un tema...</option><option>Energías renovables</option><option>Tarifas eléctricas</option><option>Infraestructura</option><option>Prensa y medios</option><option>Otro</option></select>
               </div>
               <div className="form-group"><label>Mensaje</label><textarea placeholder="Escriba su mensaje aquí..."></textarea></div>
-              <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',padding:14}}>Enviar mensaje →</button>
+              <button className="btn btn-primary subscribe-submit-btn">Enviar mensaje →</button>
             </div>
           </div>
           <div className="subscribe-right fade-up">
-            <div style={{background:'var(--green-deep)',borderRadius:'var(--radius-lg)',padding:36,marginBottom:24}}>
-              <h3 style={{fontSize:'1.1rem',fontWeight:700,color:'white',marginBottom:8}}>Suscripción al boletín</h3>
-              <p style={{fontSize:13,color:'rgba(255,255,255,0.6)',lineHeight:1.7,marginBottom:24}}>Análisis semanales, informes técnicos y comunicados oficiales de la Secretaría de Energía.</p>
-              <div style={{display:'flex',gap:10}}>
-                <input type="email" placeholder="Tu correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} style={{flex:1,padding:'12px 16px',borderRadius:10,border:'1.5px solid rgba(255,255,255,0.15)',background:'rgba(255,255,255,0.08)',color:'white',fontFamily:'var(--font-inter)',fontSize:13,outline:'none'}}/>
-                <button className="btn btn-primary" style={{whiteSpace:'nowrap'}}>Suscribirse</button>
+            <div className="subscribe-newsletter-box">
+              <h3 className="newsletter-title">Suscripción al boletín</h3>
+              <p className="newsletter-desc">Análisis semanales, informes técnicos y comunicados oficiales de la Secretaría de Energía.</p>
+              <div className="newsletter-form">
+                <input
+                  type="email"
+                  className="newsletter-input"
+                  placeholder="Tu correo electrónico"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <button className="btn btn-primary newsletter-btn">Suscribirse</button>
               </div>
             </div>
             <div className="socials-grid">
@@ -61,9 +67,9 @@ export default function Subscribe() {
                 <div><div className="sn">YouTube</div><div className="sh">SecEnergíaFP</div></div>
               </a>
             </div>
-            <div style={{marginTop:24,padding:24,background:'var(--gray-border)',borderRadius:'var(--radius)'}}>
-              <h4 style={{fontSize:13,fontWeight:700,color:'var(--graphite)',marginBottom:8}}>📍 Contacto directo</h4>
-              <p style={{fontSize:12,color:'var(--gray-mid)',lineHeight:1.8}}>
+            <div className="subscribe-contact-box">
+              <h4 className="contact-box-title">📍 Contacto directo</h4>
+              <p className="contact-box-info">
                 Av. Abraham Lincoln, esq. Gustavo Mejía Ricart,<br/>
                 Torre FP, Piso 8, Santo Domingo, D.N.<br/>
                 📞 (809) 000-0000<br/>
