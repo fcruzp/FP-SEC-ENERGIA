@@ -563,10 +563,31 @@ nav.main-nav a.active {
 .team-card-photo::after {
   content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.2));
+  z-index: 2;
+}
+
+/* Photo with green overlay & zoom on hover */
+.team-photo-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.5s ease;
+  z-index: 0;
+}
+.team-card:hover .team-photo-img {
+  transform: scale(1.08);
+}
+.team-photo-overlay {
+  position: absolute; inset: 0;
+  background: rgba(26, 107, 60, 0.25);
+  z-index: 1;
+  transition: background 0.4s ease;
+}
+.team-card:hover .team-photo-overlay {
+  background: rgba(26, 107, 60, 0.12);
 }
 
 .team-badge {
-  position: absolute; top: 16px; left: 16px; z-index: 1;
+  position: absolute; top: 16px; left: 16px; z-index: 3;
   background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   padding: 4px 12px; border-radius: 100px;
