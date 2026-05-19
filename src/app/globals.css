@@ -476,10 +476,11 @@ nav.main-nav a.active {
 
 .hero-stats {
   position: absolute; bottom: 56px; left: 0; right: 0;
-  max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+  max-width: 1400px; margin: 0 auto; padding: 28px 2rem 0;
   display: flex; gap: 40px; z-index: 2;
   width: 100%;
   box-sizing: border-box;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 .hero-stat { color: white; }
 .hero-stat .val { font-size: 2rem; font-weight: 800; line-height: 1; color: var(--green-glow); }
