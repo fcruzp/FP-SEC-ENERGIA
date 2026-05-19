@@ -41,9 +41,9 @@ export default function About() {
               <div style={{position:'absolute',inset:0,zIndex:2,pointerEvents:'none',background:'linear-gradient(to bottom, rgba(10,46,25,0.55) 0%, transparent 22%, transparent 78%, rgba(10,46,25,0.65) 100%), linear-gradient(to right, transparent 70%, rgba(244,246,244,0.18) 100%)'}}></div>
             </div>
             <div className="about-card-below">
-              <div className="label">Fundada en</div>
-              <div className="val">2023</div>
-              <div className="sub">Bajo la dirección del Ing. Leonel</div>
+              <div className="acb-label">Fundada en</div>
+              <div className="acb-val">2023</div>
+              <div className="acb-sub">Bajo la dirección del Ing. Leonel</div>
             </div>
           </div>
           <div className="about-right fade-up">
