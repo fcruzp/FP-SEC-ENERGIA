@@ -43,7 +43,7 @@ export default function About() {
             <div className="about-card-below">
               <div className="acb-label">Fundada en</div>
               <div className="acb-val">2023</div>
-              <div className="acb-sub">Bajo la dirección del Ing. Leonel</div>
+              <div className="acb-sub">Bajo la dirección del Ing. Juan Gomez</div>
             </div>
           </div>
           <div className="about-right fade-up">
