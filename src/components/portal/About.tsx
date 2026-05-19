@@ -7,12 +7,10 @@ export default function About() {
 
   useEffect(() => {
     const iframe = aboutIframeRef.current;
-    const badge = document.getElementById('about-model-badge');
     if (!iframe) return;
 
     function reveal() {
       if (iframe) iframe.style.opacity = '1';
-      if (badge) badge.style.opacity = '1';
     }
 
     const handleLoad = () => setTimeout(reveal, 700);
@@ -41,12 +39,8 @@ export default function About() {
                 style={{width:'100%',height:'100%',border:'none',position:'absolute',inset:0,opacity:0,transition:'opacity 1.2s ease 0.8s'}}
               ></iframe>
               <div style={{position:'absolute',inset:0,zIndex:2,pointerEvents:'none',background:'linear-gradient(to bottom, rgba(10,46,25,0.55) 0%, transparent 22%, transparent 78%, rgba(10,46,25,0.65) 100%), linear-gradient(to right, transparent 70%, rgba(244,246,244,0.18) 100%)'}}></div>
-              <div id="about-model-badge" style={{position:'absolute',top:18,left:18,zIndex:3,display:'flex',alignItems:'center',gap:8,background:'rgba(10,46,25,0.78)',backdropFilter:'blur(10px)',border:'1px solid rgba(74,222,128,0.22)',borderRadius:100,padding:'7px 14px',opacity:0,transition:'opacity 0.7s ease 1.8s',pointerEvents:'none'}}>
-                <span style={{width:7,height:7,borderRadius:'50%',background:'#4ade80',display:'block',animation:'pulse 2s infinite'}}></span>
-                <span style={{fontSize:10.5,fontWeight:600,color:'rgba(255,255,255,0.78)',letterSpacing:0.7}}>Visualización 3D · Infraestructura energética</span>
-              </div>
             </div>
-            <div className="about-card-float">
+            <div className="about-card-below">
               <div className="label">Fundada en</div>
               <div className="val">2023</div>
               <div className="sub">Bajo la dirección del Ing. Leonel</div>

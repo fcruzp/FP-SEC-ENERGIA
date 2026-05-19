@@ -150,8 +150,6 @@ export default function Hero() {
     const handleLoad = () => {
       setTimeout(() => {
         iframe.classList.add('loaded');
-        const label = document.getElementById('modelLabel');
-        if (label) label.classList.add('visible');
       }, 600);
     };
 
@@ -160,8 +158,6 @@ export default function Hero() {
     // Fallback after 5s
     const fallback = setTimeout(() => {
       iframe.classList.add('loaded');
-      const label = document.getElementById('modelLabel');
-      if (label) label.classList.add('visible');
     }, 5000);
 
     return () => {
@@ -186,10 +182,6 @@ export default function Hero() {
         ></iframe>
         <div className="hero-model-mask"></div>
         <div className="hero-model-glow"></div>
-        <div className="model-label" id="modelLabel">
-          <div className="ml-dot"></div>
-          <span>Infraestructura energética nacional · Visualización 3D</span>
-        </div>
       </div>
 
       <div className="hero-content">
