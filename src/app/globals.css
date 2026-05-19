@@ -627,22 +627,45 @@ nav.main-nav a.active {
 .areas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
 
 .area-card {
-  background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius); padding: 28px 24px;
-  transition: all 0.3s; cursor: default; position: relative; overflow: hidden;
+  transition: all 0.4s; cursor: default; position: relative; overflow: hidden;
+  min-height: 280px;
 }
+/* Background image */
+.area-card-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  z-index: 0; transition: transform 0.6s ease;
+}
+.area-card:hover .area-card-bg {
+  transform: scale(1.1);
+}
+/* Overlay on top of image */
+.area-card-overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(10, 46, 25, 0.88) 0%, rgba(10, 46, 25, 0.72) 50%, rgba(10, 46, 25, 0.92) 100%);
+  transition: background 0.4s ease;
+}
+.area-card:hover .area-card-overlay {
+  background: linear-gradient(180deg, rgba(10, 46, 25, 0.75) 0%, rgba(10, 46, 25, 0.55) 50%, rgba(10, 46, 25, 0.82) 100%);
+}
+/* Green top accent line */
 .area-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: var(--green-accent); transform: scaleX(0); transform-origin: left;
-  transition: transform 0.3s;
+  transition: transform 0.3s; z-index: 3;
 }
-.area-card:hover { background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.15); transform: translateY(-3px); }
+/* Content sits above overlay */
+.area-card-content { position: relative; z-index: 2; }
+
+.area-card:hover { border-color: rgba(255, 255, 255, 0.15); transform: translateY(-3px); }
 .area-card:hover::before { transform: scaleX(1); }
 .area-card .num { font-size: 11px; font-weight: 700; color: var(--green-glow); letter-spacing: 2px; margin-bottom: 16px; opacity: 0.7; }
 .area-card .icon { font-size: 2rem; margin-bottom: 14px; }
 .area-card h3 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 10px; }
 .area-card p { font-size: 12px; color: rgba(255, 255, 255, 0.5); line-height: 1.7; }
-.area-card .arrow { position: absolute; bottom: 24px; right: 24px; font-size: 18px; color: var(--green-glow); opacity: 0; transition: 0.3s; }
+.area-card .arrow { position: absolute; bottom: 24px; right: 24px; font-size: 18px; color: var(--green-glow); opacity: 0; transition: 0.3s; z-index: 2; }
 .area-card:hover .arrow { opacity: 1; transform: translateX(4px); }
 
 /* OBSERVATORY */
