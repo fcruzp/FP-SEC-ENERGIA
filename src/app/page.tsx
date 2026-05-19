@@ -13,6 +13,7 @@ import Events from '@/components/portal/Events';
 import Multimedia from '@/components/portal/Multimedia';
 import Subscribe from '@/components/portal/Subscribe';
 import SiteFooter from '@/components/portal/SiteFooter';
+import AnimationObserver from '@/components/portal/AnimationObserver';
 
 // Dynamic import for Hero since it uses Three.js (loaded from CDN)
 const Hero = dynamic(() => import('@/components/portal/Hero'), { ssr: false });
@@ -20,6 +21,7 @@ const Hero = dynamic(() => import('@/components/portal/Hero'), { ssr: false });
 export default function Home() {
   return (
     <>
+      <AnimationObserver />
       <MobileNav />
       <SiteHeader />
       <Hero />
