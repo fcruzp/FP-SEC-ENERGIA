@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -54,12 +53,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <head>
-        <Script
-          src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"
-          strategy="beforeInteractive"
-        />
-      </head>
       <body className={`${inter.variable} ${playfair.variable} antialiased`}>
         {children}
       </body>

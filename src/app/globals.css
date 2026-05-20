@@ -415,23 +415,15 @@ nav.main-nav a.active {
   background: var(--green-deep);
   overflow: hidden; display: flex; align-items: center;
 }
-#hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 .hero-model-wrap {
   position: absolute; top: 0; right: 0;
   width: 62%; height: 100%; z-index: 1; pointer-events: none;
 }
-.hero-model-wrap iframe {
-  width: 100%; height: 100%; border: none;
-  pointer-events: auto; opacity: 0;
-  transition: opacity 1.4s ease 1s;
-}
-.hero-model-wrap iframe.loaded { opacity: 1; }
-
-/* Placeholder image for mobile (instead of Sketchfab iframe) */
-.hero-model-placeholder {
-  width: 100%; height: 100%; object-fit: cover;
-  position: absolute; inset: 0;
+/* Canvas for WebP frame sequence animation */
+#hero-model-canvas {
+  width: 100%; height: 100%;
+  display: block;
 }
 
 .hero-model-mask {
@@ -1091,7 +1083,7 @@ footer {
     padding-top: 80px; padding-bottom: 32px;
     display: flex; flex-direction: column; justify-content: center; align-items: stretch;
   }
-  .hero-model-wrap { width: 100%; opacity: 0.3; height: 70%; }
+  .hero-model-wrap { width: 100%; opacity: 0.35; height: 70%; }
   .hero-content { padding: 0 1.25rem; position: relative; }
   .hero-title { font-size: clamp(2.2rem, 10vw, 3.2rem); margin-bottom: 18px; }
   .hero-subtitle { font-size: 0.95rem; margin-bottom: 28px; max-width: 100%; }

@@ -1,204 +1,114 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
+
+const TOTAL_FRAMES = 250;
+const FPS = 30;
+const FRAME_INTERVAL = 1000 / FPS;
+
+// Pre-generate frame URLs
+const frameUrls = Array.from({ length: TOTAL_FRAMES }, (_, i) => `/hero-frames/${String(i + 1).padStart(4, '0')}.webp`);
 
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const framesRef = useRef<HTMLImageElement[]>([]);
+  const currentFrameRef = useRef(0);
+  const lastTimeRef = useRef(0);
+  const animIdRef = useRef<number>(0);
+  const isPlayingRef = useRef(false);
 
-  // Detect mobile on mount and resize
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)');
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+  // Draw a frame on canvas with cover-fit
+  const drawFrame = useCallback((frameIndex: number) => {
+    const canvas = canvasRef.current;
+    const img = framesRef.current[frameIndex];
+    if (!canvas || !img || !img.complete) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    const displayW = canvas.offsetWidth;
+    const displayH = canvas.offsetHeight;
+    canvas.width = displayW * dpr;
+    canvas.height = displayH * dpr;
+
+    const canvasAspect = canvas.width / canvas.height;
+    const imgAspect = img.naturalWidth / img.naturalHeight;
+    let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+
+    if (imgAspect > canvasAspect) {
+      sw = img.naturalHeight * canvasAspect;
+      sx = (img.naturalWidth - sw) / 2;
+    } else {
+      sh = img.naturalWidth / canvasAspect;
+      sy = (img.naturalHeight - sh) / 2;
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
   }, []);
 
-  // Three.js scene — only on desktop
+  // Animation loop
+  const animate = useCallback((timestamp: number) => {
+    if (!isPlayingRef.current) return;
+
+    if (timestamp - lastTimeRef.current >= FRAME_INTERVAL) {
+      lastTimeRef.current = timestamp;
+      currentFrameRef.current = (currentFrameRef.current + 1) % TOTAL_FRAMES;
+      drawFrame(currentFrameRef.current);
+    }
+
+    animIdRef.current = requestAnimationFrame(animate);
+  }, [drawFrame]);
+
+  // Preload frames and start animation
   useEffect(() => {
-    if (isMobile) return;
-    const canvas = canvasRef.current;
-    if (!canvas || typeof (window as any).THREE === 'undefined') return;
+    let loaded = 0;
 
-    const THREE = (window as any).THREE;
-
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
-    camera.position.set(0, 0, 28);
-
-    // Grid
-    const gridGeo = new THREE.BufferGeometry();
-    const gridVerts: number[] = [];
-    const SIZE = 40, STEP = 3;
-    for (let i = -SIZE; i <= SIZE; i += STEP) {
-      gridVerts.push(-SIZE, 0, i, SIZE, 0, i);
-      gridVerts.push(i, 0, -SIZE, i, 0, SIZE);
-    }
-    gridGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(gridVerts), 3));
-    const gridMat = new THREE.LineBasicMaterial({ color: 0x1a6b3c, transparent: true, opacity: 0.18 });
-    const grid = new THREE.LineSegments(gridGeo, gridMat);
-    grid.rotation.x = Math.PI / 2;
-    grid.position.z = -8;
-    scene.add(grid);
-
-    // Floating nodes
-    const nodeMat = new THREE.MeshBasicMaterial({ color: 0x3db870, transparent: true, opacity: 0.85 });
-    const nodes: any[] = [];
-    for (let i = 0; i < 32; i++) {
-      const geo = new THREE.SphereGeometry(0.12 + Math.random() * 0.18, 8, 8);
-      const m = new THREE.Mesh(geo, nodeMat.clone());
-      m.position.set(
-        (Math.random() - 0.5) * 40,
-        (Math.random() - 0.5) * 22,
-        (Math.random() - 0.5) * 14 - 4
-      );
-      m.userData = {
-        ox: m.position.x, oy: m.position.y, oz: m.position.z,
-        speed: 0.3 + Math.random() * 0.5,
-        phase: Math.random() * Math.PI * 2
-      };
-      scene.add(m);
-      nodes.push(m);
-    }
-
-    // Connection lines
-    const lineMat = new THREE.LineBasicMaterial({ color: 0x2d9e5f, transparent: true, opacity: 0.25 });
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const d = nodes[i].position.distanceTo(nodes[j].position);
-        if (d < 10) {
-          const lg = new THREE.BufferGeometry().setFromPoints([nodes[i].position, nodes[j].position]);
-          scene.add(new THREE.Line(lg, lineMat));
-        }
+    const onFrameLoad = (index: number) => {
+      loaded++;
+      // Draw first frame immediately
+      if (index === 0) {
+        drawFrame(0);
       }
-    }
-
-    // Particles
-    const partGeo = new THREE.BufferGeometry();
-    const pCount = 300;
-    const pPos = new Float32Array(pCount * 3);
-    for (let i = 0; i < pCount * 3; i++) pPos[i] = (Math.random() - 0.5) * 60;
-    partGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-    const partMat = new THREE.PointsMaterial({ color: 0x4ade80, size: 0.08, transparent: true, opacity: 0.5 });
-    const particles = new THREE.Points(partGeo, partMat);
-    scene.add(particles);
-
-    // Rings
-    const ring1 = new THREE.Mesh(
-      new THREE.TorusGeometry(6, 0.04, 8, 60),
-      new THREE.MeshBasicMaterial({ color: 0x1a6b3c, transparent: true, opacity: 0.3 })
-    );
-    ring1.rotation.x = Math.PI / 3;
-    ring1.position.set(8, 0, -6);
-    scene.add(ring1);
-
-    const ring2 = new THREE.Mesh(
-      new THREE.TorusGeometry(4, 0.03, 8, 60),
-      new THREE.MeshBasicMaterial({ color: 0x3db870, transparent: true, opacity: 0.2 })
-    );
-    ring2.rotation.x = -Math.PI / 4;
-    ring2.position.set(-6, 2, -4);
-    scene.add(ring2);
-
-    // Mouse parallax
-    let mx = 0, my = 0;
-    const handleMouseMove = (e: MouseEvent) => {
-      mx = (e.clientX / window.innerWidth - 0.5) * 2;
-      my = (e.clientY / window.innerHeight - 0.5) * 2;
+      // Start animation once enough frames are buffered
+      if (loaded >= 30 && !isPlayingRef.current) {
+        isPlayingRef.current = true;
+        lastTimeRef.current = performance.now();
+        animIdRef.current = requestAnimationFrame(animate);
+      }
     };
-    window.addEventListener('mousemove', handleMouseMove);
 
-    // Animation loop
-    let t = 0;
-    let animId: number;
-    function animate() {
-      animId = requestAnimationFrame(animate);
-      t += 0.008;
-      nodes.forEach(n => {
-        n.position.y = n.userData.oy + Math.sin(t * n.userData.speed + n.userData.phase) * 1.2;
-        n.position.x = n.userData.ox + Math.cos(t * n.userData.speed * 0.7 + n.userData.phase) * 0.5;
-      });
-      particles.rotation.y = t * 0.03;
-      particles.rotation.x = t * 0.01;
-      ring1.rotation.z = t * 0.4;
-      ring2.rotation.z = -t * 0.3;
-      grid.rotation.z = t * 0.015;
-      camera.position.x += (mx * 2 - camera.position.x) * 0.03;
-      camera.position.y += (-my * 1.5 - camera.position.y) * 0.03;
-      camera.lookAt(0, 0, 0);
-      renderer.render(scene, camera);
+    for (let i = 0; i < TOTAL_FRAMES; i++) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = frameUrls[i];
+      img.onload = () => onFrameLoad(i);
+      framesRef.current[i] = img;
     }
-    animate();
 
-    // Resize handler
+    // Handle resize
     const handleResize = () => {
-      const w = canvas.offsetWidth, h = canvas.offsetHeight;
-      renderer.setSize(w, h);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      if (framesRef.current[currentFrameRef.current]?.complete) {
+        drawFrame(currentFrameRef.current);
+      }
     };
     window.addEventListener('resize', handleResize);
 
     return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('mousemove', handleMouseMove);
+      isPlayingRef.current = false;
+      cancelAnimationFrame(animIdRef.current);
       window.removeEventListener('resize', handleResize);
-      renderer.dispose();
     };
-  }, []);
-
-  // Sketchfab iframe fade-in
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-
-    const handleLoad = () => {
-      setTimeout(() => {
-        iframe.classList.add('loaded');
-      }, 600);
-    };
-
-    iframe.addEventListener('load', handleLoad);
-
-    // Fallback after 5s
-    const fallback = setTimeout(() => {
-      iframe.classList.add('loaded');
-    }, 5000);
-
-    return () => {
-      iframe.removeEventListener('load', handleLoad);
-      clearTimeout(fallback);
-    };
-  }, []);
+  }, [animate, drawFrame]);
 
   return (
     <section id="hero">
-      <canvas ref={canvasRef} id="hero-canvas"></canvas>
       <div className="hero-overlay"></div>
 
-      {/* Sketchfab Thermal Power Plant 3D Model — placeholder on mobile, iframe on desktop */}
+      {/* 3D Model rotation — WebP frame sequence */}
       <div className="hero-model-wrap">
-        {isMobile ? (
-          <img
-            className="hero-model-placeholder"
-            src="/hero-model-placeholder.png"
-            alt="Infraestructura energética – Planta térmica"
-          />
-        ) : (
-          <iframe
-            ref={iframeRef}
-            id="sketchfab-iframe"
-            title="Thermal Power Plant – Infraestructura energética"
-            allow="autoplay; fullscreen; xr-spatial-tracking"
-            src="https://sketchfab.com/models/b6cdd73f754a4d739ed40da287038e40/embed?autostart=1&ui_infos=0&ui_controls=0&ui_stop=0&ui_watermark=0&ui_watermark_link=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0&preload=1&camera=0&transparent=0&dnt=1&autospin=0.3&scrollwheel=0&double_click=0&ui_theme=dark&background=000000&shading=lit&annotations_visible=0&orbit_constraint_zoom_in=2&orbit_constraint_zoom_out=8"
-          ></iframe>
-        )}
+        <canvas ref={canvasRef} id="hero-model-canvas"></canvas>
         <div className="hero-model-mask"></div>
         <div className="hero-model-glow"></div>
       </div>
