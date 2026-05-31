@@ -106,3 +106,48 @@ Stage Summary:
 - PASO 1 COMPLETADO ✅
 - BD lista para recibir datos y API routes
 - Próximo paso: PASO 2 (seed indicators restantes) + PASO 3 (conexión Supabase en Next.js)
+
+---
+Task ID: paso2-seed-indicators
+Agent: main
+Task: PASO 2 — Seed de indicadores restantes (465 indicadores de 10 hojas del XLS)
+
+Work Log:
+- Analizó todas las hojas del XLS con openpyxl para extraer indicadores
+- Identificó 465 indicadores faltantes en 9 categorías + 1 nueva categoría
+- Creó script Python 002_seed_indicators.py que genera SQL automáticamente
+- Generó archivo 002_seed_indicators.sql con 465 INSERT statements
+- Incluyó: 1 nueva categoría (Régimen Tarifario Anterior), 12 VR faltantes, 168 EDE's, 63 CDEEE, 24 EGEHID, 12 ETED, 31 EGPC, 77 Res. Financieros, 8 Deuda, 35 Nuevo Tarifario, 35 Tarifario Anterior
+- Jerarquías padre-hijo con parent_indicator_id configuradas correctamente
+- Desgloses por entidad (Edenorte/Edesur/Edeeste y generadoras)
+- Todos los slugs únicos con ON CONFLICT (slug) DO NOTHING
+- Usuario ejecutó SQL exitosamente en Supabase
+
+Stage Summary:
+- PASO 2 COMPLETADO ✅
+- Archivo: /home/z/my-project/download/002_seed_indicators.sql
+- Total indicadores en BD: 487 (22 previos + 465 nuevos + 1 categoría nueva)
+- Próximo paso: PASO 4 (API Routes)
+
+---
+Task ID: paso4-api-routes
+Agent: main
+Task: PASO 4 — Crear API Routes del Observatorio (lectura pública + admin escritura)
+
+Work Log:
+- Creó estructura de directorios: api/observatorio/ y api/admin/
+- GET /api/observatorio/categories — Lista categorías con conteo de indicadores
+- GET /api/observatorio/indicators — Lista indicadores con filtros (category_slug, entity_slug, is_breakdown, parent_only, with_data)
+- GET /api/observatorio/entities — Lista todas las entidades
+- GET /api/observatorio/data-points — Serie temporal con filtros (indicator_slug, entity_slug, from/to, period_type, limit)
+- GET /api/observatorio/reports — Informes publicados con filtros (phase, file_type, limit)
+- GET /api/admin/parse-xls/status — Verifica conexión admin (service_role)
+- POST /api/admin/parse-xls — Placeholder para parser XLS (PASO 5)
+- Todas las rutas usan supabase (anon key) para lectura, supabaseAdmin (service_role) para escritura
+- Verificó compilación TypeScript: sin errores en los archivos nuevos
+
+Stage Summary:
+- PASO 4 COMPLETADO ✅ (rutas de lectura)
+- 6 endpoints creados: categories, indicators, entities, data-points, reports, parse-xls
+- Faltan: agregar service_role key para rutas de escritura (admin)
+- Próximo paso: PASO 5 (Backoffice Upload XLS + Parser)
