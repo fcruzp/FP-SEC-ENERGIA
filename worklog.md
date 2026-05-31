@@ -46,3 +46,24 @@ Stage Summary:
 - Hallazgo clave: cada XLS tiene toda la data histórica desde 2009, simplifica ingesta
 - Pipeline Fase 1: 100% automático via openpyxl, sin PDF parsing
 - Fases futuras se agregarán cuando el cliente aporte nuevas fuentes de datos
+
+---
+Task ID: sql-migration-generation
+Agent: main
+Task: Generar SQL migration completo para Observatorio + Foro con referencias a public.users
+
+Work Log:
+- Ajustó todas las FK de usuario para referenciar public.users(id) en vez de auth.users(id)
+- Generó 8 secciones de SQL: tablas observatorio (6), tablas foro (6), índices (20+), RLS policies, triggers (6), seed entities, seed categories, seed indicators
+- Incluyó triggers automáticos: auto-crear perfil, updated_at, banned words filter, comment_count, reaction_count
+- Incluyó RLS policies completas para todas las tablas
+- Seed de 23 entidades, 9 categorías, 22 indicadores de Variables Relevantes
+- Guardó archivo: /home/z/my-project/download/001_observatorio_foro_schema.sql
+- Actualizó plan markdown con nota sobre public.users
+
+Stage Summary:
+- Archivo SQL generado: /home/z/my-project/download/001_observatorio_foro_schema.sql
+- 12 tablas creadas: entities, indicator_categories, indicators, data_points, reports, ai_analysis_logs, profiles, posts, comments, reactions, content_reports, banned_words
+- 6 triggers: new_user_profile, updated_at, banned_words, comment_count, reaction_count, profile_comment_count
+- Todas las FK de usuario referencian public.users(id)
+- RLS habilitado en todas las tablas con policies de lectura pública y escritura restringida

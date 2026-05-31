@@ -3,7 +3,9 @@
 **Proyecto:** Secretaría de Energía — Fuerza del Pueblo
 **Plataforma:** energia-fp.netlify.app
 **Stack actual:** Next.js 16 + React + Supabase (por implementar)
+**BD existente:** Supabase con tabla `public.users` (custom, NO auth.users)
 **Fecha:** Mayo 2026 (actualizado con análisis de datos reales — Fase 1 definida)
+**SQL Migration:** `001_observatorio_foro_schema.sql` — listo para ejecutar
 
 ---
 
