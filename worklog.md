@@ -67,3 +67,24 @@ Stage Summary:
 - 6 triggers: new_user_profile, updated_at, banned_words, comment_count, reaction_count, profile_comment_count
 - Todas las FK de usuario referencian public.users(id)
 - RLS habilitado en todas las tablas con policies de lectura pública y escritura restringida
+
+---
+Task ID: sql-fix-v3-integer-custom-auth
+Agent: main
+Task: Corregir SQL migration: public.users.id es INTEGER (serial), sin link a auth.users
+
+Work Log:
+- Recibió schema de public.users: id serial, full_name, email, password_hash, role, province, etc.
+- Confirmó: NO usa Supabase Auth, es auth custom
+- Cambió todas las FK de usuario de UUID a INTEGER
+- Eliminó get_current_user_id() y auth.uid() de RLS policies
+- Simplificó RLS: solo policies SELECT públicas, escrituras via service_role key
+- Actualizó trigger handle_new_user_profile para usar NEW.full_name y NEW.email
+- Documentó la estrategia de auth en el header del SQL
+
+Stage Summary:
+- Archivo: /home/z/my-project/download/001_observatorio_foro_schema.sql (v3)
+- FK usuario: todas INTEGER REFERENCES public.users(id)
+- RLS: SELECT público, escrituras via service_role (bypassea RLS)
+- Auth: custom (email + password_hash), NO Supabase Auth
+- Permisos: se verifican en middleware de Next.js API routes

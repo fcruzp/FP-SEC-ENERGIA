@@ -4,8 +4,15 @@
 -- Fecha: Mayo 2026
 -- Fase: 1 — Informe Desempeño Empresas Eléctricas Estatales
 --
--- PRE-REQUISITO: Existe una tabla public.users con columna id (INTEGER PK)
--- Todas las FK de usuario referencian public.users(id) como INTEGER
+-- PRE-REQUISITO: Tabla public.users existente:
+--   id serial PK, full_name, email, password_hash, role, province,
+--   security_certifications, is_active, created_at, profile_photo_url
+--
+-- ESTRATEGIA DE AUTH:
+--   - Auth custom (NO Supabase Auth) → auth.uid() NO aplica
+--   - Lecturas: RLS permite SELECT público donde corresponda
+--   - Escrituras: API routes usan service_role key (bypassea RLS)
+--   - Permisos de usuario se verifican en la app (middleware API)
 -- ============================================================
 
 -- ============================================================
@@ -108,7 +115,7 @@ CREATE TABLE IF NOT EXISTS reports (
 
 COMMENT ON TABLE reports IS 'Informes oficiales subidos al backoffice (PDF/XLS)';
 COMMENT ON COLUMN reports.phase IS 'Fase del observatorio a la que pertenece este informe';
-COMMENT ON COLUMN reports.uploaded_by IS 'Usuario (public.users) que subió el archivo';
+COMMENT ON COLUMN reports.uploaded_by IS 'ID del usuario (public.users) que subió el archivo';
 
 -- 1.6 Logs de análisis IA
 CREATE TABLE IF NOT EXISTS ai_analysis_logs (
@@ -130,11 +137,13 @@ COMMENT ON TABLE ai_analysis_logs IS 'Log de consultas de análisis IA (OpenRout
 -- SECCIÓN 2: TABLAS DEL FORO CIUDADANO
 -- ============================================================
 
--- 2.1 Perfiles de usuario (extiende public.users)
+-- 2.1 Perfiles extendidos de usuario para el Foro
+-- Extiende public.users con campos específicos del foro.
+-- NOTA: public.users ya tiene: full_name, email, role, is_active, profile_photo_url
+-- Esta tabla solo agrega lo que users NO tiene.
 CREATE TABLE IF NOT EXISTS profiles (
   id                      INTEGER PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
-  display_name            TEXT NOT NULL,
-  avatar_url              TEXT,
+  display_name            TEXT NOT NULL,    -- puede diferir de full_name (seudónimo)
   role                    TEXT DEFAULT 'citizen' CHECK (role IN ('citizen','moderator','admin')),
   is_banned               BOOLEAN DEFAULT false,
   ban_reason              TEXT,
@@ -147,10 +156,11 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at              TIMESTAMPTZ DEFAULT now()
 );
 
-COMMENT ON TABLE profiles IS 'Perfiles extendidos de usuarios para el Foro Ciudadano';
-COMMENT ON COLUMN profiles.role IS 'Rol del usuario: citizen (default), moderator, admin';
+COMMENT ON TABLE profiles IS 'Perfiles extendidos de usuarios para el Foro Ciudadano. Extiende public.users con campos de moderación y foro';
+COMMENT ON COLUMN profiles.role IS 'Rol en el foro: citizen (default), moderator, admin. Independiente de users.role';
 COMMENT ON COLUMN profiles.is_shadow_banned IS 'Shadow ban: el usuario puede comentar pero nadie ve sus comentarios';
 COMMENT ON COLUMN profiles.first_comment_approved IS 'Para moderación: primer comentario de usuario nuevo requiere aprobación';
+COMMENT ON COLUMN profiles.display_name IS 'Nombre visible en el foro. Puede ser seudónimo, distinto de users.full_name';
 
 -- 2.2 Posts de la Secretaría
 CREATE TABLE IF NOT EXISTS posts (
@@ -238,7 +248,7 @@ COMMENT ON TABLE banned_words IS 'Lista de palabras prohibidas configurables por
 -- SECCIÓN 3: ÍNDICES
 -- ============================================================
 
--- Observatorio: unique constraint para data_points (con COALESCE, no se puede inline)
+-- Observatorio: unique constraint para data_points (con COALESCE)
 CREATE UNIQUE INDEX IF NOT EXISTS uq_data_points_indicator_date_entity
   ON data_points(indicator_id, date, COALESCE(entity_id, '00000000-0000-0000-0000-000000000000'));
 
@@ -279,7 +289,7 @@ CREATE INDEX IF NOT EXISTS idx_reactions_target ON reactions(target_id, target_t
 CREATE INDEX IF NOT EXISTS idx_reactions_user ON reactions(user_id);
 
 -- Foro: reportes pendientes
-CREATE INDEX IF NOT EXISTS idx_reports_pending ON content_reports(status, created_at DESC) WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS idx_content_reports_pending ON content_reports(status, created_at DESC) WHERE status = 'pending';
 
 -- Foro: perfiles
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
@@ -293,201 +303,84 @@ CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
 -- SECCIÓN 4: ROW LEVEL SECURITY (RLS)
 -- ============================================================
 --
--- NOTA IMPORTANTE SOBRE AUTH.UID():
--- auth.uid() devuelve un UUID (el id de auth.users).
--- Como public.users.id es INTEGER, NO se puede comparar directamente.
--- Se usa un helper function get_current_user_id() que mapea
--- auth.uid() → public.users.id via la relación entre ambas tablas.
---
--- Si public.users tiene una columna que referencia auth.users(id)
--- (ej: auth_uuid UUID REFERENCES auth.users(id)), el mapeo es directo.
--- Si no existe esa columna, se necesitará otro mecanismo.
+-- ESTRATEGIA CON AUTH CUSTOM:
+--   - auth.uid() NO funciona (no se usa Supabase Auth)
+--   - Lecturas públicas: RLS permite SELECT
+--   - Escrituras: se hacen via API routes con service_role key
+--     (service_role BYPASEA RLS completamente)
+--   - Permisos de usuario se verifican en el middleware de Next.js
+--   - Para el foro ciudadano, se usará un JWT custom o session cookie
+--     que el API route verifica antes de escribir
 -- ============================================================
 
--- Helper: obtener el public.users.id del usuario autenticado actual
--- Requiere que public.users tenga una columna que vincule con auth.users
--- Ajustar el nombre de la columna según el schema real de public.users
-CREATE OR REPLACE FUNCTION get_current_user_id()
-RETURNS INTEGER AS $$
-  SELECT id FROM public.users WHERE id = (
-    -- Intenta obtener el ID del JWT claim personalizado
-    -- Si public.users usa auth.uid() como FK, ajustar aquí
-    -- Esta versión asume que el sistema de auth setea un claim
-    -- con el public.users.id en el JWT
-    COALESCE(
-      (auth.jwt() -> 'user_metadata' ->> 'public_user_id')::INTEGER,
-      -- Fallback: si auth.uid() coincide con alguna referencia en users
-      -- (Solo funciona si hay una columna auth_uuid UUID en public.users)
-      NULL
-    )
-  )
-$$ LANGUAGE sql STABLE SECURITY DEFINER;
+-- ---- OBSERVATORIO: Lectura pública total ----
 
--- ---- OBSERVATORIO ----
-
--- entities: lectura pública, escritura solo admins
 ALTER TABLE entities ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Entities are viewable by everyone"
   ON entities FOR SELECT USING (true);
-CREATE POLICY "Admins can manage entities"
-  ON entities FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
 
--- indicator_categories: lectura pública, escritura solo admins
 ALTER TABLE indicator_categories ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Categories are viewable by everyone"
   ON indicator_categories FOR SELECT USING (true);
-CREATE POLICY "Admins can manage categories"
-  ON indicator_categories FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
 
--- indicators: lectura pública, escritura solo admins
 ALTER TABLE indicators ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Active indicators are viewable by everyone"
   ON indicators FOR SELECT USING (is_active = true);
-CREATE POLICY "Admins can manage indicators"
-  ON indicators FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
 
--- data_points: lectura pública, escritura solo admins
 ALTER TABLE data_points ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Data points are viewable by everyone"
   ON data_points FOR SELECT USING (true);
-CREATE POLICY "Admins can manage data points"
-  ON data_points FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
 
--- reports: lectura pública solo publicados, escritura solo admins
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Published reports are viewable by everyone"
   ON reports FOR SELECT USING (is_published = true);
-CREATE POLICY "Admins can see all reports"
-  ON reports FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
-CREATE POLICY "Admins can manage reports"
-  ON reports FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
 
--- ai_analysis_logs: solo admins pueden leer todos, usuarios ven los propios
 ALTER TABLE ai_analysis_logs ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Admins can view AI logs"
-  ON ai_analysis_logs FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
-CREATE POLICY "Authenticated users can create AI logs"
-  ON ai_analysis_logs FOR INSERT WITH CHECK (get_current_user_id() IS NOT NULL);
-CREATE POLICY "Users can view own AI logs"
-  ON ai_analysis_logs FOR SELECT USING (
-    user_id = get_current_user_id()
-  );
+-- Solo admins ven logs IA (via service_role en API routes)
+-- No hay policy SELECT pública para esta tabla
 
--- ---- FORO ----
+-- ---- FORO: Lectura pública, escritura via API ----
 
--- profiles: cualquiera puede leer, solo el dueño puede editar su perfil
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Profiles are viewable by everyone"
   ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile"
-  ON profiles FOR UPDATE USING (id = get_current_user_id());
-CREATE POLICY "Users can insert own profile"
-  ON profiles FOR INSERT WITH CHECK (id = get_current_user_id());
 
--- posts: cualquiera lee publicados, solo admins crean/editan
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Published posts are viewable by everyone"
   ON posts FOR SELECT USING (is_published = true);
-CREATE POLICY "Admins can see all posts"
-  ON posts FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
-CREATE POLICY "Admins can insert posts"
-  ON posts FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
-CREATE POLICY "Admins can update posts"
-  ON posts FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
-CREATE POLICY "Admins can delete posts"
-  ON posts FOR DELETE USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
 
--- comments: no ocultos son visibles; usuarios autenticados no baneados pueden crear
 ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Non-hidden comments are viewable by everyone"
   ON comments FOR SELECT USING (is_hidden = false);
-CREATE POLICY "Admins can see all comments"
-  ON comments FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
-CREATE POLICY "Authenticated non-banned users can comment"
-  ON comments FOR INSERT WITH CHECK (
-    get_current_user_id() = author_id
-    AND EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND is_banned = false AND is_shadow_banned = false)
-  );
-CREATE POLICY "Users can update own comments"
-  ON comments FOR UPDATE USING (get_current_user_id() = author_id);
-CREATE POLICY "Admins can manage comments"
-  ON comments FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
 
--- reactions: cualquiera lee, usuarios autenticados crean/borran las propias
 ALTER TABLE reactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Reactions are viewable by everyone"
   ON reactions FOR SELECT USING (true);
-CREATE POLICY "Users can create own reactions"
-  ON reactions FOR INSERT WITH CHECK (get_current_user_id() = user_id);
-CREATE POLICY "Users can delete own reactions"
-  ON reactions FOR DELETE USING (get_current_user_id() = user_id);
 
--- content_reports: usuarios autenticados crean, admins gestionan
 ALTER TABLE content_reports ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can create reports"
-  ON content_reports FOR INSERT WITH CHECK (get_current_user_id() = reporter_id);
-CREATE POLICY "Users can view own reports"
-  ON content_reports FOR SELECT USING (get_current_user_id() = reporter_id);
-CREATE POLICY "Admins can manage all reports"
-  ON content_reports FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
-  );
+-- Solo admins ven reportes (via service_role en API routes)
 
--- banned_words: solo admins leen/gestionan
 ALTER TABLE banned_words ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Admins can manage banned words"
-  ON banned_words FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role = 'admin')
-  );
+-- Solo admins ven palabras prohibidas (via service_role en API routes)
 
 -- ============================================================
 -- SECCIÓN 5: TRIGGERS
 -- ============================================================
 
--- 5.1 Auto-crear perfil cuando un usuario se registra en public.users
--- (Si public.users ya tiene registros, los perfiles se crean manualmente o via seed)
+-- 5.1 Auto-crear perfil cuando un usuario se inserta en public.users
 CREATE OR REPLACE FUNCTION handle_new_user_profile()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO profiles (id, display_name, role)
   VALUES (
     NEW.id,
-    COALESCE(NEW.email, 'Usuario ' || NEW.id::text),
+    COALESCE(NEW.full_name, NEW.email, 'Usuario ' || NEW.id::text),
     'citizen'
   );
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Nota: Este trigger se adjunta a public.users (NO a auth.users)
--- Si tu flujo de registro inserta en public.users, este trigger
--- crea automáticamente el perfil. Ajusta el nombre de la tabla si es diferente.
 CREATE TRIGGER on_user_created
   AFTER INSERT ON public.users
   FOR EACH ROW
@@ -543,7 +436,7 @@ CREATE TRIGGER check_comment_banned_words
   FOR EACH ROW
   EXECUTE FUNCTION check_banned_words();
 
--- 5.4 Actualizar comment_count en posts al insertar comentario
+-- 5.4 Actualizar comment_count en posts al insertar/eliminar comentario
 CREATE OR REPLACE FUNCTION update_post_comment_count()
 RETURNS TRIGGER AS $$
 BEGIN
