@@ -151,3 +151,38 @@ Stage Summary:
 - 6 endpoints creados: categories, indicators, entities, data-points, reports, parse-xls
 - Faltan: agregar service_role key para rutas de escritura (admin)
 - Próximo paso: PASO 5 (Backoffice Upload XLS + Parser)
+
+---
+Task ID: paso5-backoffice-parser
+Agent: main
+Task: PASO 5 — Backoffice: Upload XLS + Parser
+
+Work Log:
+- Creó parser Python robusto: download/parse_xls_to_supabase.py
+  - Parsea hojas: Variables Relevantes, EDE's, CDEEE, EGEHID, ETED, EGPC
+  - Mapea indicadores por slug → UUID usando Supabase REST API
+  - Mapea entidades por nombre → slug → UUID
+  - Extrae series temporales de columnas mensuales
+  - Inserta data_points en batches via Supabase REST API (service_role)
+  - Soporta --dry-run, --sheet, --batch-size
+- Creó página admin: /admin/observatorio
+  - Layout con sidebar oscuro (nav: Dashboard, Cargar Datos, Indicadores, Datos)
+  - Dashboard: 4 stat cards (categorías, indicadores, entidades, data points) + tabla últimos datos
+  - Cargar Datos: drag & drop upload, progreso, parseo via API
+  - Indicadores: accordion por categoría con detalles de cada indicador
+  - Datos: tabla completa de data_points recientes
+- Creó API route: /api/admin/recent-data-points (GET con joins a indicators y entities)
+- Actualizó API route: /api/admin/parse-xls POST
+  - Recibe archivo XLS en base64
+  - Lo guarda temporalmente en /tmp
+  - Ejecuta parser Python como subprocess
+  - Retorna resultados (data_points extraídos/insertados)
+- Verificó compilación TypeScript: sin errores
+- Pendiente: SUPABASE_SERVICE_ROLE_KEY en .env.local para activar escrituras
+
+Stage Summary:
+- PASO 5 COMPLETADO ✅
+- Parser: download/parse_xls_to_supabase.py (Python/openpyxl)
+- Admin UI: /admin/observatorio (4 tabs: Dashboard, Upload, Indicators, Data)
+- API routes: parse-xls (POST con subprocess Python), recent-data-points (GET)
+- Próximo paso: PASO 6 (Seed masivo: Parse XLS marzo 2026)
