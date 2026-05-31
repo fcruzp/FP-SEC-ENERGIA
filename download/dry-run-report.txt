@@ -1,0 +1,8 @@
+DRY RUN REPORT — 2026-05-31T06:08:54.840Z
+Total data_points: 70224
+Matched indicators: 263
+Unmatched: 2
+
+UNMATCHED INDICATORS:
+VR: Costos Marginal de Energía (cUSD$/KWh)
+VR: Costos Marginal de Potencia  (cUSD/kW-Mes)
