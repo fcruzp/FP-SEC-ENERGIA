@@ -4,8 +4,8 @@
 -- Fecha: Mayo 2026
 -- Fase: 1 — Informe Desempeño Empresas Eléctricas Estatales
 --
--- PRE-REQUISITO: Existe una tabla public.users con columna id (UUID PK)
--- Todas las FK de usuario referencian public.users(id), NO auth.users(id)
+-- PRE-REQUISITO: Existe una tabla public.users con columna id (INTEGER PK)
+-- Todas las FK de usuario referencian public.users(id) como INTEGER
 -- ============================================================
 
 -- ============================================================
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS reports (
   report_type     TEXT DEFAULT 'desempeno_mensual',
   phase           TEXT DEFAULT 'desempeno_eee',
   is_published    BOOLEAN DEFAULT false,
-  uploaded_by     UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  uploaded_by     INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
   created_at      TIMESTAMPTZ DEFAULT now()
 );
 
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS ai_analysis_logs (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   indicator_id    UUID REFERENCES indicators(id) ON DELETE SET NULL,
   category_id     UUID REFERENCES indicator_categories(id) ON DELETE SET NULL,
-  user_id         UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  user_id         INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
   user_query      TEXT NOT NULL,
   ai_response     TEXT NOT NULL,
   model_used      TEXT,
@@ -132,14 +132,14 @@ COMMENT ON TABLE ai_analysis_logs IS 'Log de consultas de análisis IA (OpenRout
 
 -- 2.1 Perfiles de usuario (extiende public.users)
 CREATE TABLE IF NOT EXISTS profiles (
-  id                      UUID PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
+  id                      INTEGER PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
   display_name            TEXT NOT NULL,
   avatar_url              TEXT,
   role                    TEXT DEFAULT 'citizen' CHECK (role IN ('citizen','moderator','admin')),
   is_banned               BOOLEAN DEFAULT false,
   ban_reason              TEXT,
   banned_at               TIMESTAMPTZ,
-  banned_by               UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  banned_by               INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
   is_shadow_banned        BOOLEAN DEFAULT false,
   comment_count           INT DEFAULT 0,
   first_comment_approved  BOOLEAN DEFAULT false,
@@ -155,7 +155,7 @@ COMMENT ON COLUMN profiles.first_comment_approved IS 'Para moderación: primer c
 -- 2.2 Posts de la Secretaría
 CREATE TABLE IF NOT EXISTS posts (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  author_id       UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  author_id       INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   title           TEXT NOT NULL,
   slug            TEXT UNIQUE NOT NULL,
   content         TEXT NOT NULL,
@@ -178,11 +178,11 @@ COMMENT ON TABLE posts IS 'Posts publicados por la Secretaría en el Foro Ciudad
 CREATE TABLE IF NOT EXISTS comments (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   post_id         UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-  author_id       UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  author_id       INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   parent_id       UUID REFERENCES comments(id) ON DELETE CASCADE,
   content         TEXT NOT NULL,
   is_hidden       BOOLEAN DEFAULT false,
-  hidden_by       UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  hidden_by       INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
   hidden_reason   TEXT,
   is_auto_hidden  BOOLEAN DEFAULT false,
   reaction_count  INT DEFAULT 0,
@@ -197,7 +197,7 @@ COMMENT ON COLUMN comments.is_auto_hidden IS 'Ocultado automáticamente por filt
 -- 2.4 Reacciones
 CREATE TABLE IF NOT EXISTS reactions (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id         INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   target_id       UUID NOT NULL,
   target_type     TEXT NOT NULL CHECK (target_type IN ('post','comment')),
   reaction_type   TEXT NOT NULL DEFAULT 'like' CHECK (reaction_type IN ('like','agree','disagree','flag')),
@@ -211,13 +211,13 @@ COMMENT ON TABLE reactions IS 'Reacciones de usuarios a posts y comentarios';
 -- 2.5 Reportes de abuso
 CREATE TABLE IF NOT EXISTS content_reports (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  reporter_id     UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  reporter_id     INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   target_id       UUID NOT NULL,
   target_type     TEXT NOT NULL CHECK (target_type IN ('post','comment','user')),
   reason          TEXT NOT NULL CHECK (reason IN ('spam','offensive','misinformation','irrelevant','other')),
   description     TEXT,
   status          TEXT DEFAULT 'pending' CHECK (status IN ('pending','reviewed','resolved','dismissed')),
-  reviewed_by     UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  reviewed_by     INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
   reviewed_at     TIMESTAMPTZ,
   created_at      TIMESTAMPTZ DEFAULT now()
 );
@@ -292,6 +292,36 @@ CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
 -- ============================================================
 -- SECCIÓN 4: ROW LEVEL SECURITY (RLS)
 -- ============================================================
+--
+-- NOTA IMPORTANTE SOBRE AUTH.UID():
+-- auth.uid() devuelve un UUID (el id de auth.users).
+-- Como public.users.id es INTEGER, NO se puede comparar directamente.
+-- Se usa un helper function get_current_user_id() que mapea
+-- auth.uid() → public.users.id via la relación entre ambas tablas.
+--
+-- Si public.users tiene una columna que referencia auth.users(id)
+-- (ej: auth_uuid UUID REFERENCES auth.users(id)), el mapeo es directo.
+-- Si no existe esa columna, se necesitará otro mecanismo.
+-- ============================================================
+
+-- Helper: obtener el public.users.id del usuario autenticado actual
+-- Requiere que public.users tenga una columna que vincule con auth.users
+-- Ajustar el nombre de la columna según el schema real de public.users
+CREATE OR REPLACE FUNCTION get_current_user_id()
+RETURNS INTEGER AS $$
+  SELECT id FROM public.users WHERE id = (
+    -- Intenta obtener el ID del JWT claim personalizado
+    -- Si public.users usa auth.uid() como FK, ajustar aquí
+    -- Esta versión asume que el sistema de auth setea un claim
+    -- con el public.users.id en el JWT
+    COALESCE(
+      (auth.jwt() -> 'user_metadata' ->> 'public_user_id')::INTEGER,
+      -- Fallback: si auth.uid() coincide con alguna referencia en users
+      -- (Solo funciona si hay una columna auth_uuid UUID en public.users)
+      NULL
+    )
+  )
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 -- ---- OBSERVATORIO ----
 
@@ -301,7 +331,7 @@ CREATE POLICY "Entities are viewable by everyone"
   ON entities FOR SELECT USING (true);
 CREATE POLICY "Admins can manage entities"
   ON entities FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 
 -- indicator_categories: lectura pública, escritura solo admins
@@ -310,7 +340,7 @@ CREATE POLICY "Categories are viewable by everyone"
   ON indicator_categories FOR SELECT USING (true);
 CREATE POLICY "Admins can manage categories"
   ON indicator_categories FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 
 -- indicators: lectura pública, escritura solo admins
@@ -319,7 +349,7 @@ CREATE POLICY "Active indicators are viewable by everyone"
   ON indicators FOR SELECT USING (is_active = true);
 CREATE POLICY "Admins can manage indicators"
   ON indicators FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 
 -- data_points: lectura pública, escritura solo admins
@@ -328,7 +358,7 @@ CREATE POLICY "Data points are viewable by everyone"
   ON data_points FOR SELECT USING (true);
 CREATE POLICY "Admins can manage data points"
   ON data_points FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 
 -- reports: lectura pública solo publicados, escritura solo admins
@@ -337,24 +367,24 @@ CREATE POLICY "Published reports are viewable by everyone"
   ON reports FOR SELECT USING (is_published = true);
 CREATE POLICY "Admins can see all reports"
   ON reports FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 CREATE POLICY "Admins can manage reports"
   ON reports FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 
--- ai_analysis_logs: solo admins pueden leer, usuarios autenticados pueden insertar
+-- ai_analysis_logs: solo admins pueden leer todos, usuarios ven los propios
 ALTER TABLE ai_analysis_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can view AI logs"
   ON ai_analysis_logs FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 CREATE POLICY "Authenticated users can create AI logs"
-  ON ai_analysis_logs FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+  ON ai_analysis_logs FOR INSERT WITH CHECK (get_current_user_id() IS NOT NULL);
 CREATE POLICY "Users can view own AI logs"
   ON ai_analysis_logs FOR SELECT USING (
-    user_id = auth.uid()
+    user_id = get_current_user_id()
   );
 
 -- ---- FORO ----
@@ -364,9 +394,9 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Profiles are viewable by everyone"
   ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile"
-  ON profiles FOR UPDATE USING (id = auth.uid());
+  ON profiles FOR UPDATE USING (id = get_current_user_id());
 CREATE POLICY "Users can insert own profile"
-  ON profiles FOR INSERT WITH CHECK (id = auth.uid());
+  ON profiles FOR INSERT WITH CHECK (id = get_current_user_id());
 
 -- posts: cualquiera lee publicados, solo admins crean/editan
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
@@ -374,19 +404,19 @@ CREATE POLICY "Published posts are viewable by everyone"
   ON posts FOR SELECT USING (is_published = true);
 CREATE POLICY "Admins can see all posts"
   ON posts FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 CREATE POLICY "Admins can insert posts"
   ON posts FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 CREATE POLICY "Admins can update posts"
   ON posts FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 CREATE POLICY "Admins can delete posts"
   ON posts FOR DELETE USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 
 -- comments: no ocultos son visibles; usuarios autenticados no baneados pueden crear
@@ -395,18 +425,18 @@ CREATE POLICY "Non-hidden comments are viewable by everyone"
   ON comments FOR SELECT USING (is_hidden = false);
 CREATE POLICY "Admins can see all comments"
   ON comments FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 CREATE POLICY "Authenticated non-banned users can comment"
   ON comments FOR INSERT WITH CHECK (
-    auth.uid() = author_id
-    AND EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_banned = false AND is_shadow_banned = false)
+    get_current_user_id() = author_id
+    AND EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND is_banned = false AND is_shadow_banned = false)
   );
 CREATE POLICY "Users can update own comments"
-  ON comments FOR UPDATE USING (auth.uid() = author_id);
+  ON comments FOR UPDATE USING (get_current_user_id() = author_id);
 CREATE POLICY "Admins can manage comments"
   ON comments FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 
 -- reactions: cualquiera lee, usuarios autenticados crean/borran las propias
@@ -414,26 +444,26 @@ ALTER TABLE reactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Reactions are viewable by everyone"
   ON reactions FOR SELECT USING (true);
 CREATE POLICY "Users can create own reactions"
-  ON reactions FOR INSERT WITH CHECK (auth.uid() = user_id);
+  ON reactions FOR INSERT WITH CHECK (get_current_user_id() = user_id);
 CREATE POLICY "Users can delete own reactions"
-  ON reactions FOR DELETE USING (auth.uid() = user_id);
+  ON reactions FOR DELETE USING (get_current_user_id() = user_id);
 
 -- content_reports: usuarios autenticados crean, admins gestionan
 ALTER TABLE content_reports ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can create reports"
-  ON content_reports FOR INSERT WITH CHECK (auth.uid() = reporter_id);
+  ON content_reports FOR INSERT WITH CHECK (get_current_user_id() = reporter_id);
 CREATE POLICY "Users can view own reports"
-  ON content_reports FOR SELECT USING (auth.uid() = reporter_id);
+  ON content_reports FOR SELECT USING (get_current_user_id() = reporter_id);
 CREATE POLICY "Admins can manage all reports"
   ON content_reports FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin','moderator'))
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role IN ('admin','moderator'))
   );
 
 -- banned_words: solo admins leen/gestionan
 ALTER TABLE banned_words ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can manage banned words"
   ON banned_words FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM profiles WHERE id = get_current_user_id() AND role = 'admin')
   );
 
 -- ============================================================
@@ -665,9 +695,6 @@ ON CONFLICT (slug) DO NOTHING;
 -- ============================================================
 -- SECCIÓN 8: SEED DATA — INDICADORES (Variables Relevantes)
 -- ============================================================
-
--- Categoría: Variables Relevantes
--- (Se asume que el seed de categorías ya creó el slug 'variables-relevantes')
 
 INSERT INTO indicators (category_id, name, slug, unit, description, chart_type, sort_order) VALUES
   -- Precios Combustibles
