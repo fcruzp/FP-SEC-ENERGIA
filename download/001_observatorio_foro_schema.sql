@@ -80,10 +80,7 @@ CREATE TABLE IF NOT EXISTS data_points (
   source_file     TEXT,
   is_estimated    BOOLEAN DEFAULT false,
   notes           TEXT,
-  created_at      TIMESTAMPTZ DEFAULT now(),
-
-  -- Un indicador + fecha + entidad = punto único (entity_id null se reemplaza con UUID cero)
-  UNIQUE(indicator_id, date, COALESCE(entity_id, '00000000-0000-0000-0000-000000000000'))
+  created_at      TIMESTAMPTZ DEFAULT now()
 );
 
 COMMENT ON TABLE data_points IS 'Mediciones temporales de indicadores. ~41,000+ registros en Fase 1';
@@ -240,6 +237,10 @@ COMMENT ON TABLE banned_words IS 'Lista de palabras prohibidas configurables por
 -- ============================================================
 -- SECCIÓN 3: ÍNDICES
 -- ============================================================
+
+-- Observatorio: unique constraint para data_points (con COALESCE, no se puede inline)
+CREATE UNIQUE INDEX IF NOT EXISTS uq_data_points_indicator_date_entity
+  ON data_points(indicator_id, date, COALESCE(entity_id, '00000000-0000-0000-0000-000000000000'));
 
 -- Observatorio: queries de series temporales
 CREATE INDEX IF NOT EXISTS idx_data_points_indicator_date ON data_points(indicator_id, date DESC);
