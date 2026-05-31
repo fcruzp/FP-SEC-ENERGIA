@@ -233,8 +233,15 @@ function findIndicatorBySlug(indicators: Map<string, IndicatorRow>, name: string
 /**
  * Parse date headers from a row.
  * Returns a map of column index → date string (YYYY-MM-DD)
+ * Optionally filters by dateFrom/dateTo to limit the range of columns processed.
  */
-function findDateColumns(sheet: XLSX.WorkSheet, headerRow: number, startCol: number): Map<number, string> {
+function findDateColumns(
+  sheet: XLSX.WorkSheet,
+  headerRow: number,
+  startCol: number,
+  dateFrom?: string,
+  dateTo?: string
+): Map<number, string> {
   const dateMap = new Map<number, string>()
 
   if (!sheet['!ref']) return dateMap
@@ -250,6 +257,9 @@ function findDateColumns(sheet: XLSX.WorkSheet, headerRow: number, startCol: num
       // Filter out invalid dates (before 2008 or after 2030 — likely accumulated/total columns)
       const year = parseInt(dateStr.split('-')[0], 10)
       if (year >= 2008 && year <= 2030) {
+        // Apply date range filter if specified
+        if (dateFrom && dateStr < dateFrom) continue
+        if (dateTo && dateStr > dateTo) continue
         dateMap.set(col, dateStr)
       }
     }
@@ -273,10 +283,12 @@ function getCellValue(sheet: XLSX.WorkSheet, row: number, col: number): unknown 
 function parseVariablesRelevantes(
   sheet: XLSX.WorkSheet,
   indicators: Map<string, IndicatorRow>,
-  sourceFile: string
+  sourceFile: string,
+  dateFrom?: string,
+  dateTo?: string
 ): DataPointInsert[] {
   const dataPoints: DataPointInsert[] = []
-  const dateMap = findDateColumns(sheet, 6, 11) // Row 7 (0-indexed: 6), col L (0-indexed: 11)
+  const dateMap = findDateColumns(sheet, 6, 11, dateFrom, dateTo) // Row 7 (0-indexed: 6), col L (0-indexed: 11)
   console.log(`  📅 ${dateMap.size} date columns found`)
 
   if (!sheet['!ref']) return dataPoints
@@ -323,10 +335,12 @@ function parseEdesSheet(
   sheet: XLSX.WorkSheet,
   indicators: Map<string, IndicatorRow>,
   entities: Map<string, EntityRow>,
-  sourceFile: string
+  sourceFile: string,
+  dateFrom?: string,
+  dateTo?: string
 ): DataPointInsert[] {
   const dataPoints: DataPointInsert[] = []
-  const dateMap = findDateColumns(sheet, 6, 11)
+  const dateMap = findDateColumns(sheet, 6, 11, dateFrom, dateTo)
   console.log(`  📅 ${dateMap.size} date columns found`)
 
   if (!sheet['!ref']) return dataPoints
@@ -407,11 +421,13 @@ function parseEntitySheet(
   indicatorPrefix: string,
   indicators: Map<string, IndicatorRow>,
   entities: Map<string, EntityRow>,
-  sourceFile: string
+  sourceFile: string,
+  dateFrom?: string,
+  dateTo?: string
 ): DataPointInsert[] {
   const dataPoints: DataPointInsert[] = []
   const headerRow = sheetName === 'EGPC' ? 7 : 6
-  const dateMap = findDateColumns(sheet, headerRow, 11)
+  const dateMap = findDateColumns(sheet, headerRow, 11, dateFrom, dateTo)
   console.log(`  📅 ${dateMap.size} date columns found`)
 
   if (!sheet['!ref']) return dataPoints
@@ -523,18 +539,22 @@ function parseEntitySheet(
 export async function parseXls(
   fileBuffer: Buffer,
   fileName: string,
-  options?: { dryRun?: boolean; sheetName?: string; batchSize?: number }
+  options?: { dryRun?: boolean; sheetName?: string; batchSize?: number; dateFrom?: string; dateTo?: string }
 ): Promise<{
   success: boolean
   data_points_extracted: number
   data_points_inserted: number
   date_range: string
+  date_columns_filtered: number
+  date_columns_total: number
   unmatched_indicators: string[]
   error?: string
 }> {
   const dryRun = options?.dryRun ?? false
   const sheetName = options?.sheetName
   const batchSize = options?.batchSize ?? 500
+  const dateFrom = options?.dateFrom
+  const dateTo = options?.dateTo
 
   try {
     // Load reference data from Supabase
@@ -581,13 +601,13 @@ export async function parseXls(
 
       switch (config.parser) {
         case 'variables':
-          dps = parseVariablesRelevantes(sheet, indicators, fileName)
+          dps = parseVariablesRelevantes(sheet, indicators, fileName, dateFrom, dateTo)
           break
         case 'edes':
-          dps = parseEdesSheet(sheet, indicators, entities, fileName)
+          dps = parseEdesSheet(sheet, indicators, entities, fileName, dateFrom, dateTo)
           break
         case 'entity':
-          dps = parseEntitySheet(sheet, config.name, config.entitySlug, config.prefix, indicators, entities, fileName)
+          dps = parseEntitySheet(sheet, config.name, config.entitySlug, config.prefix, indicators, entities, fileName, dateFrom, dateTo)
           break
       }
 
@@ -598,6 +618,26 @@ export async function parseXls(
     // Calculate date range
     const dates = allDataPoints.map(dp => dp.date).sort()
     const dateRange = dates.length > 0 ? `${dates[0]} → ${dates[dates.length - 1]}` : 'N/A'
+
+    // Count total date columns across all parsed sheets (before filtering)
+    let totalDateColumns = 0
+    let filteredDateColumns = 0
+    for (const config of sheetConfigs) {
+      if (sheetName && config.name !== sheetName) continue
+      const sheet = workbook.Sheets[config.name]
+      if (!sheet) continue
+      const headerRow = config.name === 'EGPC' ? 7 : 6
+      const allDateCols = findDateColumns(sheet, headerRow, 11)
+      totalDateColumns += allDateCols.size
+      // Count how many remain after filter
+      for (const [, dateStr] of allDateCols) {
+        if (!dateFrom || dateStr >= dateFrom) {
+          if (!dateTo || dateStr <= dateTo) {
+            filteredDateColumns++
+          }
+        }
+      }
+    }
 
     // Insert into Supabase
     let inserted = 0
@@ -638,6 +678,8 @@ export async function parseXls(
       data_points_extracted: allDataPoints.length,
       data_points_inserted: dryRun ? 0 : inserted,
       date_range: dateRange,
+      date_columns_filtered: filteredDateColumns,
+      date_columns_total: totalDateColumns,
       unmatched_indicators: unmatched,
     }
   } catch (err) {
@@ -648,6 +690,8 @@ export async function parseXls(
       data_points_extracted: 0,
       data_points_inserted: 0,
       date_range: '',
+      date_columns_filtered: 0,
+      date_columns_total: 0,
       unmatched_indicators: [],
       error: message,
     }

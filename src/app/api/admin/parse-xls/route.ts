@@ -57,6 +57,8 @@ export async function GET() {
  *   file_name: string,
  *   mode?: 'full' | 'dry-run' (default: 'full')
  *   sheet?: string (optional sheet name to parse only that sheet)
+ *   date_from?: string (YYYY-MM-DD — filter date columns from this date)
+ *   date_to?: string (YYYY-MM-DD — filter date columns up to this date)
  * }
  */
 export async function POST(request: NextRequest) {
@@ -67,6 +69,8 @@ export async function POST(request: NextRequest) {
     const fileName = body.file_name
     const dryRun = body.mode === 'dry-run'
     const sheetName = body.sheet || undefined
+    const dateFrom = body.date_from || undefined
+    const dateTo = body.date_to || undefined
 
     if (!fileData || !fileName) {
       return NextResponse.json(
@@ -91,6 +95,8 @@ export async function POST(request: NextRequest) {
       dryRun,
       sheetName,
       batchSize: 500,
+      dateFrom,
+      dateTo,
     })
 
     if (!result.success) {
@@ -104,10 +110,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         mode: 'dry-run',
-        message: `Análisis completado: ${result.data_points_extracted} data_points serían insertados`,
+        message: `Análisis completado: ${result.data_points_extracted} data_points serían insertados (${result.date_columns_filtered}/${result.date_columns_total} meses)`,
         data_points_extracted: result.data_points_extracted,
         data_points_inserted: 0,
         date_range: result.date_range,
+        date_columns_filtered: result.date_columns_filtered,
+        date_columns_total: result.date_columns_total,
         unmatched_indicators: result.unmatched_indicators,
       })
     }
@@ -115,10 +123,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       mode: 'full',
-      message: `Archivo procesado exitosamente: ${result.data_points_inserted} data_points insertados de ${result.data_points_extracted} extraídos`,
+      message: `Archivo procesado exitosamente: ${result.data_points_inserted} data_points insertados de ${result.data_points_extracted} extraídos (${result.date_columns_filtered}/${result.date_columns_total} meses)`,
       data_points_extracted: result.data_points_extracted,
       data_points_inserted: result.data_points_inserted,
       date_range: result.date_range,
+      date_columns_filtered: result.date_columns_filtered,
+      date_columns_total: result.date_columns_total,
       file_name: fileName,
     })
   } catch (err: unknown) {

@@ -17,6 +17,9 @@ import {
   Loader2,
   X,
   RefreshCw,
+  CalendarDays,
+  Clock,
+  Zap,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -24,6 +27,9 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -151,6 +157,56 @@ function ObservatorioAdminContent() {
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Date range filter state
+  const [dateRangePreset, setDateRangePreset] = useState<string>('current-month')
+  const [customDateFrom, setCustomDateFrom] = useState<string>('')
+  const [customDateTo, setCustomDateTo] = useState<string>('')
+
+  // ── Date Range Helpers ──
+  const getDateRangeFromPreset = useCallback((preset: string): { dateFrom?: string; dateTo?: string } => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() // 0-indexed
+
+    switch (preset) {
+      case 'current-month': {
+        // First day of current month to first day of next month
+        const from = new Date(year, month, 1)
+        const to = new Date(year, month + 1, 1)
+        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+      }
+      case 'last-3-months': {
+        const from = new Date(year, month - 2, 1)
+        const to = new Date(year, month + 1, 1)
+        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+      }
+      case 'last-6-months': {
+        const from = new Date(year, month - 5, 1)
+        const to = new Date(year, month + 1, 1)
+        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+      }
+      case 'last-12-months': {
+        const from = new Date(year, month - 11, 1)
+        const to = new Date(year, month + 1, 1)
+        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+      }
+      case 'current-year': {
+        const from = new Date(year, 0, 1)
+        const to = new Date(year, month + 1, 1)
+        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+      }
+      case 'custom': {
+        return {
+          dateFrom: customDateFrom || undefined,
+          dateTo: customDateTo || undefined,
+        }
+      }
+      case 'full':
+      default:
+        return {} // No filter = full historical load
+    }
+  }, [customDateFrom, customDateTo])
+
   // ── Data Fetching ──
   const fetchStats = useCallback(async () => {
     setStatsLoading(true)
@@ -270,6 +326,7 @@ function ObservatorioAdminContent() {
       setUploadStatus('processing')
 
       // Send to parse-xls API
+      const dateRange = getDateRangeFromPreset(dateRangePreset)
       const response = await fetch('/api/admin/parse-xls', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -277,6 +334,8 @@ function ObservatorioAdminContent() {
           file_data: base64,
           file_name: uploadFile.name,
           mode: 'full',
+          date_from: dateRange.dateFrom,
+          date_to: dateRange.dateTo,
         }),
       })
 
@@ -315,6 +374,16 @@ function ObservatorioAdminContent() {
     setUploadError(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
+
+  // Date range preset labels and descriptions
+  const dateRangePresets = [
+    { value: 'current-month', label: 'Mes en curso', desc: '~1,000 datos', icon: Zap },
+    { value: 'last-3-months', label: 'Últimos 3 meses', desc: '~4,500 datos', icon: Clock },
+    { value: 'last-12-months', label: 'Últimos 12 meses', desc: '~15,000 datos', icon: Clock },
+    { value: 'current-year', label: 'Año en curso', desc: '~2,300 datos', icon: CalendarDays },
+    { value: 'custom', label: 'Personalizado', desc: 'Rango manual', icon: CalendarDays },
+    { value: 'full', label: 'Carga completa', desc: '~200,000+ datos ⚠️', icon: Database },
+  ]
 
   // ── Helpers ──
   const formatNumber = (n: number) =>
@@ -494,7 +563,7 @@ function ObservatorioAdminContent() {
            TAB: Upload
            ═══════════════════════════════════════════════ */}
         <TabsContent value="upload" className="flex-1 p-4 md:p-8">
-          <div className="max-w-3xl mx-auto space-y-8">
+          <div className="max-w-3xl mx-auto space-y-6">
             {/* Header */}
             <div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
@@ -505,7 +574,80 @@ function ObservatorioAdminContent() {
               </p>
             </div>
 
-            {/* Upload Area */}
+            {/* ─── Date Range Selection ─── */}
+            <Card className="bg-[#0d1f3c] border-white/[0.06]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-white flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-emerald-400" />
+                  Rango de Fechas a Procesar
+                </CardTitle>
+                <p className="text-slate-500 text-xs mt-1">
+                  Cada XLS contiene toda la historia (2009→presente). Selecciona el segmento que deseas cargar para agilizar el proceso.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Preset buttons */}
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                  {dateRangePresets.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => setDateRangePreset(preset.value)}
+                      className={`
+                        flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg text-center
+                        transition-all duration-150 border
+                        ${dateRangePreset === preset.value
+                          ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                          : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.04] hover:border-white/[0.1]'
+                        }
+                      `}
+                    >
+                      <preset.icon className="w-4 h-4" />
+                      <span className="text-[11px] font-semibold leading-tight">{preset.label}</span>
+                      <span className="text-[9px] opacity-60 leading-tight">{preset.desc}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom date inputs */}
+                {dateRangePreset === 'custom' && (
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-slate-400 text-xs">Desde</Label>
+                      <Input
+                        type="date"
+                        value={customDateFrom}
+                        onChange={(e) => setCustomDateFrom(e.target.value)}
+                        className="bg-[#0a1628] border-white/[0.08] text-white text-sm h-9"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-slate-400 text-xs">Hasta</Label>
+                      <Input
+                        type="date"
+                        value={customDateTo}
+                        onChange={(e) => setCustomDateTo(e.target.value)}
+                        className="bg-[#0a1628] border-white/[0.08] text-white text-sm h-9"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Active range summary */}
+                <div className="flex items-center gap-2 bg-white/[0.02] rounded-lg px-3 py-2 border border-white/[0.04]">
+                  <span className="text-slate-500 text-xs">Rango activo:</span>
+                  <span className="text-emerald-400 text-xs font-semibold">
+                    {dateRangePreset === 'full'
+                      ? 'Toda la historia (2009 → presente)'
+                      : dateRangePreset === 'custom'
+                        ? `${customDateFrom || '...'} → ${customDateTo || '...'}`
+                        : dateRangePresets.find(p => p.value === dateRangePreset)?.label
+                    }
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ─── Upload Area ─── */}
             <Card className="bg-[#0d1f3c] border-white/[0.06]">
               <CardContent className="p-6">
                 {/* Drag & Drop Zone */}

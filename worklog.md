@@ -249,3 +249,23 @@ Stage Summary:
   - download/003_seed_data_points.sql (SQL completo)
   - download/003_seed_data_points_part01-15.sql (SQL dividido)
 - Próximo paso: PASO 7 (Portal público con charts)
+---
+Task ID: 1
+Agent: main
+Task: Add date range filtering to XLS parser and admin upload UI
+
+Work Log:
+- Analyzed XLS data structure: 207 date columns (Jan 2009 → Mar 2026), ~200K data points for full load
+- Added dateFrom/dateTo parameters to findDateColumns() function in lib/parse-xls.ts
+- Propagated dateFrom/dateTo through all parser functions (parseVariablesRelevantes, parseEdesSheet, parseEntitySheet)
+- Added date_columns_filtered and date_columns_total fields to parseXls return type
+- Updated API route /api/admin/parse-xls to accept date_from and date_to parameters
+- Added 6 preset buttons to upload UI: Mes en curso, Últimos 3 meses, Últimos 12 meses, Año en curso, Personalizado, Carga completa
+- Added custom date range inputs (Desde/Hasta) for "Personalizado" mode
+- Added active range summary display
+- Build verified successfully
+
+Stage Summary:
+- Date range filtering fully implemented in parser, API, and UI
+- Presets: current-month (~1K pts), last-3-months (~4.5K), last-12-months (~15K), current-year (~2.3K), custom, full (~200K+)
+- This solves the performance concern for monthly updates through the web app
