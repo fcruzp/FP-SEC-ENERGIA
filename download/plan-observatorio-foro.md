@@ -3,7 +3,60 @@
 **Proyecto:** Secretaría de Energía — Fuerza del Pueblo
 **Plataforma:** energia-fp.netlify.app
 **Stack actual:** Next.js 16 + React + Supabase (por implementar)
-**Fecha:** Mayo 2026
+**Fecha:** Mayo 2026 (actualizado con análisis de datos reales)
+
+---
+
+## 0. Hallazgos del Análisis de Datos Reales
+
+> **Fuente:** `Informe-de-Desempeno-marzo-2026.xlsx` (2.8MB, 11 hojas) y `Informe_Desempeno_EEE_marzo_2026.pdf` (4.2MB, 126 páginas)
+
+### Estructura del XLS — 11 hojas con datos estructurados
+
+| Hoja | Contenido | Tipo de datos |
+|------|-----------|---------------|
+| `Variables Relevantes` | Precios combustibles, generación por tipo, costos marginales, tasa de cambio | Series temporales mensuales (2009→2026) |
+| `EDE's` | Compra/venta/cobro energía, pérdidas, cobranza, CRI, clientes, empleados por EDE | Desglose por Edenorte/Edesur/Edeeste |
+| `CDEEE` | Energía comprada por generadora (GSF, CESPM, DPP, etc.) | Desglose por empresa generadora |
+| `EGEHID` | Energía facturada, mercado contratos vs spot, ingresos, gastos, resultado financiero | Empresa hidroeléctrica estatal |
+| `ETED` | Peaje transmisión, derecho uso/conexión, gastos operativos, resultado financiero | Empresa de transmisión |
+| `EGPC` | Energía facturada, mercado contratos vs spot, ingresos, gastos, resultado | Punta Catalina |
+| `Anexo Res Financieros` | Resultado financiero detallado (ingresos, gastos, compra energía, OPEX, CAPEX) | Desglose mensual con subcategorías |
+| `Anexo Deuda` | Deuda con generadoras privadas por empresa | Desglose por ~40 generadoras |
+| `Nuevo Regimen tarifario` | Cargos tarifarios por tipo (BTS1, BTS2, etc.) y EDE | Trimestral, indexado vs aplicado |
+| `Regimen tarifario anterior` | Cargos tarifarios régimen previo | Igual estructura |
+| `Hoja1` | Vacía | — |
+
+### Estructura del PDF — 126 páginas con gráficos y tablas
+
+El PDF es el informe oficial con:
+- **Resumen ejecutivo** (páginas 8-14): narrativo con datos clave
+- **Variables Relevantes** (páginas 15-21): gráficos de combustibles, generación, costos
+- **EDE's consolidado** (páginas 22-40): ~20 indicadores con gráficos y tablas comparativas
+- **Edenorte** (páginas 41-60): mismos indicadores desglosados
+- **Edesur** (páginas 61-80): mismos indicadores desglosados
+- **Edeeste** (páginas 81-100): mismos indicadores desglosados
+- **ETED** (páginas 101-109): indicadores de transmisión
+- **EGEPC/Punta Catalina** (páginas 110-116): indicadores de generación
+- **Nota metodológica**
+
+### Patrones clave detectados
+
+1. **El XLS tiene una estructura consistente** — Cada hoja tiene las mismas filas de encabezado (filas 2-7) con: organismo, tipo de informe, período actual vs anterior, deltas absolutos y porcentuales, y serie histórica mensual desde 2009
+2. **Jerarquía de datos** — Indicadores tienen categoría → nombre → desglose por empresa/región
+3. **Columnas repetitivas** — Periodo actual, periodo anterior, comparación D y D%, acumulado anual, y luego 12 columnas mensuales
+4. **Series históricas largas** — Datos desde 2009, lo que permite análisis de tendencias de 17 años
+5. **El PDF es más bien una versión impresa** del XLS con gráficos añadidos — los datos numéricos son los mismos
+6. **Hay ~60+ indicadores distintos** solo en este informe mensual
+7. **Los PDFs que NO tienen XLS** requerirán extracción de tablas, que es significativamente más complejo
+
+### Implicaciones para el Plan
+
+- El XLS tiene estructura suficiente para **parsing automático confiable** (~90%+)
+- El PDF se puede usar como referencia visual, pero la extracción de tablas PDF es solo ~50-70% confiable
+- Se necesita un modelo de datos que soporte **jerarquía de indicadores** (categoría → indicador → desglose por entidad)
+- Las series históricas largas son un **activo valioso** para análisis con IA
+- Se debe priorizar la ingesta por XLS cuando exista, y PDF solo como complemento
 
 ---
 
@@ -39,61 +92,82 @@ Se definen dos grandes módulos que transforman el portal informativo actual en 
                      └──────────────┘
 ```
 
-### 2.2 Modelo de Datos — Supabase
+### 2.2 Modelo de Datos — Supabase (Refinado con datos reales)
 
 ```sql
--- Categorías de indicadores (ej: Electricidad, Renovables, Tarifas)
+-- Entidades del sector eléctrico (Edenorte, Edesur, Edeeste, CDEEE, EGEHID, ETED, EGPC, etc.)
+CREATE TABLE entities (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        TEXT NOT NULL,            -- "Edenorte", "EGEHID", "ETED"
+  slug        TEXT UNIQUE NOT NULL,     -- "edenorte", "egehid"
+  type        TEXT NOT NULL,            -- "distribuidora", "generadora", "transmisora", "comercializadora"
+  parent_id   UUID REFERENCES entities(id), -- null = entidad raíz, o referencia a EDE padre
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+-- Categorías de indicadores (basado en las secciones del informe real)
 CREATE TABLE indicator_categories (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT NOT NULL,
   slug        TEXT UNIQUE NOT NULL,
-  icon        TEXT,                    -- emoji o nombre de ícono
-  color       TEXT,                    -- color hex para charts
+  icon        TEXT,
+  color       TEXT,
   sort_order  INT DEFAULT 0,
   created_at  TIMESTAMPTZ DEFAULT now()
 );
+-- Datos reales: "Variables Relevantes", "EDE's", "CDEEE", "EGEHID", "ETED", "EGPC",
+--   "Resultados Financieros", "Deuda", "Tarifas"
 
--- Indicadores (ej: "Pérdidas eléctricas %", "Capacidad instalada MW")
+-- Indicadores (basado en los ~60+ indicadores del informe)
 CREATE TABLE indicators (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   category_id     UUID REFERENCES indicator_categories(id) ON DELETE CASCADE,
+  entity_id       UUID REFERENCES entities(id),            -- null = consolidado nacional
   name            TEXT NOT NULL,
   slug            TEXT UNIQUE NOT NULL,
-  unit            TEXT NOT NULL,           -- "%", "MW", "GWh", "USD"
+  unit            TEXT NOT NULL,           -- "%", "MW", "GWh", "USD MM", "cUSD/kWh", "DOP/kWh", "DOP/USD"
   description     TEXT,
-  source          TEXT,                    -- "OC", "CDEEE", "IEA", etc.
+  source          TEXT,                    -- "OC", "CDEEE", "BCRD", etc.
   frequency       TEXT DEFAULT 'monthly',  -- daily/weekly/monthly/quarterly/yearly
-  target_value    NUMERIC,                 -- meta si existe
+  target_value    NUMERIC,
+  is_breakdown    BOOLEAN DEFAULT false,   -- true si es sub-indicador (ej: Edenorte dentro de EDE's)
+  parent_indicator_id UUID REFERENCES indicators(id), -- para jerarquía
   sort_order      INT DEFAULT 0,
   is_active       BOOLEAN DEFAULT true,
   created_at      TIMESTAMPTZ DEFAULT now()
 );
+-- Datos reales: "Pérdidas (%)", "Compra de Energía (GWh)", "Precio Medio de Compra (cUSD/kWh)",
+--   "Cobranza (%)", "CRI (%)", "Energía Facturada (GWh)", "Deuda Corriente (USD MM)", etc.
 
 -- Puntos de datos (las mediciones del tiempo)
 CREATE TABLE data_points (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   indicator_id    UUID REFERENCES indicators(id) ON DELETE CASCADE,
   value           NUMERIC NOT NULL,
-  date            DATE NOT NULL,           -- fecha de la medición
-  region          TEXT,                    -- null = nacional, o "Norte", "Sur", etc.
+  date            DATE NOT NULL,
+  region          TEXT,                    -- null = nacional, o "Norte", "Sur", "Este"
+  entity_id       UUID REFERENCES entities(id), -- desglose por entidad si aplica
   source_file     TEXT,                    -- nombre del archivo origen
+  period_type     TEXT DEFAULT 'monthly',  -- monthly/quarterly/yearly
   notes           TEXT,
   created_at      TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(indicator_id, date, region)       -- no duplicar mediciones
+  UNIQUE(indicator_id, date, COALESCE(entity_id, '00000000-0000-0000-0000-000000000000'))
 );
 
--- Informes oficiales (metadata de PDFs subidos)
+-- Informes oficiales (metadata de archivos subidos)
 CREATE TABLE reports (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title           TEXT NOT NULL,
   slug            TEXT UNIQUE NOT NULL,
   description     TEXT,
-  file_url        TEXT NOT NULL,            -- URL de Supabase Storage
+  file_url        TEXT NOT NULL,
   file_type       TEXT NOT NULL,            -- pdf / xls / xlsx / csv
   file_size       BIGINT,
   publish_date    DATE,
-  source_org      TEXT,                     -- "OC", "CDEEE", "Banco Central"
+  source_org      TEXT,                     -- "MEM", "VME", "OC"
+  report_type     TEXT,                     -- "desempeno_mensual", "desempeno_trimestral", "tarifario", etc.
   category_id     UUID REFERENCES indicator_categories(id),
+  has_xls         BOOLEAN DEFAULT false,   -- true si existe versión XLS
   is_published    BOOLEAN DEFAULT false,
   uploaded_by     UUID REFERENCES auth.users(id),
   created_at      TIMESTAMPTZ DEFAULT now()
@@ -105,7 +179,7 @@ CREATE TABLE ai_analysis_logs (
   indicator_id    UUID REFERENCES indicators(id),
   user_query      TEXT NOT NULL,
   ai_response     TEXT NOT NULL,
-  model_used      TEXT,                     -- "openai/gpt-4o", etc.
+  model_used      TEXT,
   tokens_used     INT,
   created_at      TIMESTAMPTZ DEFAULT now()
 );
@@ -117,7 +191,7 @@ CREATE TABLE ai_analysis_logs (
 - `reports(category_id, publish_date)` — listado filtrado
 - `indicators(category_id)` — agrupación por categoría
 
-### 2.3 Pipeline de Ingesta de Datos
+### 2.3 Pipeline de Ingesta de Datos (Refinado con datos reales)
 
 El flujo para alimentar la BD desde archivos oficiales:
 
@@ -129,10 +203,14 @@ PDF/XLS ──▶ Upload en Backoffice ──▶ Almacenamiento en Supabase Stor
                                    ┌─────────────────┐
                                    │ XLS/XLSX/CSV:   │
                                    │  - Leer con      │
-                                   │    openpyxl/pandas│
-                                   │  - Mapear columnas│
-                                   │  - Insertar filas │
-                                   │    a data_points  │
+                                   │    openpyxl      │
+                                   │  - Detectar hoja │
+                                   │  - Mapear filas  │
+                                   │    a indicadores │
+                                   │  - Extraer serie │
+                                   │    histórica     │
+                                   │  - Insertar a    │
+                                   │    data_points   │
                                    └────────┬────────┘
                                    ┌────────▼────────┐
                                    │ PDF:             │
@@ -144,31 +222,73 @@ PDF/XLS ──▶ Upload en Backoffice ──▶ Almacenamiento en Supabase Stor
                                    └─────────────────┘
 ```
 
-**Estrategia de parsing:**
+**Estructura real del XLS detectada (patrón repetido en todas las hojas):**
 
-| Formato | Librería | Precisión | Requiere revisión manual |
-|---------|----------|-----------|--------------------------|
-| XLS/XLSV | `openpyxl` / `pandas` | ~95% | Rara vez (solo si formato irregular) |
-| CSV | `pandas` | ~99% | Casi nunca |
-| PDF tabular | `pdfplumber` / `tabula-py` | ~70-85% | Frecuentemente (tablas complejas) |
-| PDF escaneado | `pytesseract` + `pdfplumber` | ~50-70% | Siempre |
+```
+Fila 2:  Organismo ("Ministerio de Energía y Minas")
+Fila 3:  Tipo de documento ("Variables Relevantes" / "Indicadores Gestión Comercial...")
+Fila 4:  "Valores según indicación"
+Fila 5:  Año de inicio de serie histórica (2009)
+Fila 6:  Períodos: "Ene26-Mar26" | "Ene25-Mar25" | Comparación | "Ene24-Mar24" | Comparación | "Acumulado Año"
+Fila 7:  Sub-encabezados: "D" | "D%" | "D" | "D%" | Mes1 | Mes2 | ... | Mes12
+Fila 8+: Datos — Columna A=Código, Columna B=Nombre indicador, Columna C+=Valores
+```
 
-**Mapeo de columnas:** El backoffice permitirá definir un "mapping template" por tipo de informe. Ejemplo:
+**Estrategia de parsing por formato:**
+
+| Formato | Librería | Precisión estimada | Notas basadas en datos reales |
+|---------|----------|-------------------|-------------------------------|
+| XLS/XLSX | `openpyxl` | ~90% | Estructura consistente entre hojas. Filas de encabezado fijas (2-7). Indicadores en col B, valores de col C en adelante |
+| CSV | `pandas` | ~95% | Si se exporta del XLS, mismo formato |
+| PDF tabular | `pdfplumber` | ~50-70% | Tablas del PDF son renderizadas como gráficos; pdfplumber detecta algunas pero con celdas vacías |
+| PDF escaneado | OCR | ~30-50% | No aplica a este informe (es digital), pero otros PDFs del sector pueden ser escaneados |
+
+**Mapping template específico para "Informe de Desempeño":**
 
 ```json
 {
-  "template_name": "Informe Mensual OC",
-  "file_pattern": "informe_mensual_*.xlsx",
-  "mappings": [
-    {"column": "A", "field": "date", "format": "YYYY-MM"},
-    {"column": "B", "field": "indicator_slug", "value": "perdidas_electricas"},
-    {"column": "C", "field": "value", "type": "numeric"},
-    {"column": "D", "field": "region", "default": null}
-  ]
+  "template_name": "Informe Desempeño EEE Mensual",
+  "file_pattern": "Informe*Desempeno*.xlsx",
+  "sheets_to_parse": ["Variables Relevantes", "EDE's", "CDEEE", "EGEHID", "ETED", "EGPC"],
+  "header_rows": 7,
+  "structure": {
+    "row_start": 8,
+    "col_code": "A",
+    "col_name": "B",
+    "col_current_period": "C",
+    "col_previous_period": "D",
+    "col_delta_abs": "E",
+    "col_delta_pct": "F",
+    "col_acum_year_start": "G",
+    "monthly_columns_start": "G",
+    "monthly_columns_count": 12
+  },
+  "entity_detection": {
+    "method": "sheet_name",
+    "mapping": {
+      "EDE's": ["Edenorte", "Edesur", "Edeeste"],
+      "CDEEE": "CDEEE",
+      "EGEHID": "EGEHID",
+      "ETED": "ETED",
+      "EGPC": "EGPC"
+    }
+  },
+  "breakdown_detection": {
+    "method": "indent_level",
+    "parent_rows_have_no_code": true,
+    "child_rows_have_entity_name": ["Edenorte", "Edesur", "Edeeste"]
+  }
 }
 ```
 
-Una vez definido el template, los siguientes uploads del mismo tipo de informe se parsean automáticamente.
+**NUEVO: Estrategia para PDFs sin XLS correspondiente**
+
+Dado que la mayoría de los datos del observatorio estarán solo en PDF:
+
+1. **Primera pasada**: Intentar `pdfplumber` para extraer tablas automáticamente
+2. **Segunda pasada**: Si la tabla está incompleta, usar un parser basado en posición (detectar bloques de datos por coordenadas X/Y)
+3. **Tercera pasada**: Si falla, habilitar modo "entrada manual asistida" donde el admin ve el PDF y transcribe los valores clave
+4. **Futuro**: Evaluar uso de IA (GPT-4o con visión) para extraer datos de gráficos y tablas en PDF
 
 ### 2.4 Backoffice (Panel de Administración)
 
