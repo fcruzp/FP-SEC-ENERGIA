@@ -186,3 +186,32 @@ Stage Summary:
 - Admin UI: /admin/observatorio (4 tabs: Dashboard, Upload, Indicators, Data)
 - API routes: parse-xls (POST con subprocess Python), recent-data-points (GET)
 - Próximo paso: PASO 6 (Seed masivo: Parse XLS marzo 2026)
+
+---
+Task ID: fix-admin-css-suspense
+Agent: main
+Task: Fix CSS rendering issues on admin page and Suspense boundary error
+
+Work Log:
+- Identified root cause: global CSS reset (`margin: 0; padding: 0` on `*`) was destroying shadcn/ui component styles
+- Identified: `body { background: white; color: dark }` conflicting with admin dark theme
+- Identified: `section { padding: 120px }` messing up admin sections
+- Identified: no `dark` class on admin layout for shadcn dark mode
+- Identified: missing Suspense boundary for `useSearchParams()` in admin layout
+- Fixed: removed destructive `margin: 0; padding: 0` from global `*` reset
+- Fixed: scoped portal body styles with `body:not(.admin-layout)`
+- Fixed: scoped section padding with `body:not(.admin-layout) section`
+- Fixed: scoped scrollbar styles with `body:not(.admin-layout)::-webkit-scrollbar`
+- Fixed: added `admin-layout` class to body via useEffect in admin layout
+- Fixed: added `dark` class to admin layout root div
+- Fixed: extracted AdminSidebar to separate component wrapped in Suspense
+- Fixed: tailwind.config.ts content paths to include `src/` prefix
+- Verified: build succeeds without errors
+- Verified: admin page returns 200 with correct dark-themed HTML
+- Verified: admin API endpoints working (parse-xls returns 487 indicators)
+
+Stage Summary:
+- Admin page CSS is now properly isolated from portal styles
+- shadcn/ui components render correctly in dark mode
+- Build succeeds, no Suspense boundary errors
+- API confirmed working: GET /api/admin/parse-xls returns {"status":"ok","indicator_count":487}
