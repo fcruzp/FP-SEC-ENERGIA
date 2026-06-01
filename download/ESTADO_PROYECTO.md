@@ -68,29 +68,29 @@
 
 ### PRIORIDAD 1: Carga Completa de Datos Históricos (CRÍTICO)
 
-**Problema:** Solo 1,000 data points cargados de ~200,000+ esperados.  
-Solo 12 de 487 indicadores tienen datos. El 98% está vacío.
+**Progreso:** 48,268 data_points cargados con datos de 2009→2026.  
+48 de 487 indicadores tienen datos (10%). Las 6 hojas principales tienen datos parciales.
 
-**Estado actual de datos:**
-| Categoría | Indicadores | Con Datos | Cobertura |
-|-----------|-------------|-----------|-----------|
-| Variables Relevantes | 34 | 2 | 6% |
-| Empresas Distribuidoras | 168 | 2 | 1% |
-| CDEEE | 63 | 1 | 2% |
-| EGEHID | 24 | 0 | 0% |
-| ETED | 12 | 0 | 0% |
-| EGPC / Punta Catalina | 31 | 0 | 0% |
-| Resultados Financieros | 77 | 0 | 0% |
-| Deuda con Generadoras | 8 | 0 | 0% |
-| Régimen Tarifario | 35 | 0 | 0% |
-| Régimen Tarifario Anterior | 35 | 0 | 0% |
+**Estado actual de datos (actualizado 2 junio 2026):**
+| Categoría | Indicadores | Con Datos | Data Points | Cobertura |
+|-----------|-------------|-----------|-------------|-----------|
+| Variables Relevantes | 34 | 6 | 3,782 | 18% |
+| Empresas Distribuidoras | 168 | 20 | 34,067 | 12% |
+| CDEEE | 63 | 21 | 3,693 | 33% |
+| EGEHID | 24 | 6 | 1,476 | 25% |
+| ETED | 12 | 4 | 3,072 | 33% |
+| EGPC / Punta Catalina | 31 | 10 | 2,178 | 32% |
+| Resultados Financieros | 77 | 0 | 0 | 0% |
+| Deuda con Generadoras | 8 | 0 | 0 | 0% |
+| Régimen Tarifario | 35 | 0 | 0 | 0% |
+| Régimen Tarifario Anterior | 35 | 0 | 0 | 0% |
 
-**Acción A — Carga de las 6 hojas principales (332 indicadores):**
-- El parser YA EXISTE para: Variables Relevantes, EDE's, CDEEE, EGEHID, ETED, EGPC
-- Ejecutar carga completa desde línea de comandos (evitar timeout del navegador)
-- Estimado: ~150,000+ data_points, varios minutos
-- Script sugerido: `node scripts/seed-xls-data.ts` con dateRangePreset='full'
-- O usar la API: POST /api/admin/parse-xls con mode='full' y sin date filter
+**Acción A — Mejorar matching de indicadores (PENDIENTE):**
+- Solo 48/487 indicadores hicieron match (10%)
+- Los ~440 sin datos son mayormente "child/breakdown" indicators
+- El parser matchea "parent indicators" pero falla con los sub-indicadores por entidad
+- Necesita: (1) mejorar el matching de slugs, (2) crear mapeo manual para los que no matchean
+- Data extract guardado en: `download/dp_deduped.json` (48,268 registros listos para re-insertar)
 
 **Acción B — Parsers para 4 hojas faltantes (155 indicadores):**
 Estas hojas tienen estructura DIFERENTE a las 6 ya implementadas:
@@ -253,17 +253,26 @@ OPENROUTER_API_KEY=    # Necesaria para análisis IA (Paso 7)
 | Categorías | 10 | 10 | 100% ✅ |
 | Entidades | 24 | 24 | 100% ✅ |
 | Indicadores (metadata) | 487 | ~487 | 100% ✅ |
-| Data Points (valores) | 1,000 | ~200,000+ | ~0.5% ❌ |
+| Data Points (valores) | 48,268 | ~200,000+ | ~24% ⚠️ |
+| Indicadores con datos | 48/487 | 487 | 10% ⚠️ |
 | Hojas con parser | 6/10 | 10 | 60% ⚠️ |
-| Rango de datos | 2009-2026 (parcial) | 2009-2026 (completo) | Parcial ❌ |
+| Rango de datos | 2009-2026 (completo) | 2009-2026 (completo) | 100% ✅ |
 
 ---
 
-## 🌅 PLAN PARA MAÑANA (Recomendado)
+## 🌅 PRÓXIMOS PASOS (Recomendado)
 
-1. **Primero:** Corregir CSS rendering issue del portal principal
-2. **Segundo:** Ejecutar carga completa de datos (6 hojas, ~150K data_points)
-3. **Tercero:** Implementar parsers para las 4 hojas faltantes
-4. **Cuarto:** Construir portal público `/observatorio` con gráficos
-5. **Quinto:** Continuar con IA y Foro según disponibilidad de tiempo
+1. **Mejorar matching de indicadores** — De 48→487 (saltar de 10% a ~60%+)
+   - Los 440 indicadores sin datos son "breakdown/child" indicators
+   - Necesitan mapeo manual de nombres del XLS a slugs de la BD
+   - Muchos son: `precio-medio-compra-energia-edenorte` vs XLS row "Precio Medio de Compra de Energía" bajo Edenorte
+   
+2. **Implementar parsers para 4 hojas faltantes** (155 indicadores)
+   - Anexo Res Financieros, Anexo Deuda, Nuevo/Anterior Régimen Tarifario
+   
+3. **Corregir CSS rendering issue** del portal principal
+
+4. **Construir portal público `/observatorio`** con gráficos
+
+5. **Continuar con IA y Foro** según disponibilidad
 

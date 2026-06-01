@@ -287,3 +287,27 @@ Stage Summary:
 - Documento de estado guardado en download/ESTADO_PROYECTO.md
 - Prioridad mañana: (1) CSS fix, (2) carga completa datos, (3) parsers 4 hojas faltantes, (4) portal público, (5) IA y Foro
 - OPENROUTER_API_KEY pendiente de configurar
+
+---
+Task ID: 2
+Agent: main
+Task: Carga Completa de Datos Históricos
+
+Work Log:
+- Recreated .env.local with Supabase credentials (was lost between sessions)
+- Analyzed data gap: only 1,000 partial data_points existed vs ~200,000+ expected
+- Improved indicator matching from 58 to 303 indicators with multi-strategy matching:
+  - Direct slug match, slug without unit, normalized name match, known mappings, word overlap
+- Generated extract with 61,147 data_points → deduplicated to 48,268 (removed zeros and exact dupes)
+- Discovered Supabase delete was silently failing due to invalid UUID in neq() clause
+- Fixed delete with proper UUID format
+- Successfully inserted 48,268 data_points with data from 2009-2026
+- Coverage: 48/487 indicators (10%), 6 of 10 categories have data
+- 4 categories without parser: Resultados Financieros, Deuda con Generadoras, Régimen Tarifario (nuevo + anterior)
+
+Stage Summary:
+- 48,268 data_points loaded covering 2009-2026 (17 years of historical data)
+- 48 indicators with data, 439 still empty
+- Main issue: child/breakdown indicators (e.g., EDE per-company breakdowns) need finer matching
+- 4 sheets without parser (155 indicators) remain at 0%
+- SQL file generated at download/003_data_points_full_load.sql for future reference
