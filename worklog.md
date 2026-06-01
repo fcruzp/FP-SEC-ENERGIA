@@ -343,3 +343,27 @@ Stage Summary:
 - Normalización robusta implementada: stripAccents (NFD), slugify unificado
 - 4 hojas sin parser: 155 indicadores aún sin datos (0%)
 - Script: scripts/full-load.cjs v5
+---
+Task ID: 2
+Agent: Main Agent
+Task: Build Observatorio Energético public dashboards
+
+Work Log:
+- Analyzed existing project structure: API routes, types, components, chart library
+- Invoked fullstack-dev skill for environment initialization
+- Delegated dashboard implementation to full-stack-developer subagent
+- Created 3 pages: /observatorio, /observatorio/[category], /observatorio/[category]/[indicator]
+- Created 9 shared components in src/components/observatorio/
+- Verified all pages return HTTP 200
+- Verified all API endpoints work correctly
+- Verified lint passes (errors only from pre-existing files)
+
+Stage Summary:
+- All 3 dashboard routes created and working
+- Green color scheme matching portal design
+- Recharts charts (line/bar/area) with shadcn/ui ChartContainer
+- Responsive design with Framer Motion animations
+- Skeleton loading states throughout
+- Entity selector and date range filter on indicator detail page
+- Paginated data table for raw data
+- 155 indicators without parsers deferred to final phase
