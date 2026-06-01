@@ -61,11 +61,11 @@ export default function CategoryPage() {
     return (
       <div className="min-h-screen bg-[#f4f6f4]">
         <ObservatorioHeader
-          breadcrumbs={[
-            { label: 'Observatorio', href: '/observatorio' },
-            { label: 'Error' },
-          ]}
-        />
+        breadcrumbs={[
+          { label: 'Observatorio', href: '/observatorio' },
+          { label: 'Error' },
+        ]}
+      />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="text-6xl mb-4">🔍</div>
           <h2 className="text-xl font-bold text-[#1c1c1e] mb-2">{error}</h2>
@@ -84,9 +84,6 @@ export default function CategoryPage() {
           { label: 'Observatorio', href: '/observatorio' },
           { label: category?.name || categorySlug },
         ]}
-        title={category?.name}
-        description={category?.description || undefined}
-        icon={category?.icon || undefined}
       />
 
       {/* Category banner */}

@@ -94,7 +94,7 @@ export default function ObservatorioPage() {
     <div className="min-h-screen bg-[#f4f6f4]">
       {/* Header */}
       <ObservatorioHeader
-        breadcrumbs={[{ label: 'Observatorio Energético', href: '/observatorio' }]}
+        breadcrumbs={[{ label: 'Observatorio Energético' }]}
       />
 
       {/* Hero Section */}
@@ -314,18 +314,9 @@ export default function ObservatorioPage() {
 
         {/* Footer info */}
         <div className="mt-16 pt-8 border-t border-[#e5e7eb]">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#6b7280]">
-            <p>
-              Datos proporcionados por la Secretaría de Energía de Fuerza del
-              Pueblo
-            </p>
-            <Link
-              href="/"
-              className="text-[#1a6b3c] hover:text-[#2d9e5f] font-medium transition-colors"
-            >
-              ← Volver al Portal
-            </Link>
-          </div>
+          <p className="text-sm text-[#6b7280] text-center">
+            Datos proporcionados por la Secretaría de Energía de Fuerza del Pueblo
+          </p>
         </div>
       </div>
     </div>

@@ -22,3 +22,25 @@ Stage Summary:
 - X-axis shows year labels in different colors (per-year from YEAR_COLORS palette) with month labels below
 - Bar charts color bars per year with the same color palette
 - Key fix: React Fragments break Recharts child component detection — must inline children directly
+---
+Task ID: 1
+Agent: Main Agent
+Task: Visual improvements to observatorio header - green banner from top, home button in banner, remove duplicate
+
+Work Log:
+- Analyzed current ObservatorioHeader structure: white sticky header with h-14 top bar containing "Observatorio Energético" link (left) and "Portal" home link (right), plus breadcrumbs and optional title/description
+- Redesigned ObservatorioHeader to be a thin dark green strip (h-10, bg-[#0a2e19]) with Home/Portal button on the left and breadcrumbs on the right
+- Removed the duplicate "Observatorio Energético" link from the header since it's already shown in the green hero banner
+- Removed title/description/icon props from ObservatorioHeader (pages handle their own titles)
+- Updated main observatorio page: removed redundant breadcrumb href, removed "Volver al Portal" footer link (now in header)
+- Updated category page: removed title/description/icon props from ObservatorioHeader usage
+- Indicator detail page: already compatible (only used breadcrumbs prop)
+- Verified tooltip delay was already changed from 5s to 1s (done in previous session)
+- Build succeeded with no new errors
+
+Stage Summary:
+- ObservatorioHeader is now a compact dark green nav strip that seamlessly blends with the hero banner on the main page
+- The green banner now starts from the very top of the page (no white header gap)
+- Home/Portal button is inside the green header
+- Duplicate "Observatorio Energético" text link removed
+- Changes applied to all observatorio routes consistently
