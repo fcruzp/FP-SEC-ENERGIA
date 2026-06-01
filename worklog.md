@@ -311,3 +311,35 @@ Stage Summary:
 - Main issue: child/breakdown indicators (e.g., EDE per-company breakdowns) need finer matching
 - 4 sheets without parser (155 indicators) remain at 0%
 - SQL file generated at download/003_data_points_full_load.sql for future reference
+
+---
+Task ID: 3
+Agent: main
+Task: Carga Completa v5 — Normalización robusta (sin mayúsculas, sin acentos)
+
+Work Log:
+- Diagnosticó problema central: slugs fallan por inconsistencias de uppercase y acentos entre XLS y BD
+- Implementó normalización robusta con NFD decomposition (stripAccents)
+- Creó slugify() unificado: lowercase + sin acentos + sin paréntesis + # → no
+- Creó normalizeSlug(): remueve conectores (de, del, y, por, en)
+- Multi-key lookup: 1,375 claves para 487 indicadores (3x coverage)
+- Agregó VR_GENERATION_MAP y VR_COMPOSITION_MAP con variantes "Fuel Oil No. 2" / "Fuel Oil 2"
+- Corrigió tracking de secciones VR (quita puntos antes de buscar en mapa)
+- Implementó inserción por hoja (evita timeouts) con batch de 500
+- Dry-run: 0 indicadores sin match, 60,317 data_points deduplicados
+- Carga ejecutada hoja por hoja (6 hojas):
+  - Variables Relevantes: 6,831 dp, 34 indicadores (97%)
+  - EDE's: 32,290 dp, 156 indicadores (90%)
+  - CDEEE: 11,053 dp, 64 indicadores (89%)
+  - EGEHID: 3,519 dp, 22 indicadores (46%)
+  - ETED: 2,484 dp, 12 indicadores (75%)
+  - EGPC: 4,140 dp, 24 indicadores (52%)
+- Total: 60,317 data_points, 277 indicadores con datos (57%), 0 errores
+- Actualizó ESTADO_PROYECTO.md con resultados
+
+Stage Summary:
+- Carga completa de 6 hojas parseable: 60,317 data_points (de 48,268 previos)
+- Cobertura de indicadores: 277/487 (57%), mejoría de 10% → 57%
+- Normalización robusta implementada: stripAccents (NFD), slugify unificado
+- 4 hojas sin parser: 155 indicadores aún sin datos (0%)
+- Script: scripts/full-load.cjs v5
