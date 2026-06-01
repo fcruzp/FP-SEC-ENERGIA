@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -60,8 +60,9 @@ export default function IndicatorDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedEntity, setSelectedEntity] = useState<string>('all')
   const [dateRange, setDateRange] = useState<{ from?: string; to?: string } | null>(null)
+  const initialFetchDone = useRef(false)
 
-  // Fetch category and indicator metadata
+  // Fetch category and indicator metadata + initial data points
   useEffect(() => {
     async function fetchMetadata() {
       try {
@@ -97,7 +98,24 @@ export default function IndicatorDetailPage() {
         // Fetch entities
         const entRes = await fetch('/api/observatorio/entities')
         const entData = await entRes.json()
-        setEntities(entData.entities || [])
+        const allEntities: Entity[] = entData.entities || []
+        setEntities(allEntities)
+
+        // Pre-select the indicator's own entity (not "all")
+        const defaultEntity = foundIndicator.entity?.slug || 'all'
+        setSelectedEntity(defaultEntity)
+
+        // Fetch initial data points with the correct entity
+        let url = `/api/observatorio/data-points?indicator_slug=${indicatorSlug}`
+        if (defaultEntity !== 'all') {
+          url += `&entity_slug=${defaultEntity}`
+        }
+        const dpRes = await fetch(url)
+        const dpData = await dpRes.json()
+        if (!dpData.error) {
+          setDataPoints(dpData.data_points || [])
+        }
+        initialFetchDone.current = true
       } catch (err) {
         console.error('Error fetching indicator metadata:', err)
         setError('Error al cargar los datos')
@@ -111,7 +129,7 @@ export default function IndicatorDetailPage() {
     }
   }, [categorySlug, indicatorSlug])
 
-  // Fetch data points (chart data)
+  // Fetch data points (chart data) — only triggered by user changes
   const fetchDataPoints = useCallback(
     async (entitySlug?: string, range?: { from?: string; to?: string } | null) => {
       if (!indicatorSlug) return
@@ -150,12 +168,12 @@ export default function IndicatorDetailPage() {
     [indicatorSlug]
   )
 
-  // Initial data fetch when indicator is loaded
+  // Re-fetch when user changes entity or date range (skip the initial automatic one)
   useEffect(() => {
-    if (indicator) {
+    if (initialFetchDone.current) {
       fetchDataPoints(selectedEntity, dateRange)
     }
-  }, [indicator, selectedEntity, dateRange, fetchDataPoints])
+  }, [selectedEntity, dateRange, fetchDataPoints])
 
   const handleEntityChange = (value: string) => {
     setSelectedEntity(value)
