@@ -190,11 +190,11 @@ export default function ObservatorioPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2.5 pb-6">
         {/* Top KPI Section */}
         {topIndicators.length > 0 && (
           <section className="mb-12">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-2.5">
               <div className="w-1 h-6 rounded-full bg-[#1a6b3c]" />
               <h2 className="text-lg font-bold text-[#1c1c1e]">
                 Indicadores Destacados
