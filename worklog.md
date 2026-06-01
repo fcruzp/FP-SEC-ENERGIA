@@ -44,3 +44,24 @@ Stage Summary:
 - Home/Portal button is inside the green header
 - Duplicate "Observatorio Energético" text link removed
 - Changes applied to all observatorio routes consistently
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix breadcrumbs visibility and reduce hero banner height
+
+Work Log:
+- Diagnosed breadcrumb visibility issue: shadcn Breadcrumb component uses `text-muted-foreground` and `text-foreground` CSS vars that resolve to gray/black on dark background, making breadcrumbs invisible
+- Replaced shadcn Breadcrumb with custom breadcrumb using plain HTML + Lucide ChevronRight icons, with explicit white color classes that work on dark green background
+- Layout: Home/Portal button → ChevronRight separator → breadcrumb items flowing naturally, all in one row at text-sm size
+- Reduced hero section vertical padding from `py-12 sm:py-16` to `py-6 sm:py-8`
+- Reduced hero heading from `text-3xl/4xl/5xl` to `text-2xl/3xl/4xl`
+- Reduced hero paragraph from `text-base/lg` to `text-sm`, margin from `mb-8` to `mb-5`
+- Reduced stat icons from w-9/h-9 to w-8/h-8, stat values from `text-xl` to `text-lg`
+- Reduced badge icon from w-10/h-10 to w-8/h-8
+- Reduced main content padding from `py-10` to `py-6`
+
+Stage Summary:
+- Breadcrumbs now visible with white text on dark green header across all routes
+- Hero banner is roughly 50% shorter vertically, allowing KPI cards to be visible without scrolling
+- Consistent navigation pattern: 🏠 Portal > Observatorio > [Category] > [Indicator]

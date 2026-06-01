@@ -105,80 +105,80 @@ export default function ObservatorioPage() {
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#2d9e5f] rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <BarChart3 className="h-5 w-5 text-[#4ade80]" />
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                <BarChart3 className="h-4 w-4 text-[#4ade80]" />
               </div>
-              <Badge className="bg-[#4ade80]/15 text-[#4ade80] border-0 text-xs font-semibold uppercase tracking-wider">
+              <Badge className="bg-[#4ade80]/15 text-[#4ade80] border-0 text-[10px] font-semibold uppercase tracking-wider">
                 Panel de Datos en Tiempo Real
               </Badge>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
               Observatorio{' '}
               <span className="text-[#4ade80]">Energético</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-white/70 max-w-2xl leading-relaxed mb-8">
+            <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-5">
               Monitoreo continuo de los indicadores clave del sector eléctrico
               dominicano. Datos actualizados, visualizaciones interactivas y
               análisis del mercado energético.
             </p>
 
             {/* Stats row */}
-            <div className="flex flex-wrap gap-6 sm:gap-10">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Activity className="h-4 w-4 text-[#4ade80]" />
+            <div className="flex flex-wrap gap-5 sm:gap-8">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Activity className="h-3.5 w-3.5 text-[#4ade80]" />
                 </div>
                 <div>
-                  <div className="text-xl font-extrabold text-[#4ade80]">
+                  <div className="text-lg font-extrabold text-[#4ade80]">
                     {loading ? (
-                      <Skeleton className="h-6 w-12 bg-white/20" />
+                      <Skeleton className="h-5 w-10 bg-white/20" />
                     ) : (
                       stats.totalIndicators
                     )}
                   </div>
-                  <div className="text-xs text-white/50 font-medium">
+                  <div className="text-[10px] text-white/50 font-medium">
                     Indicadores
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Database className="h-4 w-4 text-[#4ade80]" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Database className="h-3.5 w-3.5 text-[#4ade80]" />
                 </div>
                 <div>
-                  <div className="text-xl font-extrabold text-[#4ade80]">
+                  <div className="text-lg font-extrabold text-[#4ade80]">
                     {loading ? (
-                      <Skeleton className="h-6 w-16 bg-white/20" />
+                      <Skeleton className="h-5 w-14 bg-white/20" />
                     ) : (
                       stats.totalDataPoints.toLocaleString('es-DO')
                     )}
                   </div>
-                  <div className="text-xs text-white/50 font-medium">
+                  <div className="text-[10px] text-white/50 font-medium">
                     Puntos de Datos
                   </div>
                 </div>
               </div>
 
               {stats.dateRange && (
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-[#4ade80]" />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                    <Calendar className="h-3.5 w-3.5 text-[#4ade80]" />
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white">
                       {formatDate(stats.dateRange.min)} — {formatDate(stats.dateRange.max)}
                     </div>
-                    <div className="text-xs text-white/50 font-medium">
+                    <div className="text-[10px] text-white/50 font-medium">
                       Período Cubierto
                     </div>
                   </div>
@@ -190,7 +190,7 @@ export default function ObservatorioPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Top KPI Section */}
         {topIndicators.length > 0 && (
           <section className="mb-12">
