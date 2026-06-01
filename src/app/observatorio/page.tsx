@@ -105,13 +105,13 @@ export default function ObservatorioPage() {
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#2d9e5f] rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-2 mb-1">
               <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                 <BarChart3 className="h-4 w-4 text-[#4ade80]" />
               </div>
@@ -120,12 +120,12 @@ export default function ObservatorioPage() {
               </Badge>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1">
               Observatorio{' '}
               <span className="text-[#4ade80]">Energético</span>
             </h1>
 
-            <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-5">
+            <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-3">
               Monitoreo continuo de los indicadores clave del sector eléctrico
               dominicano. Datos actualizados, visualizaciones interactivas y
               análisis del mercado energético.
