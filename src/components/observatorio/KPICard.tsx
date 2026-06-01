@@ -1,8 +1,9 @@
 'use client'
 
 import { Card } from '@/components/ui/card'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import CategoryIcon from './CategoryIcon'
 
 interface KPICardProps {
@@ -13,6 +14,7 @@ interface KPICardProps {
   changePct?: number | null
   icon?: string
   label?: string
+  description?: string | null
   featured?: boolean
   index?: number
 }
@@ -25,6 +27,7 @@ export default function KPICard({
   changePct,
   icon,
   label,
+  description,
   featured = false,
   index = 0,
 }: KPICardProps) {
@@ -111,11 +114,25 @@ export default function KPICard({
 
           {/* Label */}
           <div
-            className={`text-xs font-medium ${
+            className={`text-xs font-medium flex items-center gap-1 ${
               featured ? 'text-white/60' : 'text-[#6b7280]'
             }`}
           >
-            {title || label}
+            <span className="truncate">{title || label}</span>
+            {description && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className={`h-3 w-3 flex-shrink-0 cursor-help transition-colors ${
+                      featured ? 'text-white/30 hover:text-white/60' : 'text-[#9ca3af] hover:text-[#6b7280]'
+                    }`} />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-[260px] text-xs leading-relaxed">
+                    {description}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
 
           {/* Progress bar */}

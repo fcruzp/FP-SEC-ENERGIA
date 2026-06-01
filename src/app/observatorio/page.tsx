@@ -266,6 +266,7 @@ export default function ObservatorioPage() {
                       change={ind.change}
                       changePct={ind.change_pct}
                       icon={ind.category?.icon || '📊'}
+                      description={ind.description}
                       featured={i === 1}
                       index={i}
                     />
