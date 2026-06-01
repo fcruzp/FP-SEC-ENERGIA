@@ -190,7 +190,7 @@ export default function ObservatorioPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2.5 pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-px pb-6">
         {/* Top KPI Section */}
         {topIndicators.length > 0 && (
           <section className="mb-12">
