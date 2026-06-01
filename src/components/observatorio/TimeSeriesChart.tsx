@@ -12,7 +12,6 @@ import {
   YAxis,
   CartesianGrid,
   ReferenceLine,
-  Label,
   Cell,
   Tooltip,
 } from 'recharts'
@@ -38,8 +37,12 @@ const YEAR_COLORS = [
 
 const MONTH_NAMES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
-// Custom tooltip component with hover delay via CSS animation
-function CustomTooltip({ active, payload, label, unit }: any) {
+// Delayed tooltip: uses pure CSS animations for the 5-second delay.
+// When the tooltip first appears (active=true), a loading state with progress bar
+// is shown for 5 seconds, after which the actual value fades in.
+// Since Recharts conditionally renders the tooltip content only when active=true,
+// each new hover session starts fresh CSS animations.
+function DelayedTooltip({ active, payload, label, unit }: any) {
   if (!active || !payload || payload.length === 0) return null
 
   const value = payload[0].value
@@ -47,28 +50,55 @@ function CustomTooltip({ active, payload, label, unit }: any) {
     ? value.toLocaleString('es-DO', { maximumFractionDigits: 2 })
     : value
 
+  const item = payload[0].payload
+  const rawDate = item?.rawDate
+  const dateStr = rawDate
+    ? new Date(rawDate).toLocaleDateString('es-DO', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : label
+
   return (
-    <div
-      className="bg-white border border-gray-200 rounded-lg shadow-xl px-4 py-3 min-w-[140px]"
-      style={{
-        animation: 'tooltipFadeIn 1.5s ease forwards',
-      }}
-    >
+    <div className="bg-white border border-gray-200 rounded-lg shadow-xl px-4 py-3 min-w-[160px] relative">
       <style>{`
-        @keyframes tooltipFadeIn {
-          0% { opacity: 0; transform: translateY(4px); }
-          80% { opacity: 0; transform: translateY(4px); }
+        @keyframes tooltipProgress {
+          0% { width: 0%; }
+          100% { width: 100%; }
+        }
+        @keyframes tooltipLoadingFade {
+          0%, 85% { opacity: 1; max-height: 40px; }
+          100% { opacity: 0; max-height: 0; padding: 0; margin: 0; overflow: hidden; }
+        }
+        @keyframes tooltipValueReveal {
+          0%, 85% { opacity: 0; transform: translateY(4px); }
           100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <p className="text-gray-500 text-xs mb-1.5 font-medium">{label}</p>
-      <p className="text-[#1c1c1e] text-lg font-bold leading-tight">
-        {formattedValue}
-        {unit && <span className="text-sm font-semibold text-gray-400 ml-1">{unit}</span>}
-      </p>
-      {payload[0].payload?.year && (
-        <p className="text-[10px] text-gray-400 mt-1">{payload[0].payload.year}</p>
-      )}
+
+      {/* Loading state — visible for first 5 seconds then fades out */}
+      <div
+        className="overflow-hidden"
+        style={{ animation: 'tooltipLoadingFade 5s ease forwards' }}
+      >
+        <p className="text-gray-500 text-xs font-medium mb-1">Pasa el cursor para ver el valor</p>
+        <div className="h-1.5 w-24 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[#1a6b3c] rounded-full"
+            style={{ animation: 'tooltipProgress 5s linear forwards' }}
+          />
+        </div>
+      </div>
+
+      {/* Value state — hidden initially, fades in after 5 seconds */}
+      <div style={{ animation: 'tooltipValueReveal 5s ease forwards' }}>
+        <p className="text-gray-500 text-xs mb-1.5 font-medium">{dateStr}</p>
+        <p className="text-[#1c1c1e] text-lg font-bold leading-tight">
+          {formattedValue}
+          {unit && <span className="text-sm font-semibold text-gray-400 ml-1">{unit}</span>}
+        </p>
+      </div>
     </div>
   )
 }
@@ -84,14 +114,6 @@ export default function TimeSeriesChart({
     value: {
       label: unit || 'Valor',
       color,
-    },
-    max: {
-      label: 'Max',
-      color: '#dc2626',
-    },
-    median: {
-      label: 'Mediana',
-      color: '#f59e0b',
     },
   }
 
@@ -137,11 +159,9 @@ export default function TimeSeriesChart({
 
       let label: string
       if (multi) {
-        // Multi-year: "Ene 09", "Ene 10", etc.
         const shortYear = year.slice(-2)
         label = `${MONTH_NAMES[date.getMonth()]} ${shortYear}`
       } else {
-        // Single year or less: just month name
         label = MONTH_NAMES[date.getMonth()]
       }
 
@@ -169,91 +189,88 @@ export default function TimeSeriesChart({
     }
   }, [data])
 
-  // Smart X-axis interval
+  // Smart X-axis interval — show fewer ticks for readability
   const xInterval = useMemo(() => {
     const len = processedData.length
     if (len <= 12) return 0
     if (len <= 24) return 1
-    if (len <= 48) return 3
+    if (len <= 48) return 2
     if (len <= 96) return 5
     if (isMultiYear) {
-      // For multi-year, aim for ~12 month ticks per year
+      // For multi-year: show roughly 1 tick per quarter per year
       const monthsPerYear = len / Math.max(uniqueYears.length, 1)
-      if (monthsPerYear <= 12) return 2
-      return Math.floor(monthsPerYear / 6)
+      if (monthsPerYear <= 12) return 3
+      return Math.max(5, Math.floor(monthsPerYear / 4))
     }
-    return Math.floor(len / 20)
+    return Math.floor(len / 15)
   }, [processedData.length, isMultiYear, uniqueYears.length])
 
   // Format Y values
-  const formatY = (v: number) => {
+  const formatY = useCallback((v: number) => {
     if (Math.abs(v) >= 1000000) return `${(v / 1000000).toFixed(1)}M`
     if (Math.abs(v) >= 1000) return `${(v / 1000).toFixed(1)}k`
     return v.toLocaleString('es-DO', { maximumFractionDigits: 1 })
-  }
+  }, [])
 
-  const formatValue = (v: number) => v.toLocaleString('es-DO', { maximumFractionDigits: 2 })
+  const formatValue = useCallback((v: number) => v.toLocaleString('es-DO', { maximumFractionDigits: 2 }), [])
 
-  const commonProps = {
-    data: processedData,
-    margin: { top: 36, right: 20, bottom: 4, left: 8 },
-  }
+  // Compute Y-axis domain with padding for reference lines
+  const yDomain = useMemo(() => {
+    if (data.length === 0) return ['auto', 'auto']
+    const values = data.map(d => d.value).filter(v => v !== null && v !== undefined)
+    if (values.length === 0) return ['auto', 'auto']
+    const min = Math.min(...values)
+    const max = Math.max(...values)
+    const padding = (max - min) * 0.18
+    return [Math.floor(Math.max(0, min - padding)), Math.ceil(max + padding)]
+  }, [data])
 
-  // Reference lines for max and median
-  const referenceLines = (
-    <>
-      {maxValue > 0 && (
-        <ReferenceLine
-          y={maxValue}
-          stroke="#dc2626"
-          strokeDasharray="6 4"
-          strokeWidth={1.5}
-        >
-          <Label
-            value={`Max: ${formatValue(maxValue)}${unit ? ` ${unit}` : ''}`}
-            position="insideTopRight"
-            fill="#dc2626"
-            fontSize={11}
-            fontWeight={600}
-          />
-        </ReferenceLine>
-      )}
-      {medianValue > 0 && medianValue !== maxValue && (
-        <ReferenceLine
-          y={medianValue}
-          stroke="#f59e0b"
-          strokeDasharray="4 4"
-          strokeWidth={1.5}
-        >
-          <Label
-            value={`Mediana: ${formatValue(medianValue)}${unit ? ` ${unit}` : ''}`}
-            position="insideTopRight"
-            fill="#f59e0b"
-            fontSize={11}
-            fontWeight={600}
-          />
-        </ReferenceLine>
-      )}
-    </>
-  )
-
-  // Custom X-axis tick component
+  // Custom X-axis tick component with year colors and month labels
   const renderXTick = useCallback((props: any) => {
     const { x, y, payload } = props
     const item = processedData[payload.index]
-    const isYearStart = item?.isYearStart
-    const yearColor = item ? (yearColorMap[item.year] || '#6b7280') : '#6b7280'
+    if (!item) return null
 
+    const isYearStart = item.isYearStart
+    const yearColor = yearColorMap[item.year] || '#6b7280'
+
+    if (isMultiYear) {
+      return (
+        <g transform={`translate(${x},${y})`}>
+          {isYearStart && (
+            <text
+              x={0}
+              y={12}
+              textAnchor="middle"
+              fill={yearColor}
+              fontSize={11}
+              fontWeight={800}
+            >
+              {item.year}
+            </text>
+          )}
+          <text
+            x={0}
+            y={isYearStart ? 26 : 14}
+            textAnchor="middle"
+            fill={isYearStart ? yearColor : '#9ca3af'}
+            fontSize={isYearStart ? 9 : 8}
+            fontWeight={isYearStart ? 600 : 400}
+          >
+            {payload.value}
+          </text>
+        </g>
+      )
+    }
+
+    // Single year: simple month labels
     return (
       <g transform={`translate(${x},${y})`}>
-        {isYearStart && (
-          <circle cx={0} cy={-4} r={2.5} fill={yearColor} />
-        )}
         <text
           x={0}
-          y={isYearStart ? 14 : 12}
+          y={12}
           textAnchor="middle"
-          fill={isYearStart ? yearColor : '#9ca3af'}
+          fill={isYearStart ? yearColor : '#6b7280'}
           fontSize={isYearStart ? 11 : 9}
           fontWeight={isYearStart ? 700 : 400}
         >
@@ -261,39 +278,66 @@ export default function TimeSeriesChart({
         </text>
       </g>
     )
-  }, [processedData, yearColorMap])
+  }, [processedData, yearColorMap, isMultiYear])
 
-  const commonAxisProps = (
-    <>
-      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-      <XAxis
-        dataKey="date"
-        tick={renderXTick}
-        tickLine={false}
-        axisLine={{ stroke: '#e5e7eb' }}
-        interval={xInterval}
-      />
-      <YAxis
-        tick={{ fontSize: 11, fill: '#6b7280' }}
-        tickLine={false}
-        axisLine={{ stroke: '#e5e7eb' }}
-        tickFormatter={formatY}
-        domain={['auto', 'auto']}
-      />
-      <Tooltip
-        content={<CustomTooltip unit={unit} />}
-        cursor={{ fill: 'rgba(26, 107, 60, 0.06)' }}
-      />
-      {referenceLines}
-    </>
-  )
+  const chartMargin = { top: 50, right: 120, bottom: 8, left: 8 }
 
   const renderChart = () => {
     switch (chartType) {
       case 'bar':
         return (
-          <BarChart {...commonProps}>
-            {commonAxisProps}
+          <BarChart data={processedData} margin={chartMargin}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={renderXTick}
+              tickLine={false}
+              axisLine={{ stroke: '#e5e7eb' }}
+              interval={xInterval}
+              height={isMultiYear ? 48 : 30}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tickLine={false}
+              axisLine={{ stroke: '#e5e7eb' }}
+              tickFormatter={formatY}
+              domain={yDomain}
+              width={60}
+            />
+            <Tooltip
+              content={<DelayedTooltip unit={unit} />}
+              cursor={{ fill: 'rgba(26, 107, 60, 0.06)' }}
+            />
+            {maxValue > 0 && (
+              <ReferenceLine
+                y={maxValue}
+                stroke="#dc2626"
+                strokeDasharray="8 4"
+                strokeWidth={1.5}
+                label={{
+                  value: `Máx: ${formatValue(maxValue)}${unit ? ` ${unit}` : ''}`,
+                  position: 'insideTopRight',
+                  fill: '#dc2626',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              />
+            )}
+            {medianValue > 0 && medianValue !== maxValue && (
+              <ReferenceLine
+                y={medianValue}
+                stroke="#f59e0b"
+                strokeDasharray="6 4"
+                strokeWidth={1.5}
+                label={{
+                  value: `Medio: ${formatValue(medianValue)}${unit ? ` ${unit}` : ''}`,
+                  position: 'insideTopRight',
+                  fill: '#f59e0b',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              />
+            )}
             <Bar
               dataKey="value"
               radius={[4, 4, 0, 0]}
@@ -303,7 +347,7 @@ export default function TimeSeriesChart({
                 <Cell
                   key={`cell-${index}`}
                   fill={yearColorMap[entry.year] || color}
-                  fillOpacity={entry.isYearStart ? 1 : 0.7}
+                  fillOpacity={entry.isYearStart ? 1 : 0.75}
                 />
               ))}
             </Bar>
@@ -311,14 +355,64 @@ export default function TimeSeriesChart({
         )
       case 'area':
         return (
-          <AreaChart {...commonProps}>
-            {commonAxisProps}
+          <AreaChart data={processedData} margin={chartMargin}>
             <defs>
               <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={color} stopOpacity={0.3} />
                 <stop offset="95%" stopColor={color} stopOpacity={0.02} />
               </linearGradient>
             </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={renderXTick}
+              tickLine={false}
+              axisLine={{ stroke: '#e5e7eb' }}
+              interval={xInterval}
+              height={isMultiYear ? 48 : 30}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tickLine={false}
+              axisLine={{ stroke: '#e5e7eb' }}
+              tickFormatter={formatY}
+              domain={yDomain}
+              width={60}
+            />
+            <Tooltip
+              content={<DelayedTooltip unit={unit} />}
+              cursor={{ fill: 'rgba(26, 107, 60, 0.06)' }}
+            />
+            {maxValue > 0 && (
+              <ReferenceLine
+                y={maxValue}
+                stroke="#dc2626"
+                strokeDasharray="8 4"
+                strokeWidth={1.5}
+                label={{
+                  value: `Máx: ${formatValue(maxValue)}${unit ? ` ${unit}` : ''}`,
+                  position: 'insideTopRight',
+                  fill: '#dc2626',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              />
+            )}
+            {medianValue > 0 && medianValue !== maxValue && (
+              <ReferenceLine
+                y={medianValue}
+                stroke="#f59e0b"
+                strokeDasharray="6 4"
+                strokeWidth={1.5}
+                label={{
+                  value: `Medio: ${formatValue(medianValue)}${unit ? ` ${unit}` : ''}`,
+                  position: 'insideTopRight',
+                  fill: '#f59e0b',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              />
+            )}
             <Area
               type="monotone"
               dataKey="value"
@@ -331,8 +425,58 @@ export default function TimeSeriesChart({
       case 'line':
       default:
         return (
-          <LineChart {...commonProps}>
-            {commonAxisProps}
+          <LineChart data={processedData} margin={chartMargin}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            <XAxis
+              dataKey="date"
+              tick={renderXTick}
+              tickLine={false}
+              axisLine={{ stroke: '#e5e7eb' }}
+              interval={xInterval}
+              height={isMultiYear ? 48 : 30}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tickLine={false}
+              axisLine={{ stroke: '#e5e7eb' }}
+              tickFormatter={formatY}
+              domain={yDomain}
+              width={60}
+            />
+            <Tooltip
+              content={<DelayedTooltip unit={unit} />}
+              cursor={{ fill: 'rgba(26, 107, 60, 0.06)' }}
+            />
+            {maxValue > 0 && (
+              <ReferenceLine
+                y={maxValue}
+                stroke="#dc2626"
+                strokeDasharray="8 4"
+                strokeWidth={1.5}
+                label={{
+                  value: `Máx: ${formatValue(maxValue)}${unit ? ` ${unit}` : ''}`,
+                  position: 'insideTopRight',
+                  fill: '#dc2626',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              />
+            )}
+            {medianValue > 0 && medianValue !== maxValue && (
+              <ReferenceLine
+                y={medianValue}
+                stroke="#f59e0b"
+                strokeDasharray="6 4"
+                strokeWidth={1.5}
+                label={{
+                  value: `Medio: ${formatValue(medianValue)}${unit ? ` ${unit}` : ''}`,
+                  position: 'insideTopRight',
+                  fill: '#f59e0b',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              />
+            )}
             <Line
               type="monotone"
               dataKey="value"
@@ -347,7 +491,11 @@ export default function TimeSeriesChart({
   }
 
   return (
-    <ChartContainer config={config} className="w-full" style={{ height }}>
+    <ChartContainer
+      config={config}
+      className="w-full !aspect-auto"
+      style={{ height }}
+    >
       {renderChart()}
     </ChartContainer>
   )
