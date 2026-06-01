@@ -87,31 +87,57 @@ export async function GET(request: NextRequest) {
     if (withData && indicators && indicators.length > 0) {
       const indicatorIds = indicators.map(i => i.id)
 
+      // Build a map of indicator_id -> entity_id for filtering
+      const indicatorEntityMap: Record<string, string | null> = {}
+      for (const ind of indicators) {
+        indicatorEntityMap[ind.id] = ind.entity_id
+      }
+
       // Get latest data point per indicator using a window function approach
       // Since Supabase doesn't support window functions directly, we fetch recent and group
       const { data: dataPoints } = await supabase
         .from('data_points')
-        .select('indicator_id, value, date, period_type')
+        .select('indicator_id, value, date, period_type, entity_id')
         .in('indicator_id', indicatorIds)
         .order('date', { ascending: false })
 
-      // Group by indicator_id and take the latest
+      // Group by indicator_id and take the latest, filtered by the indicator's entity
       const latestByIndicator: Record<string, { value: number; date: string }> = {}
       if (dataPoints) {
         for (const dp of dataPoints) {
           if (!latestByIndicator[dp.indicator_id]) {
-            latestByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
+            // Only consider data points that match the indicator's entity
+            const indicatorEntityId = indicatorEntityMap[dp.indicator_id]
+            if (indicatorEntityId) {
+              // Indicator has an entity — only use data points for that entity
+              if (dp.entity_id === indicatorEntityId) {
+                latestByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
+              }
+            } else {
+              // Indicator has no entity — only use data points with null entity_id
+              if (!dp.entity_id) {
+                latestByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
+              }
+            }
           }
         }
       }
 
-      // Get previous data point for change calculation
+      // Get previous data point for change calculation (same entity filter)
       const previousByIndicator: Record<string, { value: number; date: string }> = {}
       if (dataPoints) {
         for (const dp of dataPoints) {
           const latest = latestByIndicator[dp.indicator_id]
           if (latest && dp.date !== latest.date && !previousByIndicator[dp.indicator_id]) {
-            previousByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
+            // Apply same entity filter as above
+            const indicatorEntityId = indicatorEntityMap[dp.indicator_id]
+            const matchesEntity = indicatorEntityId
+              ? dp.entity_id === indicatorEntityId
+              : !dp.entity_id
+
+            if (matchesEntity) {
+              previousByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
+            }
           }
         }
       }

@@ -37,9 +37,9 @@ const YEAR_COLORS = [
 
 const MONTH_NAMES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
-// Delayed tooltip: uses pure CSS animations for the 5-second delay.
+// Delayed tooltip: uses pure CSS animations for a 1-second delay.
 // When the tooltip first appears (active=true), a loading state with progress bar
-// is shown for 5 seconds, after which the actual value fades in.
+// is shown for 1 second, after which the actual value fades in.
 // Since Recharts conditionally renders the tooltip content only when active=true,
 // each new hover session starts fresh CSS animations.
 function DelayedTooltip({ active, payload, label, unit }: any) {
@@ -68,31 +68,31 @@ function DelayedTooltip({ active, payload, label, unit }: any) {
           100% { width: 100%; }
         }
         @keyframes tooltipLoadingFade {
-          0%, 85% { opacity: 1; max-height: 40px; }
+          0%, 50% { opacity: 1; max-height: 40px; }
           100% { opacity: 0; max-height: 0; padding: 0; margin: 0; overflow: hidden; }
         }
         @keyframes tooltipValueReveal {
-          0%, 85% { opacity: 0; transform: translateY(4px); }
+          0%, 50% { opacity: 0; transform: translateY(4px); }
           100% { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
-      {/* Loading state — visible for first 5 seconds then fades out */}
+      {/* Loading state — visible for first second then fades out */}
       <div
         className="overflow-hidden"
-        style={{ animation: 'tooltipLoadingFade 5s ease forwards' }}
+        style={{ animation: 'tooltipLoadingFade 1s ease forwards' }}
       >
         <p className="text-gray-500 text-xs font-medium mb-1">Pasa el cursor para ver el valor</p>
         <div className="h-1.5 w-24 bg-gray-100 rounded-full overflow-hidden">
           <div
             className="h-full bg-[#1a6b3c] rounded-full"
-            style={{ animation: 'tooltipProgress 5s linear forwards' }}
+            style={{ animation: 'tooltipProgress 1s linear forwards' }}
           />
         </div>
       </div>
 
-      {/* Value state — hidden initially, fades in after 5 seconds */}
-      <div style={{ animation: 'tooltipValueReveal 5s ease forwards' }}>
+      {/* Value state — hidden initially, fades in after 1 second */}
+      <div style={{ animation: 'tooltipValueReveal 1s ease forwards' }}>
         <p className="text-gray-500 text-xs mb-1.5 font-medium">{dateStr}</p>
         <p className="text-[#1c1c1e] text-lg font-bold leading-tight">
           {formattedValue}
