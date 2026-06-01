@@ -65,3 +65,27 @@ Stage Summary:
 - Breadcrumbs now visible with white text on dark green header across all routes
 - Hero banner is roughly 50% shorter vertically, allowing KPI cards to be visible without scrolling
 - Consistent navigation pattern: 🏠 Portal > Observatorio > [Category] > [Indicator]
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Redesign hero banner with real data, info tooltip, and source info
+
+Work Log:
+- Discovered root cause of "0 Puntos de Datos": the /api/observatorio/indicators endpoint never populates data_points[], so counting its length always returns 0
+- Created new API endpoint /api/observatorio/summary that uses Supabase count queries to get: total_indicators, total_data_points, total_categories, latest_period (most recent observation date), last_upload_at (most recent created_at timestamp), and data_sources (distinct source_file values)
+- Redesigned hero stats row with 4 meaningful stats:
+  1. "Última Actualización" — shows the latest observation period (month/year) with Info icon tooltip showing exact upload timestamp
+  2. "Indicadores" — count of active parent indicators
+  3. "Registros" — total data points count (renamed from confusing "Puntos de Datos")
+  4. "Fuente(s)" — shows "MIM.gob.do" as current source, auto-appends "+N" when more sources are added
+- Replaced old stats logic that computed from client-side data_points array (which was always empty) with proper server-side aggregate query
+- Added Tooltip component from shadcn/ui for the info icon
+- Changed <section> tags to <div> to avoid 120px padding from global CSS rule body:not(.admin-layout) section
+
+Stage Summary:
+- Hero banner now shows real, accurate data from the database
+- Info tooltip reveals exact upload date/time when hovered
+- "Registros" replaces "Puntos de Datos" for clarity
+- Source display is extensible: currently shows "MIM.gob.do", will auto-show "+N" when more sources exist
+- New /api/observatorio/summary endpoint provides efficient aggregate queries

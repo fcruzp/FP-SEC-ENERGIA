@@ -3,34 +3,48 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { BarChart3, Activity, Database, Calendar, ArrowRight } from 'lucide-react'
+import { BarChart3, Activity, Database, Calendar, ArrowRight, Info } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import KPICard from '@/components/observatorio/KPICard'
 import ObservatorioHeader from '@/components/observatorio/ObservatorioHeader'
 import CategoryIcon from '@/components/observatorio/CategoryIcon'
 import type { CategoryWithIndicators, IndicatorWithData } from '@/lib/supabase-types'
 
-interface CategoryStats {
-  totalIndicators: number
-  totalDataPoints: number
-  dateRange: { min: string; max: string } | null
+interface ObservatorioStats {
+  total_indicators: number
+  total_data_points: number
+  total_categories: number
+  latest_period: string | null
+  last_upload_at: string | null
+  data_sources: string[]
 }
 
 export default function ObservatorioPage() {
   const [categories, setCategories] = useState<CategoryWithIndicators[]>([])
   const [topIndicators, setTopIndicators] = useState<IndicatorWithData[]>([])
-  const [stats, setStats] = useState<CategoryStats>({
-    totalIndicators: 0,
-    totalDataPoints: 0,
-    dateRange: null,
+  const [stats, setStats] = useState<ObservatorioStats>({
+    total_indicators: 0,
+    total_data_points: 0,
+    total_categories: 0,
+    latest_period: null,
+    last_upload_at: null,
+    data_sources: [],
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
       try {
+        // Fetch summary stats
+        const sumRes = await fetch('/api/observatorio/summary')
+        const sumData = await sumRes.json()
+        if (!sumData.error) {
+          setStats(sumData)
+        }
+
         // Fetch categories
         const catRes = await fetch('/api/observatorio/categories')
         const catData = await catRes.json()
@@ -46,29 +60,6 @@ export default function ObservatorioPage() {
           (ind) => ind.latest_value !== null && ind.latest_value !== undefined
         )
         setTopIndicators(withData.slice(0, 6))
-
-        // Calculate stats
-        const totalIndicators = allIndicators.length
-        let totalDataPoints = 0
-        let minDate: string | null = null
-        let maxDate: string | null = null
-
-        for (const ind of allIndicators) {
-          if (ind.data_points) {
-            totalDataPoints += ind.data_points.length
-          }
-          if (ind.latest_date) {
-            if (!maxDate || ind.latest_date > maxDate) maxDate = ind.latest_date
-            if (!minDate || ind.latest_date < minDate) minDate = ind.latest_date
-          }
-        }
-
-        setStats({
-          totalIndicators,
-          totalDataPoints,
-          dateRange:
-            minDate && maxDate ? { min: minDate, max: maxDate } : null,
-        })
       } catch (err) {
         console.error('Error fetching observatorio data:', err)
       } finally {
@@ -79,11 +70,25 @@ export default function ObservatorioPage() {
     fetchData()
   }, [])
 
-  const formatDate = (dateStr: string) => {
+  const formatMonth = (dateStr: string) => {
+    try {
+      return new Date(dateStr + 'T12:00:00').toLocaleDateString('es-DO', {
+        year: 'numeric',
+        month: 'long',
+      })
+    } catch {
+      return dateStr
+    }
+  }
+
+  const formatUploadDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString('es-DO', {
         year: 'numeric',
         month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       })
     } catch {
       return dateStr
@@ -132,7 +137,43 @@ export default function ObservatorioPage() {
             </p>
 
             {/* Stats row */}
-            <div className="flex flex-wrap gap-5 sm:gap-8">
+            <div className="flex flex-wrap items-center gap-5 sm:gap-8">
+              {/* Latest period */}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Calendar className="h-3.5 w-3.5 text-[#4ade80]" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white flex items-center gap-1.5">
+                    {loading ? (
+                      <Skeleton className="h-5 w-24 bg-white/20" />
+                    ) : stats.latest_period ? (
+                      <>
+                        {formatMonth(stats.latest_period)}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3 w-3 text-white/40 hover:text-white/70 cursor-help transition-colors" />
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="text-xs">
+                              {stats.last_upload_at
+                                ? `Datos subidos el ${formatUploadDate(stats.last_upload_at)}`
+                                : 'Sin registro de carga'}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </>
+                    ) : (
+                      'Sin datos'
+                    )}
+                  </div>
+                  <div className="text-[10px] text-white/50 font-medium">
+                    Última Actualización
+                  </div>
+                </div>
+              </div>
+
+              {/* Indicators */}
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                   <Activity className="h-3.5 w-3.5 text-[#4ade80]" />
@@ -142,7 +183,7 @@ export default function ObservatorioPage() {
                     {loading ? (
                       <Skeleton className="h-5 w-10 bg-white/20" />
                     ) : (
-                      stats.totalIndicators
+                      stats.total_indicators
                     )}
                   </div>
                   <div className="text-[10px] text-white/50 font-medium">
@@ -151,6 +192,7 @@ export default function ObservatorioPage() {
                 </div>
               </div>
 
+              {/* Data records */}
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                   <Database className="h-3.5 w-3.5 text-[#4ade80]" />
@@ -160,30 +202,35 @@ export default function ObservatorioPage() {
                     {loading ? (
                       <Skeleton className="h-5 w-14 bg-white/20" />
                     ) : (
-                      stats.totalDataPoints.toLocaleString('es-DO')
+                      stats.total_data_points.toLocaleString('es-DO')
                     )}
                   </div>
                   <div className="text-[10px] text-white/50 font-medium">
-                    Puntos de Datos
+                    Registros
                   </div>
                 </div>
               </div>
 
-              {stats.dateRange && (
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                    <Calendar className="h-3.5 w-3.5 text-[#4ade80]" />
+              {/* Source */}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <BarChart3 className="h-3.5 w-3.5 text-[#4ade80]" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-white">
+                    {loading ? (
+                      <Skeleton className="h-5 w-16 bg-white/20" />
+                    ) : stats.data_sources.length > 0 ? (
+                      `MIM.gob.do${stats.data_sources.length > 1 ? ` +${stats.data_sources.length - 1}` : ''}`
+                    ) : (
+                      'MIM.gob.do'
+                    )}
                   </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">
-                      {formatDate(stats.dateRange.min)} — {formatDate(stats.dateRange.max)}
-                    </div>
-                    <div className="text-[10px] text-white/50 font-medium">
-                      Período Cubierto
-                    </div>
+                  <div className="text-[10px] text-white/50 font-medium">
+                    Fuente{stats.data_sources.length > 1 ? 's' : ''}
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </motion.div>
         </div>
