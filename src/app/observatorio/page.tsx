@@ -216,7 +216,7 @@ export default function ObservatorioPage() {
   const maxIndicatorCount = Math.max(...categories.map(c => c.indicator_count), 1)
 
   return (
-    <div className="min-h-screen bg-[#f4f6f4]">
+    <div className="min-h-screen bg-[#f4f6f4] dark:bg-[#0d1117]">
       {/* Header */}
       <ObservatorioHeader
         breadcrumbs={[{ label: 'Observatorio Energético' }]}
@@ -306,18 +306,18 @@ export default function ObservatorioPage() {
       {/* Main Dashboard Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8">
         {/* Overview + Trends Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-12">
           {/* Main overview chart - 2/3 width */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-1.5 h-5 rounded-full bg-[#1a6b3c]" />
-              <h2 className="text-sm font-bold text-[#1c1c1e]">Serie Temporal Destacada</h2>
-              <Badge variant="secondary" className="bg-[#f4f6f4] text-[#1a6b3c] border-0 text-[10px] font-semibold">
+              <h2 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">Serie Temporal Destacada</h2>
+              <Badge variant="secondary" className="bg-[#f4f6f4] dark:bg-[#161b22] text-[#1a6b3c] border-0 text-[10px] font-semibold">
                 Vista General
               </Badge>
             </div>
             {loading ? (
-              <Card className="bg-white border-[#e5e7eb] p-6 h-[340px]">
+              <Card className="bg-white dark:bg-[#161b22] border-[#e5e7eb] dark:border-[#30363d] p-6 h-[340px]">
                 <Skeleton className="h-6 w-48 mb-4" />
                 <Skeleton className="h-full w-full rounded-lg" />
               </Card>
@@ -330,11 +330,11 @@ export default function ObservatorioPage() {
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-1.5 h-5 rounded-full bg-[#f59e0b]" />
-              <h2 className="text-sm font-bold text-[#1c1c1e]">Tendencias</h2>
+              <h2 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">Tendencias</h2>
               <Zap className="h-3.5 w-3.5 text-[#f59e0b]" />
             </div>
             {loading ? (
-              <Card className="bg-white border-[#e5e7eb] p-6 h-[340px]">
+              <Card className="bg-white dark:bg-[#161b22] border-[#e5e7eb] dark:border-[#30363d] p-6 h-[340px]">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Skeleton key={i} className="h-10 w-full mb-3 rounded-lg" />
                 ))}
@@ -350,14 +350,14 @@ export default function ObservatorioPage() {
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-1.5 h-5 rounded-full bg-[#1a6b3c]" />
-              <h2 className="text-sm font-bold text-[#1c1c1e]">Indicadores Destacados</h2>
-              <Badge variant="secondary" className="bg-[#f4f6f4] text-[#1a6b3c] border-0 text-[10px] font-semibold">
+              <h2 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">Indicadores Destacados</h2>
+              <Badge variant="secondary" className="bg-[#f4f6f4] dark:bg-[#161b22] text-[#1a6b3c] border-0 text-[10px] font-semibold">
                 {topIndicators.length} activos
               </Badge>
             </div>
             <Link
               href="#categorias"
-              className="text-xs font-semibold text-[#2d9e5f] hover:text-[#1a6b3c] transition-colors flex items-center gap-1"
+              className="text-xs font-semibold text-[#2d9e5f] hover:text-[#4ade80] dark:hover:text-[#4ade80] transition-colors flex items-center gap-1"
             >
               Ver categorías
               <ArrowRight className="h-3 w-3" />
@@ -367,7 +367,7 @@ export default function ObservatorioPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {loading
               ? Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="p-4 border-[#e5e7eb]">
+                  <Card key={i} className="p-4 border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22]">
                     <div className="flex items-center gap-2.5 mb-3">
                       <Skeleton className="h-9 w-9 rounded-lg" />
                       <Skeleton className="h-3 w-28" />
@@ -401,8 +401,8 @@ export default function ObservatorioPage() {
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2.5">
               <div className="w-1.5 h-5 rounded-full bg-[#1a6b3c]" />
-              <h2 className="text-sm font-bold text-[#1c1c1e]">Categorías de Indicadores</h2>
-              <Badge variant="secondary" className="bg-[#f4f6f4] text-[#1a6b3c] border-0 text-[10px] font-semibold">
+              <h2 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">Categorías de Indicadores</h2>
+              <Badge variant="secondary" className="bg-[#f4f6f4] dark:bg-[#161b22] text-[#1a6b3c] border-0 text-[10px] font-semibold">
                 {stats.total_categories} áreas
               </Badge>
             </div>
@@ -411,7 +411,7 @@ export default function ObservatorioPage() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Card key={i} className="p-4 border-[#e5e7eb]">
+                <Card key={i} className="p-4 border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22]">
                   <Skeleton className="h-10 w-10 rounded-xl mb-3" />
                   <Skeleton className="h-4 w-3/4 mb-2" />
                   <Skeleton className="h-2 w-full rounded-full" />
@@ -428,7 +428,7 @@ export default function ObservatorioPage() {
                   transition={{ duration: 0.3, delay: index * 0.04 }}
                 >
                   <Link href={`/observatorio/${cat.slug}`}>
-                    <Card className="group relative overflow-hidden border-[#e5e7eb] bg-white hover:border-[#2d9e5f]/40 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer">
+                    <Card className="group relative overflow-hidden border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22] hover:border-[#2d9e5f]/40 dark:hover:border-[#4ade80]/40 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer">
                       {/* Top accent line */}
                       <div
                         className="absolute top-0 left-0 right-0 h-[2px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
@@ -447,18 +447,18 @@ export default function ObservatorioPage() {
                             <CategoryIcon iconName={cat.icon ?? null} size={18} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-sm font-bold text-[#1c1c1e] group-hover:text-[#1a6b3c] transition-colors leading-tight truncate">
+                            <h3 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3] group-hover:text-[#1a6b3c] dark:group-hover:text-[#4ade80] transition-colors leading-tight truncate">
                               {cat.name}
                             </h3>
-                            <span className="text-[10px] text-[#9ca3af] font-medium">
+                            <span className="text-[10px] text-[#9ca3af] dark:text-[#8b949e] font-medium">
                               {cat.indicator_count} indicadores
                             </span>
                           </div>
-                          <ArrowRight className="h-3.5 w-3.5 text-[#9ca3af] group-hover:text-[#2d9e5f] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                          <ArrowRight className="h-3.5 w-3.5 text-[#9ca3af] dark:text-[#8b949e] group-hover:text-[#2d9e5f] dark:group-hover:text-[#4ade80] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                         </div>
 
                         {/* Progress bar showing relative size */}
-                        <div className="h-1.5 rounded-full bg-[#f4f6f4] overflow-hidden">
+                        <div className="h-1.5 rounded-full bg-[#f4f6f4] dark:bg-[#21262d] overflow-hidden">
                           <motion.div
                             className="h-full rounded-full transition-colors"
                             style={{ backgroundColor: cat.color || '#1a6b3c' }}
@@ -477,8 +477,8 @@ export default function ObservatorioPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 pt-6 border-t border-[#e5e7eb]">
-          <div className="flex items-center justify-center gap-2 text-xs text-[#9ca3af]">
+        <div className="mt-12 pt-6 border-t border-[#e5e7eb] dark:border-[#30363d]">
+          <div className="flex items-center justify-center gap-2 text-xs text-[#9ca3af] dark:text-[#8b949e]">
             <TrendingUp className="h-3 w-3" />
             <span>Datos proporcionados por la Secretaría de Energía de Fuerza del Pueblo</span>
           </div>

@@ -12,7 +12,7 @@ export default function ObservatorioLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-[#f4f6f4]">
+    <div className="min-h-screen bg-[#f4f6f4] dark:bg-[#0d1117]">
       {children}
     </div>
   )

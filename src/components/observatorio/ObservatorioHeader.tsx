@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Home, ChevronRight } from 'lucide-react'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 interface BreadcrumbItemData {
   label: string
@@ -17,7 +18,7 @@ export default function ObservatorioHeader({
 }: ObservatorioHeaderProps) {
 
   return (
-    <header className="bg-[#0a2e19] sticky top-0 z-40">
+    <header className="bg-[#0a2e19] dark:bg-[#071d10] sticky top-0 z-40 border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3 h-11">
           {/* Home / Portal button */}
@@ -33,7 +34,7 @@ export default function ObservatorioHeader({
           <ChevronRight className="h-3.5 w-3.5 text-white/25 flex-shrink-0" />
 
           {/* Custom Breadcrumb — no shadcn defaults to avoid dark-on-dark */}
-          <nav aria-label="breadcrumb" className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+          <nav aria-label="breadcrumb" className="flex items-center gap-1.5 min-w-0 overflow-hidden flex-1">
             <ol className="flex flex-wrap items-center gap-1.5 text-sm">
               {breadcrumbs.map((item, index) => {
                 const isLast = index === breadcrumbs.length - 1
@@ -59,6 +60,11 @@ export default function ObservatorioHeader({
               })}
             </ol>
           </nav>
+
+          {/* Theme toggle */}
+          <div className="flex-shrink-0">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>

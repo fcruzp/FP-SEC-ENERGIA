@@ -27,18 +27,18 @@ export default function TrendMovers({ gainers, losers }: TrendMoversProps) {
 
   if (!hasData) {
     return (
-      <Card className="bg-white border-[#e5e7eb] p-6 h-full min-h-[320px] flex items-center justify-center">
-        <p className="text-sm text-[#9ca3af]">Sin datos de tendencias</p>
+      <Card className="bg-white dark:bg-[#161b22] border-[#e5e7eb] dark:border-[#30363d] p-6 h-full min-h-[320px] flex items-center justify-center">
+        <p className="text-sm text-[#9ca3af] dark:text-[#8b949e]">Sin datos de tendencias</p>
       </Card>
     )
   }
 
   return (
-    <Card className="bg-white border-[#e5e7eb] overflow-hidden h-full flex flex-col">
+    <Card className="bg-white dark:bg-[#161b22] border-[#e5e7eb] dark:border-[#30363d] overflow-hidden h-full flex flex-col">
       {/* Header */}
       <div className="px-5 pt-5 pb-3 flex-shrink-0">
-        <h3 className="text-sm font-bold text-[#1c1c1e]">Tendencias</h3>
-        <p className="text-[11px] text-[#9ca3af] mt-0.5">Mayores cambios en el período</p>
+        <h3 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">Tendencias</h3>
+        <p className="text-[11px] text-[#9ca3af] dark:text-[#8b949e] mt-0.5">Mayores cambios en el período</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pb-4">
@@ -97,7 +97,7 @@ function TrendRow({ item, type, index }: { item: TrendItem; type: 'gainer' | 'lo
       transition={{ duration: 0.3, delay: index * 0.05 }}
     >
       <Link href={href} className="block group">
-        <div className="relative rounded-lg overflow-hidden hover:bg-[#f9fafb] transition-colors py-2 px-2.5 -mx-2.5">
+        <div className="relative rounded-lg overflow-hidden hover:bg-[#f9fafb] dark:hover:bg-[#21262d] transition-colors py-2 px-2.5 -mx-2.5">
           {/* Background bar */}
           <div
             className="absolute inset-y-0 rounded-lg opacity-[0.07] transition-all duration-500"
@@ -110,18 +110,18 @@ function TrendRow({ item, type, index }: { item: TrendItem; type: 'gainer' | 'lo
 
           <div className="relative flex items-center justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-[#1c1c1e] truncate group-hover:text-[#1a6b3c] transition-colors leading-tight">
+              <p className="text-xs font-medium text-[#1c1c1e] dark:text-[#e6edf3] truncate group-hover:text-[#1a6b3c] dark:group-hover:text-[#4ade80] transition-colors leading-tight">
                 {item.name}
               </p>
               {item.category_name && (
-                <p className="text-[10px] text-[#9ca3af] truncate mt-0.5">
+                <p className="text-[10px] text-[#9ca3af] dark:text-[#8b949e] truncate mt-0.5">
                   {item.category_name}
                 </p>
               )}
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               {item.latest_value !== null && item.latest_value !== undefined && (
-                <span className="text-[11px] font-medium text-[#6b7280]">
+                <span className="text-[11px] font-medium text-[#6b7280] dark:text-[#8b949e]">
                   {item.latest_value.toLocaleString('es-DO', { maximumFractionDigits: 1 })}
                   {item.unit && <span className="text-[9px] ml-0.5">{item.unit}</span>}
                 </span>
@@ -129,8 +129,8 @@ function TrendRow({ item, type, index }: { item: TrendItem; type: 'gainer' | 'lo
               <span
                 className={`inline-flex items-center text-[11px] font-bold px-1.5 py-0.5 rounded ${
                   isGainer
-                    ? 'text-[#1a6b3c] bg-[#4ade80]/10'
-                    : 'text-red-600 bg-red-50'
+                    ? 'text-[#1a6b3c] dark:text-[#4ade80] bg-[#4ade80]/10 dark:bg-[#4ade80]/15'
+                    : 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
                 }`}
               >
                 {isGainer ? '+' : ''}{pct.toFixed(1)}%

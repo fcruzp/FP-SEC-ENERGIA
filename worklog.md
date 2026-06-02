@@ -136,3 +136,30 @@ Stage Summary:
 - Fix: Added credentials + added .limit(2500) to heavy queries
 - All data flowing correctly to the Observatorio dashboard
 - Server stable in production mode
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix spacing between trends section and "Indicadores Destacados" + Add dark/light theme toggle
+
+Work Log:
+- Increased `mb-6` to `mb-12` on the overview + trends grid in `app/observatorio/page.tsx` line 309 to add more vertical separation before "Indicadores Destacados"
+- Created `src/components/ThemeProvider.tsx` wrapping next-themes ThemeProvider
+- Created `src/components/ThemeToggle.tsx` with sun/moon toggle button for dark/light mode
+- Added ThemeProvider to root layout (`src/app/layout.tsx`) with `attribute="class"`, `defaultTheme="light"`, `enableSystem`, `disableTransitionOnChange`
+- Added ThemeToggle button to ObservatorioHeader breadcrumb bar
+- Added dark mode CSS variable overrides for tooltip in globals.css (`--tooltip-bg`, `--tooltip-border`, `--tooltip-color`)
+- Added dark body scrollbar and background styles in globals.css
+- Updated all Observatorio dashboard components with `dark:` Tailwind variants:
+  - `app/observatorio/page.tsx` - page background, section headings, badges, cards, categories, footer
+  - `components/observatorio/DashboardOverviewChart.tsx` - card bg, text colors, chart grid, axes, tooltip, link
+  - `components/observatorio/TrendMovers.tsx` - card bg, text colors, hover states, badge colors
+  - `components/observatorio/KPICard.tsx` - card bg, text colors, badges, progress bars
+  - `components/observatorio/ObservatorioHeader.tsx` - header bg, added ThemeToggle
+  - `app/observatorio/layout.tsx` - layout background
+
+Stage Summary:
+- Spacing fix: `mb-6` → `mb-12` between trends and indicators sections
+- Dark/light theme: Full implementation using next-themes with class-based dark mode
+- Theme toggle: Sun/Moon button in ObservatorioHeader
+- Dark palette: #0d1117 bg, #161b22 cards, #30363d borders, #e6edf3 text, #8b949e secondary text, #4ade80 green accents
+- All TypeScript checks pass for modified files

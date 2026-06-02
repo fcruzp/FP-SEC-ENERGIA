@@ -66,8 +66,8 @@ export default function KPICard({
         isLink ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer' : ''
       } ${
         featured
-          ? 'bg-gradient-to-br from-[#0a2e19] via-[#0f3d20] to-[#1a6b3c] border-[#0a2e19] text-white shadow-lg shadow-[#0a2e19]/20'
-          : 'bg-white border-[#e5e7eb]'
+          ? 'bg-gradient-to-br from-[#0a2e19] via-[#0f3d20] to-[#1a6b3c] border-[#0a2e19] dark:from-[#0d3320] dark:via-[#0a2e19] dark:to-[#155d35] dark:border-[#0d3320] text-white shadow-lg shadow-[#0a2e19]/20'
+          : 'bg-white dark:bg-[#161b22] border-[#e5e7eb] dark:border-[#30363d]'
       }`}
     >
       <div className="p-4">
@@ -88,7 +88,7 @@ export default function KPICard({
             <div className="min-w-0 flex-1">
               <div
                 className={`text-[11px] font-medium flex items-center gap-1 leading-tight ${
-                  featured ? 'text-white/60' : 'text-[#6b7280]'
+                  featured ? 'text-white/60' : 'text-[#6b7280] dark:text-[#8b949e]'
                 }`}
               >
                 <span className="truncate">{title || label}</span>
@@ -97,7 +97,7 @@ export default function KPICard({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Info className={`h-3 w-3 flex-shrink-0 cursor-help transition-colors ${
-                          featured ? 'text-white/30 hover:text-white/60' : 'text-[#9ca3af] hover:text-[#6b7280]'
+                          featured ? 'text-white/30 hover:text-white/60' : 'text-[#9ca3af] hover:text-[#6b7280] dark:text-[#6b7280] dark:hover:text-[#8b949e]'
                         }`} />
                       </TooltipTrigger>
                       <TooltipContent side="bottom" className="max-w-[260px] text-xs leading-relaxed">
@@ -116,14 +116,14 @@ export default function KPICard({
                 isUp
                   ? featured
                     ? 'bg-[#4ade80]/20 text-[#4ade80]'
-                    : 'bg-[#4ade80]/12 text-[#1a6b3c]'
+                    : 'bg-[#4ade80]/12 dark:bg-[#4ade80]/15 text-[#1a6b3c] dark:text-[#4ade80]'
                   : isDown
                   ? featured
                     ? 'bg-red-400/20 text-red-300'
-                    : 'bg-red-50 text-red-600'
+                    : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
                   : featured
                   ? 'bg-white/10 text-white/60'
-                  : 'bg-gray-100 text-gray-500'
+                  : 'bg-gray-100 dark:bg-[#21262d] text-gray-500 dark:text-[#8b949e]'
               }`}
             >
               {isUp && <TrendingUp className="h-3 w-3" />}
@@ -141,13 +141,13 @@ export default function KPICard({
           <div>
             <div
               className={`text-2xl font-extrabold leading-tight ${
-                featured ? 'text-white' : 'text-[#1c1c1e]'
+                featured ? 'text-white' : 'text-[#1c1c1e] dark:text-[#e6edf3]'
               }`}
             >
               {displayValue}
               {unit && (
                 <span className={`text-sm font-semibold ml-1 ${
-                  featured ? 'text-white/60' : 'text-[#6b7280]'
+                  featured ? 'text-white/60' : 'text-[#6b7280] dark:text-[#8b949e]'
                 }`}>
                   {unit}
                 </span>
@@ -186,7 +186,7 @@ export default function KPICard({
         {/* Progress bar */}
         <div
           className={`h-0.5 rounded-full mt-3 overflow-hidden ${
-            featured ? 'bg-white/10' : 'bg-[#e5e7eb]'
+            featured ? 'bg-white/10' : 'bg-[#e5e7eb] dark:bg-[#30363d]'
           }`}
         >
           <motion.div
@@ -207,7 +207,7 @@ export default function KPICard({
       {/* Hover arrow indicator */}
       {isLink && (
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200">
-          <ArrowUpRight className={`h-3.5 w-3.5 ${featured ? 'text-white/40' : 'text-[#9ca3af]'}`} />
+          <ArrowUpRight className={`h-3.5 w-3.5 ${featured ? 'text-white/40' : 'text-[#9ca3af] dark:text-[#6b7280]'}`} />
         </div>
       )}
     </Card>
