@@ -93,21 +93,98 @@ export default function ObservatorioPage() {
   useEffect(() => {
     async function fetchDashboard() {
       try {
+        // Try the unified dashboard API first
         const res = await fetch('/api/observatorio/dashboard')
-        const data = await res.json()
-        if (!data.error) {
-          setStats(data.summary)
-          setTopIndicators(data.top_indicators || [])
-          setFeaturedIndicator(data.featured_indicator || null)
-          setTrendMovers(data.trend_movers || { gainers: [], losers: [] })
-          setCategories(data.categories || [])
+        if (res.ok) {
+          const data = await res.json()
+          if (!data.error) {
+            setStats(data.summary)
+            setTopIndicators(data.top_indicators || [])
+            setFeaturedIndicator(data.featured_indicator || null)
+            setTrendMovers(data.trend_movers || { gainers: [], losers: [] })
+            setCategories(data.categories || [])
+            return
+          }
         }
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err)
+        // Fallback: use separate API endpoints if dashboard fails
+        await fetchFromSeparateEndpoints()
+      } catch {
+        // JSON parse error or network issue — fallback
+        await fetchFromSeparateEndpoints()
       } finally {
         setLoading(false)
       }
     }
+
+    async function fetchFromSeparateEndpoints() {
+      try {
+        // Fetch summary
+        const sumRes = await fetch('/api/observatorio/summary')
+        if (sumRes.ok) {
+          const sumData = await sumRes.json()
+          if (!sumData.error) setStats(sumData)
+        }
+
+        // Fetch categories
+        const catRes = await fetch('/api/observatorio/categories')
+        if (catRes.ok) {
+          const catData = await catRes.json()
+          setCategories(catData.categories || [])
+        }
+
+        // Fetch indicators with data for KPI display
+        const indRes = await fetch('/api/observatorio/indicators?with_data=true&parent_only=true')
+        if (indRes.ok) {
+          const indData = await indRes.json()
+          const allIndicators = indData.indicators || []
+          const withData = allIndicators.filter(
+            (ind: TopIndicator) => ind.latest_value !== null && ind.latest_value !== undefined
+          )
+          setTopIndicators(withData.slice(0, 6))
+
+          // Build simple trend movers from available data
+          const withChange = withData
+            .filter((ind: TopIndicator & { change_pct: number }) =>
+              ind.change_pct !== null && ind.change_pct !== undefined && Math.abs(ind.change_pct) < 1000
+            )
+            .sort((a: TopIndicator & { change_pct: number }, b: TopIndicator & { change_pct: number }) =>
+              Math.abs(b.change_pct) - Math.abs(a.change_pct)
+            )
+          setTrendMovers({
+            gainers: withChange.filter((ind: TopIndicator & { change_pct: number }) => ind.change_pct > 0).slice(0, 4).map((ind: TopIndicator) => ({
+              id: ind.id, name: ind.name, slug: ind.slug,
+              change_pct: ind.change_pct, latest_value: ind.latest_value,
+              unit: ind.unit, category_slug: ind.category?.slug,
+              category_name: ind.category?.name, category_color: ind.category?.color,
+            })),
+            losers: withChange.filter((ind: TopIndicator & { change_pct: number }) => ind.change_pct < 0).slice(0, 4).map((ind: TopIndicator) => ({
+              id: ind.id, name: ind.name, slug: ind.slug,
+              change_pct: ind.change_pct, latest_value: ind.latest_value,
+              unit: ind.unit, category_slug: ind.category?.slug,
+              category_name: ind.category?.name, category_color: ind.category?.color,
+            })),
+          })
+
+          // Set featured indicator with empty time series (chart will show fallback)
+          if (withData.length > 1) {
+            setFeaturedIndicator({
+              ...withData[1],
+              category_slug: withData[1].category?.slug,
+              time_series: [],
+            })
+          } else if (withData.length > 0) {
+            setFeaturedIndicator({
+              ...withData[0],
+              category_slug: withData[0].category?.slug,
+              time_series: [],
+            })
+          }
+        }
+      } catch {
+        // Silently fail — page will show empty state
+      }
+    }
+
     fetchDashboard()
   }, [])
 
