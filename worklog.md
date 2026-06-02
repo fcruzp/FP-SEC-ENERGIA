@@ -187,3 +187,21 @@ Stage Summary:
 - Data table replaced with card-based layout on mobile for better readability
 - Entity selector and date range filters are full-width on mobile
 - All interactive elements have cursor-pointer
+---
+Task ID: 1
+Agent: main
+Task: Add Fuerza del Pueblo logo to observatorio header/hero on all routes
+
+Work Log:
+- Located FP logo at `/public/fp-logo.png` (already used in portal SiteHeader, MobileNav, Footer)
+- Added `<Image>` import and logo to `ObservatorioHeader.tsx` — the shared sticky header on ALL observatorio routes
+- Logo appears before the Portal link with a vertical separator, responsive sizing (h-7/w-7 on mobile, h-8/w-8 on sm+)
+- Added logo to the main observatorio hero section in `page.tsx` (green gradient banner)
+- Added logo to the category banner in `[category]/page.tsx`
+- Logo links to `/` (portal home) with tooltip "Fuerza del Pueblo · Secretaría de Energía"
+- TypeScript compilation passes with no errors in observatorio files
+
+Stage Summary:
+- FP logo now visible on ALL observatorio routes (header bar + hero banners)
+- Responsive: smaller on mobile (h-7), larger on desktop (h-8/h-10)
+- Consistent placement: always in the banner/header area with rounded-full + ring styling

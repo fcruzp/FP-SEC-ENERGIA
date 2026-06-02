@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { BarChart3, Activity, Database, Calendar, ArrowRight, Info, Zap, Layers, TrendingUp } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -244,6 +245,16 @@ export default function ObservatorioPage() {
             {/* Title row */}
             <div className="flex items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-3">
+                {/* FP Logo in hero */}
+                <Image
+                  src="/fp-logo.png"
+                  alt="Fuerza del Pueblo"
+                  width={40}
+                  height={40}
+                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full ring-2 ring-white/15 flex-shrink-0"
+                  priority
+                />
+                <div className="w-px h-8 bg-white/15 flex-shrink-0" />
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
                   <BarChart3 className="h-5 w-5 text-[#4ade80]" />
                 </div>

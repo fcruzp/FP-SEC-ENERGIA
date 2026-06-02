@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Home, ChevronRight } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
 
@@ -20,7 +21,26 @@ export default function ObservatorioHeader({
   return (
     <header className="bg-[#0a2e19] dark:bg-[#071d10] sticky top-0 z-40 border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 h-11">
+        <div className="flex items-center gap-3 h-12">
+          {/* FP Logo */}
+          <Link
+            href="/"
+            className="flex-shrink-0 cursor-pointer"
+            title="Fuerza del Pueblo · Secretaría de Energía"
+          >
+            <Image
+              src="/fp-logo.png"
+              alt="Fuerza del Pueblo"
+              width={32}
+              height={32}
+              className="h-7 w-7 sm:h-8 sm:w-8 rounded-full ring-1 ring-white/10"
+              priority
+            />
+          </Link>
+
+          {/* Separator after logo */}
+          <div className="w-px h-5 bg-white/15 flex-shrink-0" />
+
           {/* Home / Portal button */}
           <Link
             href="/"

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card } from '@/components/ui/card'
@@ -99,6 +100,16 @@ export default function CategoryPage() {
           </div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
             <div className="flex items-center gap-4">
+              {/* FP Logo in category banner */}
+              <Image
+                src="/fp-logo.png"
+                alt="Fuerza del Pueblo"
+                width={40}
+                height={40}
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full ring-2 ring-white/15 flex-shrink-0"
+                priority
+              />
+              <div className="w-px h-10 bg-white/20 flex-shrink-0" />
               <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center text-white/90">
                 <CategoryIcon iconName={category.icon} size={28} />
               </div>
