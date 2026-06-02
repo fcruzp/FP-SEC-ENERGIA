@@ -63,9 +63,9 @@ export default function DashboardOverviewChart({ indicator }: DashboardOverviewC
     : '—'
 
   return (
-    <Card className="bg-white border-[#e5e7eb] overflow-hidden h-full flex flex-col">
+    <Card className="bg-white border-[#e5e7eb] overflow-hidden">
       {/* Header */}
-      <div className="px-6 pt-5 pb-3 flex-shrink-0">
+      <div className="px-6 pt-5 pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -107,8 +107,8 @@ export default function DashboardOverviewChart({ indicator }: DashboardOverviewC
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="flex-1 px-2 pb-4 min-h-0" style={{ minHeight: '220px' }}>
+      {/* Chart — fixed height to prevent infinite vertical growth */}
+      <div className="px-2 pb-4" style={{ height: '280px' }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 16, bottom: 4, left: 8 }}>
             <defs>
@@ -167,7 +167,7 @@ export default function DashboardOverviewChart({ indicator }: DashboardOverviewC
 
       {/* Footer link */}
       {indicator.category_slug && (
-        <div className="px-6 pb-4 flex-shrink-0">
+        <div className="px-6 pb-4">
           <Link
             href={`/observatorio/${indicator.category_slug}/${indicator.slug}`}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2d9e5f] hover:text-[#1a6b3c] transition-colors"
