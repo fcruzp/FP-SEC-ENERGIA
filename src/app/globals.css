@@ -126,6 +126,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  a,
+  button,
+  [role="button"],
+  [role="link"] {
+    cursor: pointer;
+  }
 }
 
 /* ═══════════════════════════════════════════════════

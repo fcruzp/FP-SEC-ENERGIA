@@ -61,7 +61,7 @@ function DelayedTooltip({ active, payload, label, unit }: any) {
     : label
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-xl px-4 py-3 min-w-[160px] relative">
+    <div className="bg-white dark:bg-[#161b22] border border-gray-200 dark:border-[#30363d] rounded-lg shadow-xl px-4 py-3 min-w-[160px] relative">
       <style>{`
         @keyframes tooltipProgress {
           0% { width: 0%; }
@@ -82,8 +82,8 @@ function DelayedTooltip({ active, payload, label, unit }: any) {
         className="overflow-hidden"
         style={{ animation: 'tooltipLoadingFade 1s ease forwards' }}
       >
-        <p className="text-gray-500 text-xs font-medium mb-1">Pasa el cursor para ver el valor</p>
-        <div className="h-1.5 w-24 bg-gray-100 rounded-full overflow-hidden">
+        <p className="text-gray-500 dark:text-[#8b949e] text-xs font-medium mb-1">Pasa el cursor para ver el valor</p>
+        <div className="h-1.5 w-24 bg-gray-100 dark:bg-[#30363d] rounded-full overflow-hidden">
           <div
             className="h-full bg-[#1a6b3c] rounded-full"
             style={{ animation: 'tooltipProgress 1s linear forwards' }}
@@ -93,10 +93,10 @@ function DelayedTooltip({ active, payload, label, unit }: any) {
 
       {/* Value state — hidden initially, fades in after 1 second */}
       <div style={{ animation: 'tooltipValueReveal 1s ease forwards' }}>
-        <p className="text-gray-500 text-xs mb-1.5 font-medium">{dateStr}</p>
-        <p className="text-[#1c1c1e] text-lg font-bold leading-tight">
+        <p className="text-gray-500 dark:text-[#8b949e] text-xs mb-1.5 font-medium">{dateStr}</p>
+        <p className="text-[#1c1c1e] dark:text-[#e6edf3] text-lg font-bold leading-tight">
           {formattedValue}
-          {unit && <span className="text-sm font-semibold text-gray-400 ml-1">{unit}</span>}
+          {unit && <span className="text-sm font-semibold text-gray-400 dark:text-[#8b949e] ml-1">{unit}</span>}
         </p>
       </div>
     </div>
@@ -287,7 +287,7 @@ export default function TimeSeriesChart({
       case 'bar':
         return (
           <BarChart data={processedData} margin={chartMargin}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#30363d]" vertical={false} />
             <XAxis
               dataKey="date"
               tick={renderXTick}
@@ -298,6 +298,7 @@ export default function TimeSeriesChart({
             />
             <YAxis
               tick={{ fontSize: 11, fill: '#6b7280' }}
+              className="dark:[&>g>text]:fill-[#8b949e]"
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={formatY}
@@ -362,7 +363,7 @@ export default function TimeSeriesChart({
                 <stop offset="95%" stopColor={color} stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#30363d]" vertical={false} />
             <XAxis
               dataKey="date"
               tick={renderXTick}
@@ -373,6 +374,7 @@ export default function TimeSeriesChart({
             />
             <YAxis
               tick={{ fontSize: 11, fill: '#6b7280' }}
+              className="dark:[&>g>text]:fill-[#8b949e]"
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={formatY}
@@ -426,7 +428,7 @@ export default function TimeSeriesChart({
       default:
         return (
           <LineChart data={processedData} margin={chartMargin}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#30363d]" vertical={false} />
             <XAxis
               dataKey="date"
               tick={renderXTick}
@@ -437,6 +439,7 @@ export default function TimeSeriesChart({
             />
             <YAxis
               tick={{ fontSize: 11, fill: '#6b7280' }}
+              className="dark:[&>g>text]:fill-[#8b949e]"
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={formatY}

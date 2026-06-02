@@ -50,16 +50,16 @@ export default function IndicatorCard({
       transition={{ duration: 0.35, delay: index * 0.06 }}
     >
       <Link href={`/observatorio/${categorySlug}/${indicator.slug}`}>
-        <Card className="group relative overflow-hidden border-[#e5e7eb] bg-white hover:border-[#2d9e5f] hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 cursor-pointer">
+        <Card className="group relative overflow-hidden border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22] hover:border-[#2d9e5f] dark:hover:border-[#4ade80] hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 cursor-pointer">
           <div className="p-5">
             {/* Top row: name + frequency */}
             <div className="flex items-start justify-between gap-3 mb-3">
-              <h3 className="text-sm font-semibold text-[#1c1c1e] leading-tight line-clamp-2 flex-1">
+              <h3 className="text-sm font-semibold text-[#1c1c1e] dark:text-[#e6edf3] leading-tight line-clamp-2 flex-1">
                 {indicator.name}
               </h3>
               <Badge
                 variant="secondary"
-                className="shrink-0 text-[10px] font-semibold uppercase tracking-wide bg-[#f4f6f4] text-[#6b7280] border-0"
+                className="shrink-0 text-[10px] font-semibold uppercase tracking-wide bg-[#f4f6f4] dark:bg-[#161b22] text-[#6b7280] dark:text-[#8b949e] border-0"
               >
                 {frequencyLabels[indicator.frequency] || indicator.frequency}
               </Badge>
@@ -70,11 +70,11 @@ export default function IndicatorCard({
               <div>
                 {hasData ? (
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-extrabold text-[#1c1c1e]">
+                    <span className="text-2xl font-extrabold text-[#1c1c1e] dark:text-[#e6edf3]">
                       {displayValue}
                     </span>
                     {indicator.unit && (
-                      <span className="text-sm font-medium text-[#6b7280]">
+                      <span className="text-sm font-medium text-[#6b7280] dark:text-[#8b949e]">
                         {indicator.unit}
                       </span>
                     )}
@@ -82,7 +82,7 @@ export default function IndicatorCard({
                 ) : (
                   <Badge
                     variant="outline"
-                    className="text-[10px] font-semibold text-[#6b7280] border-[#e5e7eb]"
+                    className="text-[10px] font-semibold text-[#6b7280] dark:text-[#8b949e] border-[#e5e7eb] dark:border-[#30363d]"
                   >
                     Sin datos
                   </Badge>
@@ -93,10 +93,10 @@ export default function IndicatorCard({
                   <span
                     className={`inline-flex items-center gap-1 mt-1.5 text-xs font-semibold ${
                       isUp
-                        ? 'text-[#1a6b3c]'
+                        ? 'text-[#1a6b3c] dark:text-[#4ade80]'
                         : isDown
-                        ? 'text-red-600'
-                        : 'text-[#6b7280]'
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-[#6b7280] dark:text-[#8b949e]'
                     }`}
                   >
                     {isUp && <TrendingUp className="h-3 w-3" />}
@@ -121,7 +121,7 @@ export default function IndicatorCard({
 
             {/* Arrow indicator on hover */}
             <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
-              <ArrowRight className="h-4 w-4 text-[#2d9e5f]" />
+              <ArrowRight className="h-4 w-4 text-[#2d9e5f] dark:text-[#4ade80]" />
             </div>
           </div>
         </Card>

@@ -198,7 +198,7 @@ export default function IndicatorDetailPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f4f6f4]">
+      <div className="min-h-screen bg-[#f4f6f4] dark:bg-[#0d1117]">
         <ObservatorioHeader
           breadcrumbs={[
             { label: 'Observatorio', href: '/observatorio' },
@@ -208,8 +208,8 @@ export default function IndicatorDetailPage() {
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="text-6xl mb-4">🔍</div>
-          <h2 className="text-xl font-bold text-[#1c1c1e] mb-2">{error}</h2>
-          <p className="text-sm text-[#6b7280]">
+          <h2 className="text-xl font-bold text-[#1c1c1e] dark:text-[#e6edf3] mb-2">{error}</h2>
+          <p className="text-sm text-[#6b7280] dark:text-[#8b949e]">
             El indicador que busca no existe o ha sido removido.
           </p>
         </div>
@@ -218,7 +218,7 @@ export default function IndicatorDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f6f4]">
+    <div className="min-h-screen bg-[#f4f6f4] dark:bg-[#0d1117]">
       <ObservatorioHeader
         breadcrumbs={[
           { label: 'Observatorio', href: '/observatorio' },
@@ -237,7 +237,7 @@ export default function IndicatorDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Card className="border-[#e5e7eb] bg-white overflow-hidden">
+          <Card className="border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22] overflow-hidden">
             {/* Green accent bar */}
             <div
               className="h-1.5"
@@ -249,11 +249,11 @@ export default function IndicatorDetailPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
                     {category?.icon && (
-                      <span className="text-[#1a6b3c]">
+                      <span className="text-[#1a6b3c] dark:text-[#4ade80]">
                         <CategoryIcon iconName={category.icon} size={24} />
                       </span>
                     )}
-                    <h1 className="text-xl sm:text-2xl font-bold text-[#1c1c1e]">
+                    <h1 className="text-xl sm:text-2xl font-bold text-[#1c1c1e] dark:text-[#e6edf3]">
                       {loading ? (
                         <Skeleton className="h-7 w-64" />
                       ) : (
@@ -269,11 +269,11 @@ export default function IndicatorDetailPage() {
                         <Skeleton className="h-9 w-24" />
                       ) : (
                         <>
-                          <span className="text-3xl font-extrabold text-[#1c1c1e]">
+                          <span className="text-3xl font-extrabold text-[#1c1c1e] dark:text-[#e6edf3]">
                             {displayValue}
                           </span>
                           {indicator?.unit && (
-                            <span className="text-base font-semibold text-[#6b7280]">
+                            <span className="text-base font-semibold text-[#6b7280] dark:text-[#8b949e]">
                               {indicator.unit}
                             </span>
                           )}
@@ -286,10 +286,10 @@ export default function IndicatorDetailPage() {
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold ${
                           isUp
-                            ? 'bg-[#4ade80]/15 text-[#1a6b3c]'
+                            ? 'bg-[#4ade80]/15 dark:bg-[#4ade80]/15 text-[#1a6b3c] dark:text-[#4ade80]'
                             : isDown
-                            ? 'bg-red-50 text-red-600'
-                            : 'bg-gray-100 text-gray-500'
+                            ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                            : 'bg-gray-100 text-gray-500 dark:bg-[#21262d] dark:text-[#8b949e]'
                         }`}
                       >
                         {isUp && <TrendingUp className="h-3.5 w-3.5" />}
@@ -304,7 +304,7 @@ export default function IndicatorDetailPage() {
                     {!loading && indicator?.frequency && (
                       <Badge
                         variant="secondary"
-                        className="bg-[#f4f6f4] text-[#6b7280] border-0 text-xs font-semibold uppercase tracking-wide"
+                        className="bg-[#f4f6f4] dark:bg-[#161b22] text-[#6b7280] dark:text-[#8b949e] border-0 text-xs font-semibold uppercase tracking-wide"
                       >
                         {frequencyLabels[indicator.frequency] || indicator.frequency}
                       </Badge>
@@ -314,7 +314,7 @@ export default function IndicatorDetailPage() {
                     {!loading && indicator?.chart_type && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] font-semibold text-[#6b7280] border-[#e5e7eb]"
+                        className="text-[10px] font-semibold text-[#6b7280] dark:text-[#8b949e] border-[#e5e7eb] dark:border-[#30363d]"
                       >
                         {chartTypeLabels[indicator.chart_type] || indicator.chart_type}
                       </Badge>
@@ -326,7 +326,7 @@ export default function IndicatorDetailPage() {
                 {!loading && indicator && (
                   <div className="flex flex-wrap gap-4 lg:gap-6 text-sm">
                     {indicator.latest_date && (
-                      <div className="flex items-center gap-2 text-[#6b7280]">
+                      <div className="flex items-center gap-2 text-[#6b7280] dark:text-[#8b949e]">
                         <Calendar className="h-4 w-4" />
                         <span>
                           Último:{' '}
@@ -337,7 +337,7 @@ export default function IndicatorDetailPage() {
                         </span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 text-[#6b7280]">
+                    <div className="flex items-center gap-2 text-[#6b7280] dark:text-[#8b949e]">
                       <Database className="h-4 w-4" />
                       <span>{dataPoints.length} registros</span>
                     </div>
@@ -351,13 +351,13 @@ export default function IndicatorDetailPage() {
 
       {/* Chart Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Card className="border-[#e5e7eb] bg-white overflow-hidden">
+        <Card className="border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22] overflow-hidden">
           <div className="p-6">
             {/* Chart controls */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-[#1a6b3c]" />
-                <h2 className="text-base font-bold text-[#1c1c1e]">
+                <BarChart3 className="h-5 w-5 text-[#1a6b3c] dark:text-[#4ade80]" />
+                <h2 className="text-base font-bold text-[#1c1c1e] dark:text-[#e6edf3]">
                   Serie Histórica
                 </h2>
               </div>
@@ -392,11 +392,11 @@ export default function IndicatorDetailPage() {
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-[300px] text-center">
-                <Database className="h-10 w-10 text-[#d1d5db] mb-3" />
-                <p className="text-sm font-semibold text-[#6b7280] mb-1">
+                <Database className="h-10 w-10 text-[#d1d5db] dark:text-[#484f58] mb-3" />
+                <p className="text-sm font-semibold text-[#6b7280] dark:text-[#8b949e] mb-1">
                   No hay datos disponibles
                 </p>
-                <p className="text-xs text-[#9ca3af]">
+                <p className="text-xs text-[#9ca3af] dark:text-[#8b949e]">
                   Intenta cambiar el filtro de entidad o rango de fechas.
                 </p>
               </div>
@@ -410,11 +410,11 @@ export default function IndicatorDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Metadata card */}
           <div>
-            <Card className="border-[#e5e7eb] bg-white h-fit">
+            <Card className="border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22] h-fit">
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Info className="h-4 w-4 text-[#1a6b3c]" />
-                  <h3 className="text-sm font-bold text-[#1c1c1e]">
+                  <Info className="h-4 w-4 text-[#1a6b3c] dark:text-[#4ade80]" />
+                  <h3 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">
                     Información del Indicador
                   </h3>
                 </div>
@@ -450,10 +450,10 @@ export default function IndicatorDetailPage() {
                     <MetadataRow label="Fuente" value={indicator?.source || '—'} />
                     {indicator?.description && (
                       <div>
-                        <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-1">
+                        <p className="text-xs font-semibold text-[#6b7280] dark:text-[#8b949e] uppercase tracking-wide mb-1">
                           Descripción
                         </p>
-                        <p className="text-sm text-[#1c1c1e] leading-relaxed">
+                        <p className="text-sm text-[#1c1c1e] dark:text-[#e6edf3] leading-relaxed">
                           {indicator.description}
                         </p>
                       </div>
@@ -472,16 +472,16 @@ export default function IndicatorDetailPage() {
 
           {/* Data table */}
           <div className="lg:col-span-2">
-            <Card className="border-[#e5e7eb] bg-white">
+            <Card className="border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22]">
               <div className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Database className="h-4 w-4 text-[#1a6b3c]" />
-                  <h3 className="text-sm font-bold text-[#1c1c1e]">
+                  <Database className="h-4 w-4 text-[#1a6b3c] dark:text-[#4ade80]" />
+                  <h3 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">
                     Datos Históricos
                   </h3>
                   <Badge
                     variant="secondary"
-                    className="bg-[#f4f6f4] text-[#6b7280] border-0 text-xs ml-auto"
+                    className="bg-[#f4f6f4] dark:bg-[#161b22] text-[#6b7280] dark:text-[#8b949e] border-0 text-xs ml-auto"
                   >
                     {dataPoints.length} registros
                   </Badge>
@@ -511,10 +511,10 @@ export default function IndicatorDetailPage() {
 function MetadataRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-1">
+      <p className="text-xs font-semibold text-[#6b7280] dark:text-[#8b949e] uppercase tracking-wide mb-1">
         {label}
       </p>
-      <p className="text-sm text-[#1c1c1e] font-medium">{value}</p>
+      <p className="text-sm text-[#1c1c1e] dark:text-[#e6edf3] font-medium">{value}</p>
     </div>
   )
 }

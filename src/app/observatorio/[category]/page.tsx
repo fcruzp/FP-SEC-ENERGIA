@@ -59,7 +59,7 @@ export default function CategoryPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f4f6f4]">
+      <div className="min-h-screen bg-[#f4f6f4] dark:bg-[#0d1117]">
         <ObservatorioHeader
         breadcrumbs={[
           { label: 'Observatorio', href: '/observatorio' },
@@ -68,8 +68,8 @@ export default function CategoryPage() {
       />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="text-6xl mb-4">🔍</div>
-          <h2 className="text-xl font-bold text-[#1c1c1e] mb-2">{error}</h2>
-          <p className="text-sm text-[#6b7280]">
+          <h2 className="text-xl font-bold text-[#1c1c1e] dark:text-[#e6edf3] mb-2">{error}</h2>
+          <p className="text-sm text-[#6b7280] dark:text-[#8b949e]">
             La categoría que busca no existe o ha sido removida.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f6f4]">
+    <div className="min-h-screen bg-[#f4f6f4] dark:bg-[#0d1117]">
       <ObservatorioHeader
         breadcrumbs={[
           { label: 'Observatorio', href: '/observatorio' },
@@ -120,7 +120,7 @@ export default function CategoryPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="p-5 border-[#e5e7eb]">
+              <Card key={i} className="p-5 border-[#e5e7eb] dark:border-[#30363d] dark:bg-[#161b22]">
                 <div className="flex items-start justify-between mb-3">
                   <Skeleton className="h-4 w-2/3" />
                   <Skeleton className="h-5 w-16 rounded-full" />
@@ -134,10 +134,10 @@ export default function CategoryPage() {
         ) : indicators.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-5xl mb-4">📭</div>
-            <h3 className="text-lg font-bold text-[#1c1c1e] mb-2">
+            <h3 className="text-lg font-bold text-[#1c1c1e] dark:text-[#e6edf3] mb-2">
               Sin indicadores disponibles
             </h3>
-            <p className="text-sm text-[#6b7280]">
+            <p className="text-sm text-[#6b7280] dark:text-[#8b949e]">
               Esta categoría aún no tiene indicadores registrados.
             </p>
           </div>

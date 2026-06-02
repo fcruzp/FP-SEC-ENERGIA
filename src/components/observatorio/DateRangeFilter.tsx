@@ -58,8 +58,8 @@ export default function DateRangeFilter({ onRangeChange }: DateRangeFilterProps)
           onClick={() => handleRangeClick(key)}
           className={
             active === key
-              ? 'bg-[#1a6b3c] hover:bg-[#2d9e5f] text-white text-xs h-8'
-              : 'border-[#e5e7eb] text-[#6b7280] hover:text-[#1a6b3c] hover:border-[#1a6b3c] text-xs h-8'
+              ? 'bg-[#1a6b3c] dark:bg-[#155d35] hover:bg-[#2d9e5f] dark:hover:bg-[#1a6b3c] text-white text-xs h-8'
+              : 'border-[#e5e7eb] dark:border-[#30363d] text-[#6b7280] dark:text-[#8b949e] hover:text-[#1a6b3c] dark:hover:text-[#4ade80] hover:border-[#1a6b3c] dark:hover:border-[#4ade80] text-xs h-8'
           }
         >
           {label}
