@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import type { CategoryWithIndicators } from '@/lib/supabase-types'
 
 export const dynamic = 'force-dynamic'
@@ -12,6 +12,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: NextRequest) {
   try {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ categories: [] })
+    }
+
     const { searchParams } = new URL(request.url)
     const withIndicators = searchParams.get('with_indicators') === 'true'
 

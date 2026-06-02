@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +14,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET() {
   try {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ total_indicators: 0, total_data_points: 0, total_categories: 0, latest_period: null, last_upload_at: null, data_sources: [] })
+    }
+
     // 1. Count active parent indicators
     const { count: totalIndicators, error: indError } = await supabase
       .from('indicators')

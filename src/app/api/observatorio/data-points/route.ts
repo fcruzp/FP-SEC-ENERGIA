@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import type { DataPoint } from '@/lib/supabase-types'
 
 export const dynamic = 'force-dynamic'
@@ -17,6 +17,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: NextRequest) {
   try {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ data_points: [] })
+    }
+
     const { searchParams } = new URL(request.url)
     const indicatorSlug = searchParams.get('indicator_slug')
     const entitySlug = searchParams.get('entity_slug')

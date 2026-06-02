@@ -1,7 +1,25 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
+
+/** Empty dashboard response when Supabase is not configured */
+function emptyDashboard() {
+  return NextResponse.json({
+    summary: {
+      total_indicators: 0,
+      total_data_points: 0,
+      total_categories: 0,
+      latest_period: null,
+      last_upload_at: null,
+      data_sources: [],
+    },
+    top_indicators: [],
+    featured_indicator: null,
+    trend_movers: { gainers: [], losers: [] },
+    categories: [],
+  })
+}
 
 /**
  * GET /api/observatorio/dashboard
@@ -13,6 +31,10 @@ export const dynamic = 'force-dynamic'
  *   - categories: with indicator counts and coverage info
  */
 export async function GET() {
+  if (!isSupabaseConfigured) {
+    return emptyDashboard()
+  }
+
   try {
     // 1. Summary stats
     const [indCount, dpCount, latestDp, latestUpload, sources, catCount] = await Promise.all([

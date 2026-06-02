@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +13,10 @@ export const dynamic = 'force-dynamic'
  */
 export async function GET(request: NextRequest) {
   try {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ reports: [] })
+    }
+
     const { searchParams } = new URL(request.url)
     const phase = searchParams.get('phase')
     const fileType = searchParams.get('file_type')
