@@ -97,13 +97,15 @@ export async function GET(request: NextRequest) {
         indicatorEntityMap[ind.id] = ind.entity_id
       }
 
-      // Get latest data point per indicator using a window function approach
-      // Since Supabase doesn't support window functions directly, we fetch recent and group
+      // MEMORY-OPTIMIZED: Fetch recent data points with a smart limit
+      // Instead of loading ALL 60K+ data points, fetch the most recent 2500 rows
+      // which covers enough data for latest/previous per indicator
       const { data: dataPoints } = await supabase
         .from('data_points')
         .select('indicator_id, value, date, period_type, entity_id')
         .in('indicator_id', indicatorIds)
         .order('date', { ascending: false })
+        .limit(2500)
 
       // Group by indicator_id and take the latest, filtered by the indicator's entity
       const latestByIndicator: Record<string, { value: number; date: string }> = {}
@@ -113,12 +115,10 @@ export async function GET(request: NextRequest) {
             // Only consider data points that match the indicator's entity
             const indicatorEntityId = indicatorEntityMap[dp.indicator_id]
             if (indicatorEntityId) {
-              // Indicator has an entity — only use data points for that entity
               if (dp.entity_id === indicatorEntityId) {
                 latestByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
               }
             } else {
-              // Indicator has no entity — only use data points with null entity_id
               if (!dp.entity_id) {
                 latestByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
               }
@@ -133,7 +133,6 @@ export async function GET(request: NextRequest) {
         for (const dp of dataPoints) {
           const latest = latestByIndicator[dp.indicator_id]
           if (latest && dp.date !== latest.date && !previousByIndicator[dp.indicator_id]) {
-            // Apply same entity filter as above
             const indicatorEntityId = indicatorEntityMap[dp.indicator_id]
             const matchesEntity = indicatorEntityId
               ? dp.entity_id === indicatorEntityId

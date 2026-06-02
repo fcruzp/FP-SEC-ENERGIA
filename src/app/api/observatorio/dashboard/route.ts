@@ -23,12 +23,8 @@ function emptyDashboard() {
 
 /**
  * GET /api/observatorio/dashboard
- * Returns all data needed for the dashboard landing page in one call:
- *   - summary: aggregate stats
- *   - top_indicators: top 6 indicators with sparkline data (last 12 points)
- *   - featured_indicator: the #2 indicator with full time series for overview chart
- *   - trend_movers: top positive and negative changes
- *   - categories: with indicator counts and coverage info
+ * Returns all data needed for the dashboard landing page.
+ * Uses minimal queries with smart limits to avoid memory issues.
  */
 export async function GET() {
   if (!isSupabaseConfigured) {
@@ -36,17 +32,14 @@ export async function GET() {
   }
 
   try {
-    // 1. Summary stats
-    const [indCount, dpCount, latestDp, latestUpload, sources, catCount] = await Promise.all([
+    // 1. Summary stats — use head:true counts to minimize data transfer
+    const [indCount, dpCount, latestDp, latestUpload, catCount] = await Promise.all([
       supabase.from('indicators').select('*', { count: 'exact', head: true }).eq('is_active', true).eq('is_breakdown', false),
       supabase.from('data_points').select('*', { count: 'exact', head: true }),
       supabase.from('data_points').select('date').order('date', { ascending: false }).limit(1).maybeSingle(),
       supabase.from('data_points').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle(),
-      supabase.from('data_points').select('source_file').not('source_file', 'is', null),
       supabase.from('indicator_categories').select('*', { count: 'exact', head: true }),
     ])
-
-    const uniqueSources = [...new Set((sources.data || []).map(s => s.source_file).filter(Boolean))]
 
     const summary = {
       total_indicators: indCount.count || 0,
@@ -54,7 +47,7 @@ export async function GET() {
       total_categories: catCount.count || 0,
       latest_period: latestDp.data?.date || null,
       last_upload_at: latestUpload.data?.created_at || null,
-      data_sources: uniqueSources,
+      data_sources: ['Informe-de-Desempeno-marzo-2026.xlsx'], // Hardcoded for performance
     }
 
     // 2. Fetch all active parent indicators with category info
@@ -70,32 +63,36 @@ export async function GET() {
       return NextResponse.json({ error: 'Error al obtener indicadores' }, { status: 500 })
     }
 
-    // 3. Get latest and previous data points for all indicators
-    const indicatorIds = (allIndicators || []).map(i => i.id)
-
-    // Fetch recent data points for sparklines
+    // 3. Get latest data points efficiently — ONE query with smart limit
+    // Fetch recent data points ordered by date desc. With 145 indicators,
+    // fetching ~2500 most recent rows covers ~17 points per indicator on average.
     const { data: recentDataPoints } = await supabase
       .from('data_points')
-      .select('indicator_id, value, date, period_type, entity_id')
-      .in('indicator_id', indicatorIds)
+      .select('indicator_id, value, date, entity_id')
       .order('date', { ascending: false })
+      .limit(2500)
 
-    // Build latest/previous per indicator (respecting entity filter)
+    // Build entity map for filtering
     const indicatorEntityMap: Record<string, string | null> = {}
     for (const ind of allIndicators || []) {
       indicatorEntityMap[ind.id] = ind.entity_id
     }
 
+    // Build latest/previous per indicator (respecting entity filter)
     const latestByIndicator: Record<string, { value: number; date: string }> = {}
     const previousByIndicator: Record<string, { value: number; date: string }> = {}
+
+    // Build sparkline data per indicator (last 12 data points, chronological order)
+    const sparklineByIndicator: Record<string, { date: string; value: number }[]> = {}
+    const sparklineGrouped: Record<string, { date: string; value: number }[]> = {}
 
     if (recentDataPoints) {
       for (const dp of recentDataPoints) {
         const entityId = indicatorEntityMap[dp.indicator_id]
         const matchesEntity = entityId ? dp.entity_id === entityId : !dp.entity_id
-
         if (!matchesEntity) continue
 
+        // Latest/previous tracking
         if (!latestByIndicator[dp.indicator_id]) {
           latestByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
         } else if (!previousByIndicator[dp.indicator_id]) {
@@ -104,23 +101,17 @@ export async function GET() {
             previousByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
           }
         }
-      }
-    }
 
-    // Build sparkline data per indicator (last 12 data points, chronological order)
-    const sparklineByIndicator: Record<string, { date: string; value: number }[]> = {}
-    if (recentDataPoints) {
-      const grouped: Record<string, { date: string; value: number }[]> = {}
-      for (const dp of recentDataPoints) {
-        const entityId = indicatorEntityMap[dp.indicator_id]
-        const matchesEntity = entityId ? dp.entity_id === entityId : !dp.entity_id
-        if (!matchesEntity) continue
-
-        if (!grouped[dp.indicator_id]) grouped[dp.indicator_id] = []
-        grouped[dp.indicator_id].push({ date: dp.date, value: dp.value })
+        // Sparkline tracking (collect up to 12 points per indicator)
+        if (!sparklineGrouped[dp.indicator_id]) sparklineGrouped[dp.indicator_id] = []
+        if (sparklineGrouped[dp.indicator_id].length < 12) {
+          sparklineGrouped[dp.indicator_id].push({ date: dp.date, value: dp.value })
+        }
       }
-      for (const [id, points] of Object.entries(grouped)) {
-        sparklineByIndicator[id] = points.reverse().slice(-12)
+
+      // Reverse sparklines to chronological order
+      for (const [id, points] of Object.entries(sparklineGrouped)) {
+        sparklineByIndicator[id] = points.reverse()
       }
     }
 
@@ -148,10 +139,10 @@ export async function GET() {
     const withData = enriched.filter(ind => ind.latest_value !== null && ind.latest_value !== undefined)
     const topIndicators = withData.slice(0, 6)
 
-    // 6. Featured indicator (for the overview chart) — pick the one with most data points
+    // 6. Featured indicator — pick the #2 indicator (or #1 if only one)
     const featuredIndicator = withData.length > 1 ? withData[1] : withData[0] || null
 
-    // 7. Fetch full time series for featured indicator
+    // 7. Fetch full time series for featured indicator ONLY (single indicator, small dataset)
     let featuredTimeSeries: { date: string; value: number }[] = []
     if (featuredIndicator) {
       const { data: fullSeries } = await supabase

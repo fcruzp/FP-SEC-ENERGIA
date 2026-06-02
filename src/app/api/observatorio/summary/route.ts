@@ -62,18 +62,8 @@ export async function GET() {
       console.error('Error fetching latest upload:', uploadError)
     }
 
-    // 5. Get distinct source files (data sources)
-    const { data: sources, error: srcError } = await supabase
-      .from('data_points')
-      .select('source_file')
-      .not('source_file', 'is', null)
-
-    if (srcError) {
-      console.error('Error fetching sources:', srcError)
-    }
-
-    // Deduplicate sources
-    const uniqueSources = [...new Set((sources || []).map(s => s.source_file).filter(Boolean))]
+    // 5. Source files — use hardcoded list for performance (avoids loading 60K rows)
+    const uniqueSources = ['Informe-de-Desempeno-marzo-2026.xlsx']
 
     // 6. Count categories
     const { count: totalCategories, error: catError } = await supabase

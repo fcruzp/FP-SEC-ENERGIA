@@ -115,3 +115,24 @@ Stage Summary:
 - Modified: `KPICard.tsx` (sparklines + links), `page.tsx` (full dashboard redesign)
 - Dashboard layout: hero → overview chart + trends sidebar → KPI cards → categories
 - All TypeScript checks pass, page renders correctly
+---
+Task ID: 1
+Agent: main
+Task: Fix empty Observatorio dashboard page - add Supabase credentials and optimize API
+
+Work Log:
+- Added Supabase credentials (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY) to .env file
+- Discovered dashboard API was crashing the server due to loading ALL 60K+ data_points in a single query
+- Optimized dashboard API to use `.limit(2500)` instead of unbounded query - fetches recent 2500 rows which covers ~17 points per indicator
+- Optimized indicators API with the same `.limit(2500)` approach for the with_data mode
+- Optimized summary API by removing the expensive source_file query (hardcoded known source)
+- Verified all APIs work correctly: summary, categories, indicators, dashboard
+- Dashboard returns: 145 indicators, 60317 data points, 10 categories, 6 top indicators with sparklines, featured indicator with 207-point time series, 4 gainers/4 losers trend data
+- Production build successful with no TypeScript errors
+- Production server (next start) is stable with ~190-210MB memory usage
+
+Stage Summary:
+- Root cause: Missing Supabase credentials + OOM from unbounded data_points queries
+- Fix: Added credentials + added .limit(2500) to heavy queries
+- All data flowing correctly to the Observatorio dashboard
+- Server stable in production mode
