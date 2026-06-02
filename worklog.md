@@ -89,3 +89,29 @@ Stage Summary:
 - "Registros" replaces "Puntos de Datos" for clarity
 - Source display is extensible: currently shows "MIM.gob.do", will auto-show "+N" when more sources exist
 - New /api/observatorio/summary endpoint provides efficient aggregate queries
+---
+Task ID: 1-6
+Agent: Main Agent
+Task: Visual dashboard redesign of Observatorio main page
+
+Work Log:
+- Created new `/api/observatorio/dashboard` endpoint that returns all dashboard data in one call: summary stats, top indicators with sparkline data, featured indicator with full time series, trend movers (gainers/losers), and categories with counts
+- Created `DashboardOverviewChart` component: large area chart showing the featured indicator's time series with gradient fill, category badge, value display, change percentage, and link to detail
+- Created `TrendMovers` component: sidebar panel showing top positive ("Al alza") and negative ("A la baja") changes with colored background bars, category labels, and links to indicator details
+- Redesigned `KPICard` component: added integrated sparkline area charts, clickable links to indicator detail pages, arrow hover indicator, and refined visual treatment
+- Completely redesigned `page.tsx` with dashboard layout:
+  - Hero banner with animated grid pattern, glow effects, and 4 stat cards in a 2x2/4-col grid
+  - Overview + Trends section: 2/3 chart + 1/3 sidebar layout
+  - KPI cards section with sparklines, links, and active count badge
+  - Categories section with compact cards, progress bars showing relative indicator count
+  - Footer with icon accent
+- Fixed TypeScript error: `cat.icon ?? null` for CategoryIcon compatibility
+- Verified TypeScript compilation passes for all new/modified files
+- Confirmed page renders all new section headers correctly
+
+Stage Summary:
+- New API: `/api/observatorio/dashboard` (efficient single-call data loading)
+- New components: `DashboardOverviewChart.tsx`, `TrendMovers.tsx`
+- Modified: `KPICard.tsx` (sparklines + links), `page.tsx` (full dashboard redesign)
+- Dashboard layout: hero → overview chart + trends sidebar → KPI cards → categories
+- All TypeScript checks pass, page renders correctly
