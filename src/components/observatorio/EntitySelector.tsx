@@ -39,7 +39,7 @@ export default function EntitySelector({
 
   return (
     <Select value={value || 'all'} onValueChange={onChange}>
-      <SelectTrigger className="w-[200px] border-[#e5e7eb] dark:border-[#30363d] dark:bg-[#161b22] dark:text-[#e6edf3] text-sm">
+      <SelectTrigger className="w-full sm:w-[200px] border-[#e5e7eb] dark:border-[#30363d] dark:bg-[#161b22] dark:text-[#e6edf3] text-sm cursor-pointer">
         <SelectValue placeholder="Todas las entidades" />
       </SelectTrigger>
       <SelectContent>

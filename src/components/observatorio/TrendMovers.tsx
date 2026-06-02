@@ -96,7 +96,7 @@ function TrendRow({ item, type, index }: { item: TrendItem; type: 'gainer' | 'lo
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
     >
-      <Link href={href} className="block group">
+      <Link href={href} className="block group cursor-pointer">
         <div className="relative rounded-lg overflow-hidden hover:bg-[#f9fafb] dark:hover:bg-[#21262d] transition-colors py-2 px-2.5 -mx-2.5">
           {/* Background bar */}
           <div

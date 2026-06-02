@@ -231,7 +231,7 @@ export default function IndicatorDetailPage() {
       />
 
       {/* Indicator header card */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-0 pt-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-0 pt-4 sm:pt-6">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -243,7 +243,7 @@ export default function IndicatorDetailPage() {
               className="h-1.5"
               style={{ backgroundColor: category?.color || '#1a6b3c' }}
             />
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 {/* Left: indicator info */}
                 <div className="flex-1">
@@ -350,11 +350,11 @@ export default function IndicatorDetailPage() {
       </div>
 
       {/* Chart Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
         <Card className="border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22] overflow-hidden">
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {/* Chart controls */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-[#1a6b3c] dark:text-[#4ade80]" />
                 <h2 className="text-base font-bold text-[#1c1c1e] dark:text-[#e6edf3]">
@@ -362,7 +362,7 @@ export default function IndicatorDetailPage() {
                 </h2>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                 {/* Entity selector */}
                 {entities.length > 0 && (
                   <EntitySelector
@@ -406,13 +406,13 @@ export default function IndicatorDetailPage() {
       </div>
 
       {/* Bottom section: Metadata + Data Table */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-6 sm:pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Metadata card */}
           <div>
             <Card className="border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22] h-fit">
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
+              <div className="p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
                   <Info className="h-4 w-4 text-[#1a6b3c] dark:text-[#4ade80]" />
                   <h3 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">
                     Información del Indicador
@@ -473,8 +473,8 @@ export default function IndicatorDetailPage() {
           {/* Data table */}
           <div className="lg:col-span-2">
             <Card className="border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22]">
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
+              <div className="p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
                   <Database className="h-4 w-4 text-[#1a6b3c] dark:text-[#4ade80]" />
                   <h3 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">
                     Datos Históricos

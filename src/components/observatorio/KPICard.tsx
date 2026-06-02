@@ -221,7 +221,7 @@ export default function KPICard({
       className="group"
     >
       {isLink ? (
-        <Link href={href}>{content}</Link>
+        <Link href={href} className="block cursor-pointer">{content}</Link>
       ) : (
         content
       )}

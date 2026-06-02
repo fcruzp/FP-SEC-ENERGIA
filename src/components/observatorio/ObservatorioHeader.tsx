@@ -24,7 +24,7 @@ export default function ObservatorioHeader({
           {/* Home / Portal button */}
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-sm text-white/70 hover:text-white transition-colors flex-shrink-0"
+            className="flex items-center gap-1.5 text-sm text-white/70 hover:text-white transition-colors flex-shrink-0 cursor-pointer"
           >
             <Home className="h-4 w-4" />
             <span>Portal</span>
@@ -47,7 +47,7 @@ export default function ObservatorioHeader({
                     ) : (
                       <Link
                         href={item.href || '#'}
-                        className="text-white/50 hover:text-white/80 transition-colors truncate"
+                        className="text-white/50 hover:text-white/80 transition-colors truncate cursor-pointer"
                       >
                         {item.label}
                       </Link>

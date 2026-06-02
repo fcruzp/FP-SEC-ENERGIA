@@ -260,7 +260,7 @@ export default function ObservatorioPage() {
               </div>
               <Link
                 href="#indicadores"
-                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/8 text-white/70 hover:text-white hover:bg-white/12 text-xs font-semibold transition-all border border-white/10"
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/8 text-white/70 hover:text-white hover:bg-white/12 text-xs font-semibold transition-all border border-white/10 cursor-pointer"
               >
                 Explorar datos
                 <ArrowRight className="h-3 w-3" />
@@ -357,7 +357,7 @@ export default function ObservatorioPage() {
             </div>
             <Link
               href="#categorias"
-              className="text-xs font-semibold text-[#2d9e5f] hover:text-[#4ade80] dark:hover:text-[#4ade80] transition-colors flex items-center gap-1"
+              className="text-xs font-semibold text-[#2d9e5f] hover:text-[#4ade80] dark:hover:text-[#4ade80] transition-colors flex items-center gap-1 cursor-pointer"
             >
               Ver categorías
               <ArrowRight className="h-3 w-3" />

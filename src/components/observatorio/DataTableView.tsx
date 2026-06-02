@@ -55,7 +55,8 @@ export default function DataTableView({ dataPoints, unit = '' }: DataTableViewPr
 
   return (
     <div>
-      <div className="rounded-lg border border-[#e5e7eb] dark:border-[#30363d] overflow-hidden">
+      {/* Desktop: Table view */}
+      <div className="hidden sm:block rounded-lg border border-[#e5e7eb] dark:border-[#30363d] overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-[#f4f6f4] dark:bg-[#21262d] hover:bg-[#f4f6f4] dark:hover:bg-[#21262d]">
@@ -94,6 +95,38 @@ export default function DataTableView({ dataPoints, unit = '' }: DataTableViewPr
         </Table>
       </div>
 
+      {/* Mobile: Card-based view */}
+      <div className="sm:hidden space-y-2">
+        {pageData.map((dp) => (
+          <div
+            key={dp.id}
+            className="rounded-lg border border-[#e5e7eb] dark:border-[#30363d] bg-white dark:bg-[#161b22] p-3"
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-sm font-medium text-[#1c1c1e] dark:text-[#e6edf3]">
+                {formatDate(dp.date)}
+              </span>
+              {dp.is_estimated ? (
+                <span className="text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded">
+                  Estimado
+                </span>
+              ) : null}
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg font-bold font-mono text-[#1c1c1e] dark:text-[#e6edf3]">
+                {dp.value.toLocaleString('es-DO', { maximumFractionDigits: 2 })}
+              </span>
+              {unit && (
+                <span className="text-xs text-[#6b7280] dark:text-[#8b949e]">{unit}</span>
+              )}
+            </div>
+            <p className="text-xs text-[#6b7280] dark:text-[#8b949e] capitalize mt-0.5">
+              {dp.period_type}
+            </p>
+          </div>
+        ))}
+      </div>
+
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
@@ -107,7 +140,7 @@ export default function DataTableView({ dataPoints, unit = '' }: DataTableViewPr
               size="sm"
               disabled={page === 0}
               onClick={() => setPage(page - 1)}
-              className="h-8 w-8 p-0 border-[#e5e7eb] dark:border-[#30363d]"
+              className="h-8 w-8 p-0 border-[#e5e7eb] dark:border-[#30363d] cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -119,7 +152,7 @@ export default function DataTableView({ dataPoints, unit = '' }: DataTableViewPr
               size="sm"
               disabled={page >= totalPages - 1}
               onClick={() => setPage(page + 1)}
-              className="h-8 w-8 p-0 border-[#e5e7eb] dark:border-[#30363d]"
+              className="h-8 w-8 p-0 border-[#e5e7eb] dark:border-[#30363d] cursor-pointer"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

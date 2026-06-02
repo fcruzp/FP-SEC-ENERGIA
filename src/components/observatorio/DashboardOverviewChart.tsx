@@ -173,7 +173,7 @@ export default function DashboardOverviewChart({ indicator }: DashboardOverviewC
         <div className="px-6 pb-4">
           <Link
             href={`/observatorio/${indicator.category_slug}/${indicator.slug}`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2d9e5f] dark:text-[#4ade80] hover:text-[#1a6b3c] dark:hover:text-[#4ade80] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2d9e5f] dark:text-[#4ade80] hover:text-[#1a6b3c] dark:hover:text-[#4ade80] transition-colors cursor-pointer"
           >
             Ver detalle del indicador
             <TrendingUp className="h-3 w-3" />

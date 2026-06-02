@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useEffect, useState } from 'react'
 import {
   LineChart,
   Line,
@@ -110,6 +110,15 @@ export default function TimeSeriesChart({
   color = '#1a6b3c',
   height = 350,
 }: TimeSeriesChartProps) {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    setIsMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
   const config = {
     value: {
       label: unit || 'Valor',
@@ -229,10 +238,15 @@ export default function TimeSeriesChart({
   const renderXTick = useCallback((props: any) => {
     const { x, y, payload } = props
     const item = processedData[payload.index]
-    if (!item) return null
+    if (!item) return <g />
 
     const isYearStart = item.isYearStart
     const yearColor = yearColorMap[item.year] || '#6b7280'
+
+    // On mobile, abbreviate month labels further
+    const label = isMobile && payload.value.length > 3
+      ? payload.value.slice(0, 3)
+      : payload.value
 
     if (isMultiYear) {
       return (
@@ -243,7 +257,7 @@ export default function TimeSeriesChart({
               y={12}
               textAnchor="middle"
               fill={yearColor}
-              fontSize={11}
+              fontSize={isMobile ? 9 : 11}
               fontWeight={800}
             >
               {item.year}
@@ -251,13 +265,13 @@ export default function TimeSeriesChart({
           )}
           <text
             x={0}
-            y={isYearStart ? 26 : 14}
+            y={isYearStart ? (isMobile ? 22 : 26) : 14}
             textAnchor="middle"
             fill={isYearStart ? yearColor : '#9ca3af'}
-            fontSize={isYearStart ? 9 : 8}
+            fontSize={isMobile ? (isYearStart ? 7 : 7) : (isYearStart ? 9 : 8)}
             fontWeight={isYearStart ? 600 : 400}
           >
-            {payload.value}
+            {label}
           </text>
         </g>
       )
@@ -271,16 +285,51 @@ export default function TimeSeriesChart({
           y={12}
           textAnchor="middle"
           fill={isYearStart ? yearColor : '#6b7280'}
-          fontSize={isYearStart ? 11 : 9}
+          fontSize={isMobile ? 8 : (isYearStart ? 11 : 9)}
           fontWeight={isYearStart ? 700 : 400}
         >
-          {payload.value}
+          {label}
         </text>
       </g>
     )
-  }, [processedData, yearColorMap, isMultiYear])
+  }, [processedData, yearColorMap, isMultiYear, isMobile])
 
-  const chartMargin = { top: 50, right: 120, bottom: 8, left: 8 }
+  // Responsive margins: tight on mobile, spacious on desktop
+  const chartMargin = isMobile
+    ? { top: 40, right: 12, bottom: 8, left: 4 }
+    : { top: 50, right: 120, bottom: 8, left: 8 }
+
+  // Responsive Y-axis width
+  const yAxisWidth = isMobile ? 42 : 60
+
+  // Responsive font sizes
+  const tickFontSize = isMobile ? 9 : 11
+  const refLabelFontSize = isMobile ? 9 : 11
+  const refLabelValue = isMobile
+    ? (v: number, u: string) => `${formatValue(v)}${u ? ` ${u}` : ''}`
+    : (v: number, u: string) => `${formatValue(v)}${u ? ` ${u}` : ''}`
+
+  // Responsive reference line label position
+  const refLabelPosition = isMobile ? 'insideTopLeft' : 'insideTopRight'
+
+  // On mobile, show a compact reference line label (no unit)
+  const maxLabel = isMobile
+    ? `Máx: ${formatValue(maxValue)}`
+    : `Máx: ${formatValue(maxValue)}${unit ? ` ${unit}` : ''}`
+  const medianLabel = isMobile
+    ? `Medio: ${formatValue(medianValue)}`
+    : `Medio: ${formatValue(medianValue)}${unit ? ` ${unit}` : ''}`
+
+  // Responsive chart height
+  const chartHeight = isMobile ? Math.min(height, 280) : height
+
+  // Responsive X-axis height
+  const xAxisHeight = isMultiYear ? (isMobile ? 36 : 48) : (isMobile ? 24 : 30)
+
+  // On mobile, increase tick interval to show fewer labels
+  const mobileXInterval = isMobile
+    ? Math.max(xInterval, Math.floor(processedData.length / 8))
+    : xInterval
 
   const renderChart = () => {
     switch (chartType) {
@@ -293,17 +342,17 @@ export default function TimeSeriesChart({
               tick={renderXTick}
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
-              interval={xInterval}
-              height={isMultiYear ? 48 : 30}
+              interval={mobileXInterval}
+              height={xAxisHeight}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tick={{ fontSize: tickFontSize, fill: '#6b7280' }}
               className="dark:[&>g>text]:fill-[#8b949e]"
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={formatY}
               domain={yDomain}
-              width={60}
+              width={yAxisWidth}
             />
             <Tooltip
               content={<DelayedTooltip unit={unit} />}
@@ -316,10 +365,10 @@ export default function TimeSeriesChart({
                 strokeDasharray="8 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Máx: ${formatValue(maxValue)}${unit ? ` ${unit}` : ''}`,
-                  position: 'insideTopRight',
+                  value: maxLabel,
+                  position: refLabelPosition,
                   fill: '#dc2626',
-                  fontSize: 11,
+                  fontSize: refLabelFontSize,
                   fontWeight: 700,
                 }}
               />
@@ -331,10 +380,10 @@ export default function TimeSeriesChart({
                 strokeDasharray="6 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Medio: ${formatValue(medianValue)}${unit ? ` ${unit}` : ''}`,
-                  position: 'insideTopRight',
+                  value: medianLabel,
+                  position: refLabelPosition,
                   fill: '#f59e0b',
-                  fontSize: 11,
+                  fontSize: refLabelFontSize,
                   fontWeight: 700,
                 }}
               />
@@ -369,17 +418,17 @@ export default function TimeSeriesChart({
               tick={renderXTick}
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
-              interval={xInterval}
-              height={isMultiYear ? 48 : 30}
+              interval={mobileXInterval}
+              height={xAxisHeight}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tick={{ fontSize: tickFontSize, fill: '#6b7280' }}
               className="dark:[&>g>text]:fill-[#8b949e]"
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={formatY}
               domain={yDomain}
-              width={60}
+              width={yAxisWidth}
             />
             <Tooltip
               content={<DelayedTooltip unit={unit} />}
@@ -392,10 +441,10 @@ export default function TimeSeriesChart({
                 strokeDasharray="8 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Máx: ${formatValue(maxValue)}${unit ? ` ${unit}` : ''}`,
-                  position: 'insideTopRight',
+                  value: maxLabel,
+                  position: refLabelPosition,
                   fill: '#dc2626',
-                  fontSize: 11,
+                  fontSize: refLabelFontSize,
                   fontWeight: 700,
                 }}
               />
@@ -407,10 +456,10 @@ export default function TimeSeriesChart({
                 strokeDasharray="6 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Medio: ${formatValue(medianValue)}${unit ? ` ${unit}` : ''}`,
-                  position: 'insideTopRight',
+                  value: medianLabel,
+                  position: refLabelPosition,
                   fill: '#f59e0b',
-                  fontSize: 11,
+                  fontSize: refLabelFontSize,
                   fontWeight: 700,
                 }}
               />
@@ -434,17 +483,17 @@ export default function TimeSeriesChart({
               tick={renderXTick}
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
-              interval={xInterval}
-              height={isMultiYear ? 48 : 30}
+              interval={mobileXInterval}
+              height={xAxisHeight}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tick={{ fontSize: tickFontSize, fill: '#6b7280' }}
               className="dark:[&>g>text]:fill-[#8b949e]"
               tickLine={false}
               axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={formatY}
               domain={yDomain}
-              width={60}
+              width={yAxisWidth}
             />
             <Tooltip
               content={<DelayedTooltip unit={unit} />}
@@ -457,10 +506,10 @@ export default function TimeSeriesChart({
                 strokeDasharray="8 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Máx: ${formatValue(maxValue)}${unit ? ` ${unit}` : ''}`,
-                  position: 'insideTopRight',
+                  value: maxLabel,
+                  position: refLabelPosition,
                   fill: '#dc2626',
-                  fontSize: 11,
+                  fontSize: refLabelFontSize,
                   fontWeight: 700,
                 }}
               />
@@ -472,10 +521,10 @@ export default function TimeSeriesChart({
                 strokeDasharray="6 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Medio: ${formatValue(medianValue)}${unit ? ` ${unit}` : ''}`,
-                  position: 'insideTopRight',
+                  value: medianLabel,
+                  position: refLabelPosition,
                   fill: '#f59e0b',
-                  fontSize: 11,
+                  fontSize: refLabelFontSize,
                   fontWeight: 700,
                 }}
               />
@@ -497,7 +546,7 @@ export default function TimeSeriesChart({
     <ChartContainer
       config={config}
       className="w-full !aspect-auto"
-      style={{ height }}
+      style={{ height: chartHeight }}
     >
       {renderChart()}
     </ChartContainer>

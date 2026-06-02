@@ -163,3 +163,27 @@ Stage Summary:
 - Theme toggle: Sun/Moon button in ObservatorioHeader
 - Dark palette: #0d1117 bg, #161b22 cards, #30363d borders, #e6edf3 text, #8b949e secondary text, #4ade80 green accents
 - All TypeScript checks pass for modified files
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix mobile responsiveness for the Serie Histórica (historical series) component on the indicator detail page
+
+Work Log:
+- Analyzed uploaded screenshot using VLM to identify mobile layout issues
+- Fixed TimeSeriesChart.tsx: Added isMobile state detection, responsive margins (right: 12 on mobile vs 120 on desktop), responsive YAxis width (42 vs 60), responsive font sizes, responsive chart height (280 max on mobile), responsive X-axis height, mobile-specific tick interval (fewer labels), reference line labels repositioned to insideTopLeft on mobile, compact reference line labels without unit on mobile
+- Fixed EntitySelector.tsx: Changed from fixed w-[200px] to w-full sm:w-[200px] for full width on mobile, added cursor-pointer
+- Fixed DateRangeFilter.tsx: Added flex-wrap for button wrapping on mobile, added cursor-pointer to buttons
+- Fixed DataTableView.tsx: Added card-based mobile view (sm:hidden) that shows each data point as an individual card with date, value, unit, and period, desktop table view (hidden sm:block), added cursor-pointer to pagination buttons
+- Fixed indicator detail page ([category]/[indicator]/page.tsx): Reduced padding on mobile (p-4 sm:p-6), tighter spacing (px-3 sm:px-6), responsive section gaps
+- Added cursor-pointer to all links and buttons across observatorio: ObservatorioHeader links, main page links, KPICard Link wrapper, TrendMovers TrendRow links, DashboardOverviewChart link, DateRangeFilter buttons, EntitySelector trigger, DataTableView pagination buttons
+- Global cursor-pointer already set in globals.css for a, button, [role="button"], [role="link"]
+- Dark mode consistency verified across all observatorio routes (main page, category page, indicator detail page) - all already have dark: variants
+- TypeScript compilation passes with no errors in observatorio files
+
+Stage Summary:
+- Mobile responsiveness significantly improved for the Serie Histórica component
+- Chart adapts to mobile screens with tighter margins, smaller fonts, fewer tick labels, and reduced height
+- Data table replaced with card-based layout on mobile for better readability
+- Entity selector and date range filters are full-width on mobile
+- All interactive elements have cursor-pointer
