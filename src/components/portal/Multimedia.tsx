@@ -27,7 +27,7 @@ import { useState } from 'react';
  * ────────────────────────────────────────────────────────────────────────────
  */
 
-interface MediaItem {
+export interface MediaItem {
   id: string;
   type: string;
   title: string;
@@ -43,7 +43,7 @@ interface MediaItem {
   keyPoints?: string[];
 }
 
-const mediaItems: MediaItem[] = [
+export const mediaItems: MediaItem[] = [
   {
     id: 'cuenta-publica-electrica-2026',
     type: 'Video · Aporte Sectorial',
@@ -67,6 +67,26 @@ const mediaItems: MediaItem[] = [
       'Llamado a la acción: exigencia de respuestas sobre ejecución presupuestaria de la ETED',
       'Espacio de preguntas: dependencia de combustibles fósiles, situación en Medio Oriente y Pacto Eléctrico',
     ],
+  },
+  {
+    id: 'entrevista-juan-gomez-direccion-politica',
+    type: 'Video · Entrevista',
+    title:
+      'A detalle: entrevista a Juan Gómez, miembro de la Dirección Política de la Fuerza del Pueblo',
+    icon: '🎙️',
+    bg: 'linear-gradient(135deg,#0a2e19,#1a6b3c)',
+    hasPlay: true,
+    youtubeId: '6dDGTfopsyk',
+  },
+  {
+    id: 'fp-cuestiona-manejo-apagones',
+    type: 'Video · Denuncia',
+    title:
+      'Fuerza del Pueblo cuestiona manejo del gobierno ante crisis de apagones',
+    icon: '⚡',
+    bg: 'linear-gradient(135deg,#7f1d1d,#dc2626)',
+    hasPlay: true,
+    youtubeId: 'FUAjY8hzT-I',
   },
   {
     id: 'malagestion-prm-crisis-electrica',

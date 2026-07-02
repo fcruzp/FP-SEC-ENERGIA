@@ -205,3 +205,32 @@ Stage Summary:
 - FP logo now visible on ALL observatorio routes (header bar + hero banners)
 - Responsive: smaller on mobile (h-7), larger on desktop (h-8/h-10)
 - Consistent placement: always in the banner/header area with rounded-full + ring styling
+
+---
+Task ID: multimedia-archive-page
+Agent: Main Agent
+Task: Add 2 new YouTube secondary videos + create /multimedia historical page + ensure mobile uniformity
+
+Work Log:
+- Added 2 new YouTube secondary videos at FRONT of mediaItems array:
+  - 'entrevista-juan-gomez-direccion-politica' (6dDGTfopsyk) — "A detalle: entrevista a Juan Gómez"
+  - 'fp-cuestiona-manejo-apagones' (FUAjY8hzT-I) — "Fuerza del Pueblo cuestiona manejo del gobierno"
+- Exported `mediaItems` and `MediaItem` interface from Multimedia.tsx so the archive page can reuse them
+- Created `/multimedia` route (src/app/multimedia/page.tsx) — full archive page showing:
+  - Hero section with breadcrumb back to portal
+  - Stats (total items, videos available, archive records)
+  - Featured item (same as home, with YouTube embed)
+  - Full 3-column grid (2-col on tablet/mobile) with ALL items
+  - Modal/lightbox reused from home page
+- Added archive page CSS in globals.css:
+  - .multimedia-archive-page with header offset
+  - .archive-hero with green gradient + radial overlays
+  - .archive-stats grid
+  - .gallery-grid-archive 3-col → 2-col responsive
+  - Dark mode adjustments
+- Mobile uniformity on home page: SOLVED by adding the 2 new YouTube videos. Desktop top 4 secondary cards are now all YouTube thumbnails (uniform aspect-ratio 4/3, same thumbnail style), so mobile inherits the same uniformity. The 4 placeholder cards (no YouTube ID) are now hidden from home page and only visible on /multimedia archive page.
+
+Stage Summary:
+- Home page gallery now shows 4 uniform YouTube thumbnail cards on desktop (2x2 on mobile)
+- "Ver archivo completo" button links to /multimedia where all 9 items (1 featured + 8 secondary) are shown
+- /multimedia archive page is fully functional with featured block + complete grid + modal
