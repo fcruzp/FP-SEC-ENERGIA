@@ -69,6 +69,26 @@ const mediaItems: MediaItem[] = [
     ],
   },
   {
+    id: 'malagestion-prm-crisis-electrica',
+    type: 'Video · Denuncia',
+    title:
+      'La mala gestión del PRM provoca crisis eléctrica, denuncia Fuerza del Pueblo',
+    icon: '⚡',
+    bg: 'linear-gradient(135deg,#7f1d1d,#dc2626)',
+    hasPlay: true,
+    youtubeId: 'C1sD0jsBx58',
+  },
+  {
+    id: 'leonel-no-privatizo-electricidad',
+    type: 'Video · Aclaración',
+    title:
+      'Dirigente de la Fuerza del Pueblo aclara que Leonel Fernández no privatizó empresas de electricidad',
+    icon: '📋',
+    bg: 'linear-gradient(135deg,#0a2e19,#1a6b3c)',
+    hasPlay: true,
+    youtubeId: 'R_iiDUB-Hug',
+  },
+  {
     id: 'foro-solar-rd-2024',
     type: 'Video · Conferencia',
     title: 'Foro Solar RD 2024 — Resumen ejecutivo',
