@@ -27,18 +27,19 @@ export default function Hero() {
     <section id="hero">
       <div className="hero-overlay"></div>
 
-      {/* 3D Model rotation — MP4 video */}
+      {/* 3D Model rotation — WebM video (official version) */}
       <div className="hero-model-wrap">
         <video
           ref={videoRef}
           className="hero-video"
-          src="/hero-animation.mp4"
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
-        />
+        >
+          <source src="/hero-animation.webm" type="video/webm" />
+        </video>
         <div className="hero-model-mask"></div>
         <div className="hero-model-glow"></div>
       </div>
