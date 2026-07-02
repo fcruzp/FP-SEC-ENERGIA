@@ -1138,6 +1138,41 @@ nav.main-nav a.active {
   letter-spacing: 0.5px;
 }
 
+/* ─── Botón Ver archivo completo ─── */
+.gallery-archive-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+.gallery-archive-cta .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.gallery-archive-cta .btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+.gallery-archive-count {
+  background: var(--green-primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .gallery-bg {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center; font-size: 3rem;
@@ -1282,7 +1317,6 @@ footer {
   .events-layout { grid-template-columns: 1fr; }
   .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
   .gallery-grid { grid-template-columns: 1fr 1fr; }
-  .gallery-item:first-child { grid-column: span 2; }
   .news-layout { grid-template-columns: 1fr; }
   .subscribe-grid { grid-template-columns: 1fr; gap: 40px; }
   .hero-model-wrap { width: 100%; }
@@ -1373,9 +1407,8 @@ footer {
   .calendar-mini { padding: 20px; }
   .event-card { flex-direction: column; gap: 14px; padding: 18px; }
 
-  /* Gallery mobile */
+  /* Gallery mobile — all cards same size (2 columns) */
   .gallery-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .gallery-item:first-child { grid-column: span 2; }
   .gallery-info { padding: 10px; }
   .gallery-info h4 { font-size: 11px; }
 

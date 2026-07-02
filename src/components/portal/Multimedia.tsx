@@ -215,7 +215,7 @@ export default function Multimedia() {
 
         {/* ───── Galería secundaria ───── */}
         <div className="gallery-grid fade-up">
-          {sideItems.map((item) => (
+          {sideItems.slice(0, 4).map((item) => (
             <div
               className="gallery-item"
               key={item.id}
@@ -252,6 +252,18 @@ export default function Multimedia() {
             </div>
           ))}
         </div>
+
+        {/* ───── Botón Ver archivo completo ───── */}
+        {sideItems.length > 4 && (
+          <div className="gallery-archive-cta fade-up">
+            <a href="/multimedia" className="btn btn-ghost btn-large">
+              Ver archivo completo
+              <span className="gallery-archive-count">
+                +{sideItems.length - 4} contenidos
+              </span>
+            </a>
+          </div>
+        )}
       </div>
 
       {/* ───── Modal para videos secundarios ───── */}
