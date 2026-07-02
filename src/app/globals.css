@@ -1118,6 +1118,26 @@ nav.main-nav a.active {
 }
 .gallery-item:hover { transform: scale(1.02); }
 
+/* Thumbnail de YouTube */
+.gallery-thumb {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gallery-duration {
+  position: absolute;
+  bottom: 56px; right: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  z-index: 4;
+  letter-spacing: 0.5px;
+}
+
 .gallery-bg {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center; font-size: 3rem;
@@ -1391,6 +1411,32 @@ footer {
   footer { padding: 48px 1.25rem 24px; }
   .footer-top { gap: 28px; margin-bottom: 36px; }
   .footer-bottom { flex-direction: column; text-align: center; gap: 12px; }
+
+  /* Multimedia featured mobile — stack video above metadata */
+  .multimedia-featured { padding: 16px; margin-bottom: 24px; }
+  .multimedia-featured-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .multimedia-featured-body { padding: 0; }
+  .multimedia-featured-body h3 { font-size: 1rem; line-height: 1.3; }
+  .multimedia-featured-author { font-size: 0.75rem; margin-bottom: 8px; }
+  .multimedia-featured-summary { font-size: 0.78rem; line-height: 1.5; margin-bottom: 10px; }
+  .multimedia-featured-points li { font-size: 0.72rem; padding: 3px 0 3px 16px; }
+  .multimedia-featured-points li::before { font-size: 0.7rem; }
+  .multimedia-featured-tag {
+    font-size: 9px;
+    padding: 4px 10px;
+    margin-bottom: 10px;
+  }
+  .multimedia-featured-meta { gap: 10px; font-size: 10px; }
+
+  /* Gallery secondary mobile — 2 columns instead of 4 */
+  .gallery-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gallery-info { padding: 10px; }
+  .gallery-info h4 { font-size: 11px; }
+  .gallery-info .type { font-size: 9px; }
+  .gallery-duration { bottom: 48px; right: 6px; font-size: 9px; padding: 1px 5px; }
 }
 
 @media (max-width: 480px) {

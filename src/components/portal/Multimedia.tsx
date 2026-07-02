@@ -222,11 +222,29 @@ export default function Multimedia() {
               onClick={() => item.youtubeId && setActiveMedia(item)}
               style={{ cursor: item.youtubeId ? 'pointer' : 'default' }}
             >
-              <div className="gallery-bg" style={{ background: item.bg }}>
-                {item.icon}
-              </div>
-              <div className="gallery-overlay"></div>
-              {item.hasPlay && <div className="play-btn">▶</div>}
+              {item.youtubeId ? (
+                <>
+                  <img
+                    src={`https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg`}
+                    alt={item.title}
+                    className="gallery-thumb"
+                    loading="lazy"
+                  />
+                  <div className="gallery-overlay"></div>
+                  {item.hasPlay && <div className="play-btn">▶</div>}
+                  {item.duration && (
+                    <span className="gallery-duration">{item.duration}</span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="gallery-bg" style={{ background: item.bg }}>
+                    {item.icon}
+                  </div>
+                  <div className="gallery-overlay"></div>
+                  {item.hasPlay && <div className="play-btn">▶</div>}
+                </>
+              )}
               <div className="gallery-info">
                 <div className="type">{item.type}</div>
                 <h4>{item.title}</h4>
