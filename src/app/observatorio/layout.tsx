@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Observatorio Energético · Secretaría de Energía',
   description:
-    'Monitoreo en tiempo real de los indicadores clave del sector eléctrico dominicano. Datos, gráficos y análisis del Observatorio Energético.',
+    'Indicadores del sector eléctrico dominicano a partir de datos oficiales del Ministerio de Energía y Minas: series históricas, gráficos y análisis.',
 }
 
 export default function ObservatorioLayout({

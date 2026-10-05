@@ -1,10 +1,13 @@
 'use client'
 
+import { parseDateOnly, toDateOnly } from '@/lib/dates'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 
 interface DateRangeFilterProps {
   onRangeChange: (range: { from?: string; to?: string } | null) => void
+  /** Fecha del último dato ('YYYY-MM-DD'); los rangos se cuentan hacia atrás desde ella. */
+  anchorDate?: string | null
 }
 
 type RangeKey = '1y' | '3y' | '5y' | 'all'
@@ -16,7 +19,7 @@ const ranges: { key: RangeKey; label: string }[] = [
   { key: 'all', label: 'Todo' },
 ]
 
-export default function DateRangeFilter({ onRangeChange }: DateRangeFilterProps) {
+export default function DateRangeFilter({ onRangeChange, anchorDate }: DateRangeFilterProps) {
   const [active, setActive] = useState<RangeKey>('all')
 
   const handleRangeClick = (key: RangeKey) => {
@@ -27,7 +30,7 @@ export default function DateRangeFilter({ onRangeChange }: DateRangeFilterProps)
       return
     }
 
-    const now = new Date()
+    const now = anchorDate ? parseDateOnly(anchorDate) : new Date()
     const from = new Date(now)
 
     switch (key) {
@@ -43,8 +46,8 @@ export default function DateRangeFilter({ onRangeChange }: DateRangeFilterProps)
     }
 
     onRangeChange({
-      from: from.toISOString().split('T')[0],
-      to: now.toISOString().split('T')[0],
+      from: toDateOnly(from),
+      to: toDateOnly(now),
     })
   }
 

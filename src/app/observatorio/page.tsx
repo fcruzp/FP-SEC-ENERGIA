@@ -1,10 +1,12 @@
 'use client'
 
+import SourceAttribution from '@/components/observatorio/SourceAttribution'
+import { formatDateOnly } from '@/lib/dates'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { BarChart3, Activity, Database, Calendar, ArrowRight, Info, Zap, Layers, TrendingUp } from 'lucide-react'
+import { BarChart3, Activity, Database, Calendar, ArrowRight, Info, Zap, Layers } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -191,10 +193,7 @@ export default function ObservatorioPage() {
 
   const formatMonth = (dateStr: string) => {
     try {
-      return new Date(dateStr + 'T12:00:00').toLocaleDateString('es-DO', {
-        year: 'numeric',
-        month: 'long',
-      })
+      return formatDateOnly(dateStr, { year: 'numeric', month: 'long' })
     } catch {
       return dateStr
     }
@@ -304,9 +303,7 @@ export default function ObservatorioPage() {
               <StatCard
                 icon={<Layers className="h-4 w-4 text-[#4ade80]" />}
                 label="Fuente"
-                value={loading ? null : stats.data_sources.length > 0
-                  ? `MIM.gob.do${stats.data_sources.length > 1 ? ` +${stats.data_sources.length - 1}` : ''}`
-                  : 'MIM.gob.do'}
+                value={loading ? null : 'MEM · mem.gob.do'}
                 loading={loading}
               />
             </div>
@@ -489,10 +486,14 @@ export default function ObservatorioPage() {
 
         {/* Footer */}
         <div className="mt-12 pt-6 border-t border-[#e5e7eb] dark:border-[#30363d]">
-          <div className="flex items-center justify-center gap-2 text-xs text-[#9ca3af] dark:text-[#8b949e]">
-            <TrendingUp className="h-3 w-3" />
-            <span>Datos proporcionados por la Secretaría de Energía de Fuerza del Pueblo</span>
-          </div>
+          <SourceAttribution
+            sourceCode="MEM"
+            sourceFile={stats.data_sources[0]}
+            className="text-center"
+          />
+          <p className="mt-2 text-center text-xs text-[#9ca3af] dark:text-[#8b949e]">
+            Procesamiento y visualización: Secretaría de Energía · Fuerza del Pueblo
+          </p>
         </div>
       </div>
     </div>

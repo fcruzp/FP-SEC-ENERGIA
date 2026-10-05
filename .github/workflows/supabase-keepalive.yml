@@ -1,0 +1,60 @@
+# Mantiene activo el proyecto de Supabase (el plan gratuito se pausa tras 7 días
+# sin actividad) y guarda una copia de seguridad semanal de la base de datos.
+#
+# Secrets requeridos (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL       URL del proyecto (https://xxxx.supabase.co)
+#   SUPABASE_ANON_KEY  clave pública (publishable / anon)
+#   SUPABASE_DB_URL    cadena de conexión Postgres (Session pooler) — solo para el backup
+name: Supabase keep-alive y backup
+
+on:
+  schedule:
+    - cron: '17 11 * * *'   # diario, 07:17 hora de RD
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consulta liviana a la API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/indicator_categories?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "HTTP $status"
+          test "$status" = "200"
+
+  backup:
+    # Solo los lunes, o al ejecutarlo manualmente
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 11 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decidir si toca backup
+        id: day
+        run: echo "run=$([ "$(date -u +%u)" = "1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+      - name: Instalar cliente de Postgres 17
+        if: steps.day.outputs.run == 'yes'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+      - name: pg_dump del esquema public
+        if: steps.day.outputs.run == 'yes'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" --schema=public --no-owner --no-privileges \
+            | gzip > "backup-$(date -u +%Y-%m-%d).sql.gz"
+          ls -lh backup-*.sql.gz
+      - name: Guardar backup como artefacto
+        if: steps.day.outputs.run == 'yes'
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: backup-*.sql.gz
+          retention-days: 90

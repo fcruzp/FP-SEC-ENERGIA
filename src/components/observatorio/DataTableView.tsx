@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateOnly } from '@/lib/dates'
 import { useState } from 'react'
 import {
   Table,
@@ -18,6 +19,13 @@ interface DataTableViewProps {
   unit?: string
 }
 
+const PERIOD_LABELS: Record<string, string> = {
+  monthly: 'Mensual',
+  quarterly: 'Trimestral',
+  yearly: 'Anual',
+  ytd: 'Acumulado del año',
+}
+
 const PAGE_SIZE = 10
 
 export default function DataTableView({ dataPoints, unit = '' }: DataTableViewProps) {
@@ -33,7 +41,7 @@ export default function DataTableView({ dataPoints, unit = '' }: DataTableViewPr
 
   // Sort by date descending for the table
   const sorted = [...dataPoints].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => b.date.localeCompare(a.date)
   )
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
@@ -42,12 +50,7 @@ export default function DataTableView({ dataPoints, unit = '' }: DataTableViewPr
 
   const formatDate = (dateStr: string) => {
     try {
-      const date = new Date(dateStr)
-      return date.toLocaleDateString('es-DO', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
+      return formatDateOnly(dateStr, { year: 'numeric', month: 'short' })
     } catch {
       return dateStr
     }
@@ -78,7 +81,7 @@ export default function DataTableView({ dataPoints, unit = '' }: DataTableViewPr
                   {dp.value.toLocaleString('es-DO', { maximumFractionDigits: 2 })}
                 </TableCell>
                 <TableCell className="text-sm text-[#6b7280] dark:text-[#8b949e] capitalize">
-                  {dp.period_type}
+                  {PERIOD_LABELS[dp.period_type] ?? dp.period_type}
                 </TableCell>
                 <TableCell className="text-sm">
                   {dp.is_estimated ? (
@@ -121,7 +124,7 @@ export default function DataTableView({ dataPoints, unit = '' }: DataTableViewPr
               )}
             </div>
             <p className="text-xs text-[#6b7280] dark:text-[#8b949e] capitalize mt-0.5">
-              {dp.period_type}
+              {PERIOD_LABELS[dp.period_type] ?? dp.period_type}
             </p>
           </div>
         ))}

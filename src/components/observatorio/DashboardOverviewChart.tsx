@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateOnly } from '@/lib/dates'
 import {
   AreaChart,
   Area,
@@ -186,8 +187,7 @@ export default function DashboardOverviewChart({ indicator }: DashboardOverviewC
 
 function formatDateLabel(dateStr: string): string {
   try {
-    const d = new Date(dateStr + 'T12:00:00')
-    return d.toLocaleDateString('es-DO', { month: 'short', year: '2-digit' })
+    return formatDateOnly(dateStr, { month: 'short', year: '2-digit' })
   } catch {
     return dateStr
   }

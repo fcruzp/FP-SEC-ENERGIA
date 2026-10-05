@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateOnly, parseDateOnly } from '@/lib/dates'
 import { useMemo, useCallback, useEffect, useState } from 'react'
 import {
   LineChart,
@@ -53,11 +54,7 @@ function DelayedTooltip({ active, payload, label, unit }: any) {
   const item = payload[0].payload
   const rawDate = item?.rawDate
   const dateStr = rawDate
-    ? new Date(rawDate).toLocaleDateString('es-DO', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+    ? formatDateOnly(rawDate, { year: 'numeric', month: 'long' })
     : label
 
   return (
@@ -149,7 +146,7 @@ export default function TimeSeriesChart({
       yearColorMap: {},
     }
 
-    const dates = data.map(d => new Date(d.date))
+    const dates = data.map(d => parseDateOnly(d.date))
     const minDate = new Date(Math.min(...dates.map(d => d.getTime())))
     const maxDate = new Date(Math.max(...dates.map(d => d.getTime())))
     const monthDiff = (maxDate.getFullYear() - minDate.getFullYear()) * 12
@@ -159,7 +156,7 @@ export default function TimeSeriesChart({
     const yearsSet = new Set<string>()
 
     const processed = data.map((d) => {
-      const date = new Date(d.date)
+      const date = parseDateOnly(d.date)
       const year = date.getFullYear().toString()
       const isNewYear = !yearsSet.has(year)
       if (isNewYear) {

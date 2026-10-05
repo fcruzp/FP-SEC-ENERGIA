@@ -1,9 +1,38 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { Fragment, useRef, useEffect, useState } from 'react';
+import { editionFromSourceFile } from '@/lib/sources';
+
+interface HeadlineStat {
+  key: string;
+  label: string;
+  value: number;
+  unit: string;
+}
+
+const HERO_LABELS: Record<string, string> = {
+  perdidas: '% Pérdidas EDEs',
+  cri: '% CRI EDEs',
+  cobranzas: '% Cobranza EDEs',
+  renovable: '% Generación renovable',
+};
 
 export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [stats, setStats] = useState<HeadlineStat[]>([]);
+  const [edition, setEdition] = useState<string | null>(null);
+
+  // Indicadores reales del Observatorio (fuente: MEM)
+  useEffect(() => {
+    fetch('/api/observatorio/headline')
+      .then(res => (res.ok ? res.json() : null))
+      .then(json => {
+        if (!json) return;
+        setStats(json.stats ?? []);
+        setEdition(editionFromSourceFile(json.source_file));
+      })
+      .catch(() => {});
+  }, []);
 
   // Ensure video plays (some mobile browsers need a nudge)
   useEffect(() => {
@@ -56,15 +85,25 @@ export default function Hero() {
           <a href="#areas" className="btn btn-primary btn-large">Ver propuestas</a>
           <a href="#news" className="btn btn-ghost btn-large">Leer comunicados</a>
         </div>
-        <div className="hero-stats">
-          <div className="hero-stat fade-up"><div className="val" data-count="40">0</div><div className="lbl">% Pérdidas eléctricas</div></div>
-          <div className="hero-divider"></div>
-          <div className="hero-stat fade-up"><div className="val" data-count="4200">0</div><div className="lbl">MW Capacidad instalada</div></div>
-          <div className="hero-divider"></div>
-          <div className="hero-stat fade-up"><div className="val" data-count="28">0</div><div className="lbl">% Energía renovable</div></div>
-          <div className="hero-divider"></div>
-          <div className="hero-stat fade-up"><div className="val" data-count="12">0</div><div className="lbl">Propuestas de ley</div></div>
-        </div>
+        {stats.length > 0 && (
+          <>
+            <div className="hero-stats">
+              {stats.map((s, i) => (
+                <Fragment key={s.key}>
+                  {i > 0 && <div className="hero-divider"></div>}
+                  <div className="hero-stat">
+                    <div className="val">{s.value.toLocaleString('es-DO', { maximumFractionDigits: 1 })}</div>
+                    <div className="lbl">{HERO_LABELS[s.key] ?? s.label}</div>
+                  </div>
+                </Fragment>
+              ))}
+            </div>
+            <p className="hero-source">
+              Fuente: Ministerio de Energía y Minas{edition ? `, Informe de Desempeño ${edition}` : ''}.{' '}
+              <a href="/observatorio">Ver Observatorio →</a>
+            </p>
+          </>
+        )}
       </div>
 
       <div className="scroll-indicator">

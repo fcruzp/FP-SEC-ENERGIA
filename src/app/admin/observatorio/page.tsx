@@ -1,5 +1,6 @@
 'use client'
 
+import { formatDateOnly, toDateOnly } from '@/lib/dates'
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -173,27 +174,27 @@ function ObservatorioAdminContent() {
         // First day of current month to first day of next month
         const from = new Date(year, month, 1)
         const to = new Date(year, month + 1, 1)
-        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+        return { dateFrom: toDateOnly(from), dateTo: toDateOnly(to) }
       }
       case 'last-3-months': {
         const from = new Date(year, month - 2, 1)
         const to = new Date(year, month + 1, 1)
-        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+        return { dateFrom: toDateOnly(from), dateTo: toDateOnly(to) }
       }
       case 'last-6-months': {
         const from = new Date(year, month - 5, 1)
         const to = new Date(year, month + 1, 1)
-        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+        return { dateFrom: toDateOnly(from), dateTo: toDateOnly(to) }
       }
       case 'last-12-months': {
         const from = new Date(year, month - 11, 1)
         const to = new Date(year, month + 1, 1)
-        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+        return { dateFrom: toDateOnly(from), dateTo: toDateOnly(to) }
       }
       case 'current-year': {
         const from = new Date(year, 0, 1)
         const to = new Date(year, month + 1, 1)
-        return { dateFrom: from.toISOString().split('T')[0], dateTo: to.toISOString().split('T')[0] }
+        return { dateFrom: toDateOnly(from), dateTo: toDateOnly(to) }
       }
       case 'custom': {
         return {
@@ -390,11 +391,7 @@ function ObservatorioAdminContent() {
     new Intl.NumberFormat('es-DO').format(n)
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('es-DO', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
+    formatDateOnly(d, { year: 'numeric', month: 'short' })
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`

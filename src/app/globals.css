@@ -497,8 +497,7 @@ nav.main-nav a.active {
 .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
 
 .hero-stats {
-  position: absolute; bottom: 56px; left: 0; right: 0;
-  max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+  position: relative; margin-top: 48px;
   display: flex; gap: 40px; z-index: 5;
   width: 100%;
   box-sizing: border-box;
@@ -506,6 +505,8 @@ nav.main-nav a.active {
 .hero-stat { color: white; }
 .hero-stat .val { font-size: 2rem; font-weight: 800; line-height: 1; color: var(--green-glow); }
 .hero-stat .lbl { font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; opacity: 0.6; margin-top: 4px; }
+.hero-source { margin-top: 14px; font-size: 11px; color: rgba(255, 255, 255, 0.55); }
+.hero-source a { color: var(--green-glow); text-decoration: underline; text-underline-offset: 2px; }
 .hero-divider { width: 1px; background: rgba(255, 255, 255, 0.15); margin: 4px 0; }
 
 .scroll-indicator {
@@ -735,6 +736,8 @@ nav.main-nav a.active {
 .kpi-card.featured .kpi-bar-fill { background: var(--green-glow); }
 
 .obs-bottom { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+.obs-source { margin-top: 20px; font-size: 12px; color: var(--text-muted, #6b7280); }
+.obs-source a { color: var(--green-primary); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
 .chart-card {
   background: white; border-radius: var(--radius); padding: 28px;
@@ -1305,7 +1308,7 @@ footer {
 /* Desktop & iPad landscape only — hero separator line */
 @media (min-width: 1024px) {
   .hero-stats {
-    padding: 48px 2rem 0;
+    padding: 28px 0 0;
     border-top: 1px solid rgba(255, 255, 255, 0.22);
   }
 }

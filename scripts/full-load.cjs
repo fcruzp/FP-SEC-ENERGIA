@@ -28,6 +28,7 @@ const shouldClean = args.includes('--clean');
 const dryRun = args.includes('--dry-run');
 const sheetArgIdx = args.indexOf('--sheet');
 const specificSheet = sheetArgIdx !== -1 ? args[sheetArgIdx + 1] : null;
+const PERCENT_UNITS = new Set(['%', 'PP', 'ratio']);
 const INSERT_BATCH_SIZE = 500; // For DB inserts (larger = faster)
 const DRY_RUN_BATCH_SIZE = 100; // User requested batch display size
 
@@ -719,13 +720,15 @@ async function run() {
       matched++;
 
       const entity = eSlug2 ? entMap.get(eSlug2) : null;
+      // El XLS guarda porcentajes como fracción (0.387); se almacenan como 38.7
+      const scale = PERCENT_UNITS.has(ind.unit) ? 100 : 1;
       for (const [col, dateStr] of dateMap) {
         const value = getCellValue(sheet, r, col);
         if (value !== null && typeof value === 'number' && isFinite(value)) {
           const dp = {
             indicator_id: ind.id,
             entity_id: entity?.id || null,
-            value: Math.round(value * 1e6) / 1e6,
+            value: Math.round(value * scale * 1e6) / 1e6,
             date: dateStr,
             period_type: 'monthly',
             source_file: 'Informe-de-Desempeno-marzo-2026.xlsx',

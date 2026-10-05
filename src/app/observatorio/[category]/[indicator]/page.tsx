@@ -1,5 +1,8 @@
 'use client'
 
+import SourceAttribution from '@/components/observatorio/SourceAttribution'
+import { getSource } from '@/lib/sources'
+import { formatDateOnly } from '@/lib/dates'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -330,10 +333,7 @@ export default function IndicatorDetailPage() {
                         <Calendar className="h-4 w-4" />
                         <span>
                           Último:{' '}
-                          {new Date(indicator.latest_date).toLocaleDateString('es-DO', {
-                            year: 'numeric',
-                            month: 'short',
-                          })}
+                          {formatDateOnly(indicator.latest_date, { year: 'numeric', month: 'short' })}
                         </span>
                       </div>
                     )}
@@ -373,7 +373,7 @@ export default function IndicatorDetailPage() {
                 )}
 
                 {/* Date range filter */}
-                <DateRangeFilter onRangeChange={handleDateRangeChange} />
+                <DateRangeFilter onRangeChange={handleDateRangeChange} anchorDate={indicator?.latest_date} />
               </div>
             </div>
 
@@ -400,6 +400,13 @@ export default function IndicatorDetailPage() {
                   Intenta cambiar el filtro de entidad o rango de fechas.
                 </p>
               </div>
+            )}
+            {!chartLoading && chartData.length > 0 && (
+              <SourceAttribution
+                sourceCode={indicator?.source}
+                sourceFile={dataPoints[dataPoints.length - 1]?.source_file}
+                className="mt-3"
+              />
             )}
           </div>
         </Card>
@@ -447,7 +454,10 @@ export default function IndicatorDetailPage() {
                           : '—'
                       }
                     />
-                    <MetadataRow label="Fuente" value={indicator?.source || '—'} />
+                    <MetadataRow
+                      label="Fuente"
+                      value={getSource(indicator?.source)?.institution ?? indicator?.source ?? '—'}
+                    />
                     {indicator?.description && (
                       <div>
                         <p className="text-xs font-semibold text-[#6b7280] dark:text-[#8b949e] uppercase tracking-wide mb-1">
