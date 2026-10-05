@@ -80,14 +80,14 @@ Objetivo: 100 % de los datos en el indicador y la empresa correctos, verificable
 ### Fase 3 — Un observatorio de nivel profesional (2–3 semanas)
 Inspirado en Our World in Data, Ember, Energía Abierta (Chile) y ESIOS (España).
 
-- [ ] **Ficha por indicador**: definición, fórmula, unidad, fuente exacta, frecuencia, última actualización, notas.
-- [ ] **Página de metodología**: glosario del MEM (CRI, pérdidas, P.P., equivalencias), enfoque devengado vs. caja, diferencias entre fuentes.
-- [ ] **Cita al pie de cada gráfico** + botón **Descargar CSV/XLSX** + enlace al Excel original del MEM.
-- [ ] **Calendario de actualización** y fecha de datos visible ("Datos a: julio 2026 · publicado por el MEM el 22-sep-2026").
-- [ ] **Registro público de correcciones** (changelog).
-- [ ] "Tendencias" con comparación **interanual** y umbral mínimo (eliminar +519 % sobre bases casi cero); marcar anomalías de la fuente.
-- [ ] Páginas renderizadas en servidor con metadatos por indicador (SEO, compartir en redes), `sitemap.xml`.
-- [ ] Accesibilidad de gráficos (tabla alternativa, textos descriptivos).
+- [x] **Ficha por indicador**: definición, fórmula, unidad, fuente exacta, frecuencia, última actualización, notas.
+- [x] **Página de metodología**: glosario del MEM (CRI, pérdidas, P.P., equivalencias), enfoque devengado vs. caja, diferencias entre fuentes.
+- [x] **Cita al pie de cada gráfico** + botón **Descargar CSV** (con celda de origen) + enlace al Excel y PDF originales del MEM.
+- [x] **Calendario de actualización** y fecha de datos visible ("Datos a: julio 2026 · publicado por el MEM el 22-sep-2026").
+- [x] **Registro público de correcciones** (changelog).
+- [x] "Tendencias" con comparación **interanual** y umbral mínimo (eliminar +519 % sobre bases casi cero); marcar anomalías de la fuente.
+- [x] Metadatos por indicador y categoría (SEO, compartir en redes), `sitemap.xml` y `robots.txt`.
+- [x] Accesibilidad de gráficos (tabla alternativa, textos descriptivos).
 - [ ] Opcional posterior: datos abiertos / API pública con licencia.
 
 ### Fase 4 — Automatización y nuevas fuentes (2–3 semanas)
