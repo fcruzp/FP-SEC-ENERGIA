@@ -19,6 +19,8 @@ export interface EditionMeta {
   pdfUrl: string | null
   sha256: string
   fileSize: number
+  /** Fecha en que el MEM publicó la edición ('YYYY-MM-DD'), si se conoce */
+  publishedAt?: string | null
 }
 
 export interface Point { slug: string; date: string; value: number; cell: string }
@@ -46,13 +48,15 @@ export async function writeEdition(db: Queryable, catalog: CatalogEntry[], point
 
     const report = await db.query(
       `INSERT INTO reports (title, slug, file_url, file_type, file_size, publish_date, source_org, report_type, is_published, edition, source_url, pdf_url, sha256)
-       VALUES ($1, $2, $3, 'xlsx', $4, now()::date, 'MEM', 'desempeno_mensual', true, $5, $3, $6, $7)
+       VALUES ($1, $2, $3, 'xlsx', $4, $8::date, 'MEM', 'desempeno_mensual', true, $5, $3, $6, $7)
        ON CONFLICT (source_org, report_type, edition) DO UPDATE SET
          file_url = EXCLUDED.file_url, source_url = EXCLUDED.source_url, pdf_url = COALESCE(EXCLUDED.pdf_url, reports.pdf_url),
-         sha256 = EXCLUDED.sha256, file_size = EXCLUDED.file_size, title = EXCLUDED.title
+         sha256 = EXCLUDED.sha256, file_size = EXCLUDED.file_size, title = EXCLUDED.title,
+         publish_date = COALESCE(EXCLUDED.publish_date, reports.publish_date)
        RETURNING id`,
       [`Informe de Desempeño EEE — ${MONTHS[Number(edition.slice(5, 7)) - 1]} ${edition.slice(0, 4)}`,
-        `mem-desempeno-${edition.slice(0, 7)}`, meta.sourceUrl ?? meta.sourceFile, meta.fileSize, edition, meta.pdfUrl, meta.sha256])
+        `mem-desempeno-${edition.slice(0, 7)}`, meta.sourceUrl ?? meta.sourceFile, meta.fileSize, edition, meta.pdfUrl, meta.sha256,
+        meta.publishedAt ?? null])
     const reportId: string = report.rows[0].id
 
     // Catálogo: categorías y entidades deben existir

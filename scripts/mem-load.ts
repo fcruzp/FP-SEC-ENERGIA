@@ -3,7 +3,7 @@
  * Estatales" (MEM) en la base de datos.
  *
  * Uso (con bun):
- *   bun scripts/mem-load.ts --file data/mem/<archivo>.xlsx --source-url <url> [--pdf-url <url>]
+ *   bun scripts/mem-load.ts --file data/mem/<archivo>.xlsx --source-url <url> [--pdf-url <url>] [--published AAAA-MM-DD]
  *   bun scripts/mem-load.ts --file ... --dry-run          # solo verifica, no escribe
  *   bun scripts/mem-load.ts --file ... --accept-catalog   # acepta cambios de estructura del Excel
  *
@@ -36,6 +36,11 @@ const arg = (name: string) => {
 const file = arg('--file')
 const sourceUrl = arg('--source-url') ?? null
 const pdfUrl = arg('--pdf-url') ?? null
+const publishedAt = arg('--published') ?? null // fecha de publicación del MEM, AAAA-MM-DD
+if (publishedAt && !/^\d{4}-\d{2}-\d{2}$/.test(publishedAt)) {
+  console.error('--published debe tener el formato AAAA-MM-DD')
+  process.exit(1)
+}
 const dryRun = args.includes('--dry-run')
 const acceptCatalog = args.includes('--accept-catalog')
 if (!file) {
@@ -117,7 +122,7 @@ async function main() {
   await db.connect()
   try {
     const stats = await writeEdition(db, catalog, points, checks, {
-      edition, sourceFile, sourceUrl, pdfUrl, sha256, fileSize: buffer.length,
+      edition, sourceFile, sourceUrl, pdfUrl, sha256, fileSize: buffer.length, publishedAt,
     })
     console.log('\n✅ Carga completada')
     console.log(`   ${stats.indicators} indicadores · ${stats.values.toLocaleString('es-DO')} valores · último mes ${stats.latest_month}`)

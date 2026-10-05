@@ -15,6 +15,12 @@ const TOP_SLUGS = [
 ]
 const FEATURED_SLUG = 'edes-perdidas-ano-movil'
 
+/** 'YYYY-MM-DD' + n meses → 'YYYY-MM-01' */
+function addMonths(date: string, n: number): string {
+  const total = Number(date.slice(0, 4)) * 12 + Number(date.slice(5, 7)) - 1 + n
+  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}-01`
+}
+
 /** Base mínima para calcular variaciones porcentuales con sentido. */
 const MIN_BASE: Record<string, number> = { 'US$ MM': 1, 'RD$ MM': 50, 'GWh': 1 }
 
@@ -59,7 +65,7 @@ export async function GET() {
       supabase.from('indicator_categories').select('*').order('sort_order', { ascending: true }),
       supabase
         .from('reports')
-        .select('source_url, file_url, edition')
+        .select('source_url, file_url, edition, publish_date')
         .eq('source_org', 'MEM')
         .order('edition', { ascending: false })
         .limit(1)
@@ -90,6 +96,12 @@ export async function GET() {
       latest_period: withData.reduce<string | null>((max, i) => (i.latest_date && (!max || i.latest_date > max) ? i.latest_date : max), null),
       last_upload_at: latestRun.data?.finished_at ?? null,
       data_sources: reportFile ? [reportFile.split('/').pop()!] : [],
+      // Calendario: edición vigente, su publicación y la siguiente. El MEM publica cada edición
+      // unos dos meses después del cierre del mes (marzo→28-may, julio→22-sep de 2026)
+      edition: latestReport.data?.edition ?? null,
+      published_at: latestReport.data?.publish_date ?? null,
+      next_edition: latestReport.data?.edition ? addMonths(latestReport.data.edition, 1) : null,
+      next_expected_month: latestReport.data?.edition ? addMonths(latestReport.data.edition, 4) : null,
     }
 
     // Indicadores clave

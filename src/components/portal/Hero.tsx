@@ -99,7 +99,7 @@ export default function Hero() {
               ))}
             </div>
             <p className="hero-source">
-              Fuente: Ministerio de Energía y Minas{edition ? `, Informe de Desempeño ${edition}` : ''}.{' '}
+              Fuente: Ministerio de Energía y Minas{edition ? `, Informe de Desempeño ${edition}` : ''}. Generación renovable: hidráulica + renovable no convencional (cálculo del Observatorio).{' '}
               <a href="/observatorio">Ver Observatorio →</a>
             </p>
           </>

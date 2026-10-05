@@ -187,7 +187,8 @@ export default function Observatory() {
 
             <p className="obs-source">
               Fuente: Ministerio de Energía y Minas (MEM), <em>Informe de Desempeño de las Empresas Eléctricas Estatales</em>
-              {edition ? `, edición ${edition}` : ''}.{' '}
+              {edition ? `, edición ${edition}` : ''}. La generación renovable y los totales y participaciones de 12 meses
+              son cálculos del Observatorio a partir de esos datos.{' '}
               <a href="/observatorio">Explorar el Observatorio completo →</a>
             </p>
           </>

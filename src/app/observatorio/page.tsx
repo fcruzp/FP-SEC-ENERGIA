@@ -24,6 +24,10 @@ interface ObservatorioStats {
   latest_period: string | null
   last_upload_at: string | null
   data_sources: string[]
+  edition?: string | null
+  published_at?: string | null
+  next_edition?: string | null
+  next_expected_month?: string | null
 }
 
 interface TopIndicator {
@@ -260,7 +264,7 @@ export default function ObservatorioPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <Badge className="bg-[#4ade80]/15 text-[#4ade80] border-0 text-[9px] font-bold uppercase tracking-widest">
-                      Panel en Vivo
+                      Datos oficiales
                     </Badge>
                   </div>
                   <h1 className="text-xl sm:text-2xl font-bold text-white mt-0.5">
@@ -281,7 +285,7 @@ export default function ObservatorioPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard
                 icon={<Calendar className="h-4 w-4 text-[#4ade80]" />}
-                label="Última Actualización"
+                label="Datos a"
                 value={loading ? null : stats.latest_period ? formatMonth(stats.latest_period) : 'Sin datos'}
                 tooltip={stats.last_upload_at ? `Datos subidos el ${formatUploadDate(stats.last_upload_at)}` : 'Sin registro de carga'}
                 loading={loading}
@@ -307,6 +311,17 @@ export default function ObservatorioPage() {
                 loading={loading}
               />
             </div>
+
+            {/* Calendario de publicación */}
+            {!loading && stats.edition && (
+              <p className="mt-3 text-xs text-white/60 leading-relaxed">
+                Edición de {formatMonth(stats.edition)} del Informe de Desempeño
+                {stats.published_at ? `, publicada por el MEM el ${formatDateOnly(stats.published_at, { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}.
+                {stats.next_edition && stats.next_expected_month && (
+                  <> Próxima edición ({formatMonth(stats.next_edition)}): se espera hacia {formatMonth(stats.next_expected_month)}, ya que el MEM suele publicar unos dos meses después del cierre de cada mes.</>
+                )}
+              </p>
+            )}
           </motion.div>
         </div>
       </div>

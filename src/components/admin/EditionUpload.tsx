@@ -49,6 +49,7 @@ export default function EditionUpload({ onLoaded }: { onLoaded?: () => void }) {
   const [file, setFile] = useState<File | null>(null)
   const [sourceUrl, setSourceUrl] = useState('')
   const [pdfUrl, setPdfUrl] = useState('')
+  const [publishedAt, setPublishedAt] = useState('')
   const [step, setStep] = useState<Step>('idle')
   const [report, setReport] = useState<EditionReport | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -63,6 +64,7 @@ export default function EditionUpload({ onLoaded }: { onLoaded?: () => void }) {
     form.append('mode', mode)
     if (sourceUrl.trim()) form.append('source_url', sourceUrl.trim())
     if (pdfUrl.trim()) form.append('pdf_url', pdfUrl.trim())
+    if (publishedAt) form.append('published_at', publishedAt)
     try {
       const res = await fetch('/api/admin/mem-edition', { method: 'POST', body: form })
       const data = (await res.json()) as EditionReport
@@ -125,6 +127,11 @@ export default function EditionUpload({ onLoaded }: { onLoaded?: () => void }) {
               <Label htmlFor="mem-pdf" className="text-slate-300 text-xs">Enlace oficial del PDF (opcional)</Label>
               <Input id="mem-pdf" value={pdfUrl} onChange={e => setPdfUrl(e.target.value)} disabled={busy}
                 placeholder="https://mem.gob.do/wp-content/uploads/…pdf" className="mt-1 bg-[#0a1628] border-white/[0.08] text-white text-sm" />
+            </div>
+            <div>
+              <Label htmlFor="mem-published" className="text-slate-300 text-xs">Fecha de publicación en mem.gob.do (opcional)</Label>
+              <Input id="mem-published" type="date" value={publishedAt} onChange={e => setPublishedAt(e.target.value)} disabled={busy}
+                className="mt-1 bg-[#0a1628] border-white/[0.08] text-white text-sm" />
             </div>
           </div>
           <div className="flex flex-wrap gap-3">

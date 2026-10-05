@@ -23,6 +23,7 @@ const MAX_SIZE = 15 * 1024 * 1024
  *   mode        "validate" (por defecto) | "load"
  *   source_url  enlace oficial del Excel en mem.gob.do (opcional)
  *   pdf_url     enlace oficial del PDF de la misma edición (opcional)
+ *   published_at fecha en que el MEM publicó la edición, AAAA-MM-DD (opcional)
  */
 export async function POST(request: NextRequest) {
   let form: FormData
@@ -46,6 +47,8 @@ export async function POST(request: NextRequest) {
   try {
     const sourceUrl = urlField('source_url')
     const pdfUrl = urlField('pdf_url')
+    const publishedAt = String(form.get('published_at') ?? '').trim() || null
+    if (publishedAt && !/^\d{4}-\d{2}-\d{2}$/.test(publishedAt)) throw new Error('La fecha de publicación debe tener el formato AAAA-MM-DD')
     const buffer = Buffer.from(await file.arrayBuffer())
     const edition = editionFromFilename(file.name)
 
@@ -103,6 +106,7 @@ export async function POST(request: NextRequest) {
         pdfUrl,
         sha256: createHash('sha256').update(buffer).digest('hex'),
         fileSize: file.size,
+        publishedAt,
       })
       return NextResponse.json({ ...report, can_load: true, loaded: true, stats })
     } finally {

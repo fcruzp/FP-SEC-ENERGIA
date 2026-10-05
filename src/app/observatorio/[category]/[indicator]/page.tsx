@@ -419,6 +419,7 @@ export default function IndicatorDetailPage() {
                 unit={indicator?.unit}
                 color={category?.color || '#1a6b3c'}
                 height={380}
+                title={indicator?.name}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-[300px] text-center">

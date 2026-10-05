@@ -27,6 +27,8 @@ interface TimeSeriesChartProps {
   unit?: string
   color?: string
   height?: number
+  /** Nombre del indicador, para la descripción accesible del gráfico */
+  title?: string
 }
 
 // Color palette for year differentiation
@@ -106,6 +108,7 @@ export default function TimeSeriesChart({
   unit = '',
   color = '#1a6b3c',
   height = 350,
+  title,
 }: TimeSeriesChartProps) {
   const [isMobile, setIsMobile] = useState(false)
 
@@ -539,11 +542,23 @@ export default function TimeSeriesChart({
     }
   }
 
+  // Descripción textual del gráfico para lectores de pantalla
+  const sorted = [...data].sort((a, b) => a.date.localeCompare(b.date))
+  const fmtValue = (v: number) => `${v.toLocaleString('es-DO', { maximumFractionDigits: 2 })} ${unit}`.trim()
+  const monthLabel = (d: string) => formatDateOnly(d, { month: 'long', year: 'numeric' })
+  const ariaLabel = sorted.length
+    ? `${title ? `${title}: ` : ''}serie de ${sorted.length} meses, de ${monthLabel(sorted[0].date)} a ${monthLabel(sorted[sorted.length - 1].date)}. ` +
+      `Último valor ${fmtValue(sorted[sorted.length - 1].value)}; mínimo ${fmtValue(Math.min(...sorted.map(d => d.value)))}; ` +
+      `máximo ${fmtValue(Math.max(...sorted.map(d => d.value)))}. Los valores están en la tabla de datos históricos.`
+    : 'Gráfico sin datos'
+
   return (
     <ChartContainer
       config={config}
       className="w-full !aspect-auto"
       style={{ height: chartHeight }}
+      role="img"
+      aria-label={ariaLabel}
     >
       {renderChart()}
     </ChartContainer>
