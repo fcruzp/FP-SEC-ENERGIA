@@ -494,6 +494,11 @@ export default function ObservatorioPage() {
           <p className="mt-2 text-center text-xs text-[#9ca3af] dark:text-[#8b949e]">
             Procesamiento y visualización: Secretaría de Energía · Fuerza del Pueblo
           </p>
+          <p className="mt-2 text-center text-xs">
+            <Link href="/observatorio/metodologia" className="text-[#1a6b3c] dark:text-[#4ade80] underline underline-offset-2">Metodología</Link>
+            {' · '}
+            <Link href="/observatorio/correcciones" className="text-[#1a6b3c] dark:text-[#4ade80] underline underline-offset-2">Registro de correcciones del MEM</Link>
+          </p>
         </div>
       </div>
     </div>

@@ -1,8 +1,9 @@
 'use client'
 
 import SourceAttribution from '@/components/observatorio/SourceAttribution'
-import { getSource } from '@/lib/sources'
+import IndicatorFactSheet from '@/components/observatorio/IndicatorFactSheet'
 import { formatDateOnly } from '@/lib/dates'
+import { downloadCsv, toCsv } from '@/lib/csv'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -14,6 +15,7 @@ import {
   Calendar,
   Database,
   BarChart3,
+  Download,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -194,6 +196,24 @@ export default function IndicatorDetailPage() {
 
   const handleDateRangeChange = (range: { from?: string; to?: string } | null) => {
     setDateRange(range)
+  }
+
+  // Serie visible en CSV, con la procedencia de cada valor
+  const handleDownloadCsv = () => {
+    const csv = toCsv(
+      ['fecha', 'indicador', 'valor', 'unidad', 'entidad', 'fuente', 'archivo_origen', 'celda_origen'],
+      dataPoints.map((dp) => [
+        dp.date.slice(0, 7),
+        indicator?.name ?? indicatorSlug,
+        dp.value,
+        indicator?.unit ?? '',
+        indicator?.entity?.name ?? '',
+        'Ministerio de Energía y Minas (MEM) - Informe de Desempeño de las Empresas Eléctricas Estatales',
+        dp.source_file ?? '',
+        (dp as DataPoint & { source_cell?: string | null }).source_cell ?? '',
+      ])
+    )
+    downloadCsv(`${indicatorSlug}.csv`, csv)
   }
 
   const isUp = indicator?.change !== null && indicator?.change !== undefined && indicator.change > 0
@@ -432,60 +452,16 @@ export default function IndicatorDetailPage() {
                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
                   <Info className="h-4 w-4 text-[#1a6b3c] dark:text-[#4ade80]" />
                   <h3 className="text-sm font-bold text-[#1c1c1e] dark:text-[#e6edf3]">
-                    Información del Indicador
+                    Ficha técnica
                   </h3>
                 </div>
 
-                {loading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i}>
-                        <Skeleton className="h-3 w-20 mb-1" />
-                        <Skeleton className="h-4 w-32" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <MetadataRow label="Unidad" value={indicator?.unit || '—'} />
-                    <MetadataRow
-                      label="Frecuencia"
-                      value={
-                        indicator?.frequency
-                          ? frequencyLabels[indicator.frequency]
-                          : '—'
-                      }
-                    />
-                    <MetadataRow
-                      label="Tipo de gráfico"
-                      value={
-                        indicator?.chart_type
-                          ? chartTypeLabels[indicator.chart_type]
-                          : '—'
-                      }
-                    />
-                    <MetadataRow
-                      label="Fuente"
-                      value={getSource(indicator?.source)?.institution ?? indicator?.source ?? '—'}
-                    />
-                    {indicator?.description && (
-                      <div>
-                        <p className="text-xs font-semibold text-[#6b7280] dark:text-[#8b949e] uppercase tracking-wide mb-1">
-                          Descripción
-                        </p>
-                        <p className="text-sm text-[#1c1c1e] dark:text-[#e6edf3] leading-relaxed">
-                          {indicator.description}
-                        </p>
-                      </div>
-                    )}
-                    {indicator?.entity && (
-                      <MetadataRow
-                        label="Entidad"
-                        value={indicator.entity.name}
-                      />
-                    )}
-                  </div>
-                )}
+                <IndicatorFactSheet
+                  slug={indicatorSlug}
+                  unit={indicator?.unit}
+                  frequency={indicator?.frequency ? frequencyLabels[indicator.frequency] : undefined}
+                  entityName={indicator?.entity?.name}
+                />
               </div>
             </Card>
           </div>
@@ -505,6 +481,14 @@ export default function IndicatorDetailPage() {
                   >
                     {dataPoints.length} registros
                   </Badge>
+                  <button
+                    type="button"
+                    onClick={handleDownloadCsv}
+                    disabled={dataPoints.length === 0}
+                    className="inline-flex items-center gap-1 rounded-md border border-[#e5e7eb] dark:border-[#30363d] px-2.5 py-1 text-xs font-medium text-[#1a6b3c] dark:text-[#4ade80] hover:bg-[#f0fdf4] dark:hover:bg-[#0f2a1a] disabled:opacity-40 cursor-pointer"
+                  >
+                    <Download className="h-3.5 w-3.5" aria-hidden="true" /> CSV
+                  </button>
                 </div>
 
                 {chartLoading ? (

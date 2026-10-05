@@ -81,6 +81,12 @@ export default function ObservatorioHeader({
             </ol>
           </nav>
 
+          {/* Páginas de transparencia */}
+          <nav aria-label="Observatorio" className="hidden sm:flex items-center gap-4 text-sm flex-shrink-0">
+            <Link href="/observatorio/metodologia" className="text-white/70 hover:text-white transition-colors">Metodología</Link>
+            <Link href="/observatorio/correcciones" className="text-white/70 hover:text-white transition-colors">Correcciones</Link>
+          </nav>
+
           {/* Theme toggle */}
           <div className="flex-shrink-0">
             <ThemeToggle />
