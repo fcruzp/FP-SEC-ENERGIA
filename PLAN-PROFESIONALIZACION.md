@@ -39,7 +39,7 @@
 
 ---
 
-> **Avance al 5-oct-2026:** Fase 0 completa salvo el contenido de relleno del portal (se mantiene como mockup para la presentación). Fase 1: ediciones **marzo a julio 2026** cargadas en orden con el parser nuevo con **las 11 hojas del informe** (918 indicadores, 98,430 valores; 14/14 cifras del PDF verificadas; 147 revisiones del MEM registradas; 34 pruebas automáticas): series operativas desde 2009, anexo de resultados financieros (aportes del Gobierno, CAPEX, balances), deuda y pagos a generadoras, y tarifas 2013–2026. Ver `data/mem/verificacion-julio-2026.md`. Pendiente de Fase 1: conectar el panel admin al parser nuevo.
+> **Avance al 5-oct-2026:** Fase 0 completa salvo el contenido de relleno del portal (se mantiene como mockup para la presentación). Fase 1: ediciones **marzo a julio 2026** cargadas en orden con el parser nuevo con **las 11 hojas del informe** (918 indicadores, 98,430 valores; 14/14 cifras del PDF verificadas; 147 revisiones del MEM registradas; 34 pruebas automáticas): series operativas desde 2009, anexo de resultados financieros (aportes del Gobierno, CAPEX, balances), deuda y pagos a generadoras, y tarifas 2013–2026. Ver `data/mem/verificacion-julio-2026.md`. **Fase 1 completa:** las ediciones nuevas se cargan desde el panel `/admin` (validar → cargar) o con `bun scripts/mem-load.ts`; una edición nueva se carga en segundos y registra las correcciones del MEM.
 
 ## 3. Plan por fases
 
@@ -75,7 +75,7 @@ Objetivo: 100 % de los datos en el indicador y la empresa correctos, verificable
 - [x] Conteo honesto de indicadores (solo los que tienen datos) y páginas para los desgloses por empresa.
 - [ ] Caché: los datos cambian una vez al mes; revalidar al cargar una edición nueva.
 - [ ] Validación de parámetros (zod), actualizar `xlsx` (vulnerabilidades conocidas), límite de tamaño de archivo.
-- [ ] Arreglar el panel admin (hoy probablemente "dice éxito" sin insertar nada).
+- [x] Panel admin: pestaña "Cargar edición del MEM" con validación previa y carga usando el mismo parser y la misma escritura que el script (requiere `SUPABASE_DB_URL` en el servidor).
 
 ### Fase 3 — Un observatorio de nivel profesional (2–3 semanas)
 Inspirado en Our World in Data, Ember, Energía Abierta (Chile) y ESIOS (España).
