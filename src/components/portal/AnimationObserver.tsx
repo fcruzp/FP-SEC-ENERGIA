@@ -51,7 +51,8 @@ export default function AnimationObserver() {
           // Trigger chart bars
           if ((e.target as HTMLElement).querySelector('.chart-bar')) {
             document.querySelectorAll('.chart-bar').forEach(bar => {
-              setTimeout(() => { (bar as HTMLElement).style.height = (bar as HTMLElement).dataset.h; }, 200);
+              const h = (bar as HTMLElement).dataset.h;
+              if (h) setTimeout(() => { (bar as HTMLElement).style.height = h; }, 200);
             });
           }
         }

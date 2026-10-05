@@ -19,15 +19,12 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Client } from 'pg'
-import { readSheet, readWorkbook } from '../src/lib/mem/workbook'
-import { buildSheetCatalog, MEM_SHEETS, type CatalogEntry, type CatalogRow } from '../src/lib/mem/catalog'
-import { checkAnnualTotals, checkCoverage, checkEdeBreakdowns, type CheckResult } from '../src/lib/mem/reconcile'
+import { MEM_SHEETS } from '../src/lib/mem/catalog'
+import { compareCatalog, editionFromFilename, extractWorkbook, MONTHS, runChecks, toPoints, type KnownAnomaly } from '../src/lib/mem/pipeline'
 
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 const CATALOG_FILE = resolve(ROOT, 'data/mem/catalogo.json')
 const KNOWN_FILE = resolve(ROOT, 'data/mem/anomalias-conocidas.json')
-
-interface KnownAnomaly { check: string; key: string; explanation: string }
 
 // ── Argumentos ──
 const args = process.argv.slice(2)
@@ -51,36 +48,6 @@ for (const line of readFileSync(resolve(ROOT, '.env.local'), 'utf-8').split('\n'
   if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim().replace(/^"|"$/g, '')
 }
 
-const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
-function editionFromFilename(name: string): string {
-  const m = new RegExp(`(${MONTHS.join('|')})[^0-9]*(\\d{4})`, 'i').exec(name)
-  if (!m) throw new Error(`No se pudo deducir la edición (mes y año) del nombre "${name}"`)
-  return `${m[2]}-${String(MONTHS.indexOf(m[1].toLowerCase()) + 1).padStart(2, '0')}-01`
-}
-
-/** Campos del catálogo que deben mantenerse estables entre ediciones. */
-const stable = (e: CatalogEntry) => ({
-  slug: e.slug, name: e.name, unit: e.unit, sheet: e.sheet, label: e.label, category: e.category,
-  entity: e.entity, parent: e.parent, scale: e.scale, chart: e.chart, note: e.note ?? null,
-})
-
-function compareCatalog(current: CatalogEntry[], expected: CatalogEntry[]): string[] {
-  const diffs: string[] = []
-  const exp = new Map(expected.map(e => [e.slug, e]))
-  const cur = new Map(current.map(e => [e.slug, e]))
-  for (const [slug, e] of cur) {
-    const x = exp.get(slug)
-    if (!x) { diffs.push(`+ nuevo: ${slug} (${e.sheet}!B${e.row} "${e.label}")`); continue }
-    const a = JSON.stringify(stable(e)), b = JSON.stringify(stable(x))
-    if (a !== b) diffs.push(`~ cambia: ${slug}\n    antes: ${b}\n    ahora: ${a}`)
-  }
-  for (const slug of exp.keys()) if (!cur.has(slug)) diffs.push(`- falta: ${slug}`)
-  // El orden de las filas también forma parte del contrato
-  const order = (list: CatalogEntry[]) => list.map(e => e.slug).join('|')
-  if (!diffs.length && order(current) !== order(expected)) diffs.push('~ cambió el orden de las filas')
-  return diffs
-}
-
 async function main() {
   const filePath = resolve(ROOT, file!)
   const buffer = readFileSync(filePath)
@@ -90,13 +57,10 @@ async function main() {
   console.log(`📄 ${sourceFile}\n   edición ${edition} · sha256 ${sha256.slice(0, 16)}…`)
 
   // ── 1. Estructura y catálogo ──
-  const wb = readWorkbook(buffer)
-  const rows: CatalogRow[] = []
-  for (const config of MEM_SHEETS) {
-    const sheet = readSheet(wb, config.sheet)
-    const sheetRows = buildSheetCatalog(config, sheet)
-    rows.push(...sheetRows)
-    console.log(`   ${config.sheet.padEnd(22)} ${String(sheetRows.length).padStart(3)} indicadores · ${sheet.months[0]} → ${sheet.months.at(-1)}`)
+  const { rows, sheets } = extractWorkbook(buffer)
+  for (const s of sheets) {
+    const alias = s.actualName !== s.sheet ? ` (hoja "${s.actualName}")` : ''
+    console.log(`   ${s.sheet.padEnd(22)} ${String(s.indicators).padStart(3)} indicadores · ${s.firstMonth} → ${s.lastMonth}${alias}`)
   }
   const catalog = rows.map(r => r.entry)
 
@@ -115,28 +79,19 @@ async function main() {
   }
 
   // ── 2. Verificaciones ──
-  const checks: CheckResult[] = [checkCoverage(rows), checkAnnualTotals(rows), checkEdeBreakdowns(rows)]
   const known: KnownAnomaly[] = existsSync(KNOWN_FILE) ? JSON.parse(readFileSync(KNOWN_FILE, 'utf-8')) : []
-  let failed = false
+  const { outcomes, ok: checksOk } = runChecks(rows, known)
+  const checks = outcomes.map(o => o.result)
+  const failed = !checksOk
   console.log('\n🔎 Verificaciones')
-  for (const c of checks) {
-    const knownHere = known.filter(k => k.check === c.check && c.keys.includes(k.key))
-    const unexpected = c.keys.filter(key => !knownHere.some(k => k.key === key))
-    const ok = unexpected.length === 0
-    if (!ok) failed = true
+  for (const { result: c, known: knownHere, ok } of outcomes) {
     const knownNote = knownHere.length ? ` (${knownHere.length} anomalías conocidas de la fuente)` : ''
     console.log(`   ${ok ? '✅' : '❌'} ${c.check}: ${c.compared} comparaciones, ${c.mismatches} diferencias${knownNote} — ${c.description}`)
     if (!ok) c.samples.forEach(s => console.log(`      · ${s}`))
     knownHere.forEach(k => console.log(`      ℹ️  ${k.key}: ${k.explanation}`))
   }
 
-  const points = rows.flatMap(({ entry, source }) =>
-    [...source.monthly].map(([date, v]) => ({
-      slug: entry.slug,
-      date,
-      value: Math.round(v.value * entry.scale * 1e6) / 1e6,
-      cell: v.cell,
-    })))
+  const points = toPoints(rows)
   const latest = points.reduce((max, p) => (p.date > max ? p.date : max), '')
   console.log(`\n📊 ${points.length.toLocaleString('es-DO')} valores mensuales · último mes ${latest}`)
   const nonNumeric = rows.reduce((s, r) => s + r.source.nonNumeric, 0)

@@ -20,11 +20,20 @@ export interface SheetConfig {
   /** Prefijo de slug */
   prefix: string
   kind: 'blocks' | 'sections'
+  /** Otros nombres que la hoja ha tenido en alguna edición */
+  aliases?: string[]
+}
+
+/** Nombre real de la hoja en este archivo (canónico o alias conocido). */
+export function resolveSheetName(sheetNames: string[], config: SheetConfig): string {
+  const found = [config.sheet, ...(config.aliases ?? [])].find(name => sheetNames.includes(name))
+  if (!found) throw new Error(`La hoja "${config.sheet}" no existe en el archivo (hojas: ${sheetNames.join(', ')})`)
+  return found
 }
 
 export const MEM_SHEETS: SheetConfig[] = [
   { sheet: 'Variables Relevantes', category: 'variables-relevantes', entity: null, prefix: '', kind: 'sections' },
-  { sheet: "EDE's", category: 'empresas-distribuidoras', entity: 'edes-consolidado', prefix: 'edes', kind: 'blocks' },
+  { sheet: "EDE's", category: 'empresas-distribuidoras', entity: 'edes-consolidado', prefix: 'edes', kind: 'blocks', aliases: ['EDE'] }, // "EDE" en la edición abril 2026
   { sheet: 'CDEEE', category: 'cdeee', entity: 'cdeee', prefix: 'cdeee', kind: 'blocks' },
   { sheet: 'EGEHID', category: 'egehid', entity: 'egehid', prefix: 'egehid', kind: 'blocks' },
   { sheet: 'ETED', category: 'eted', entity: 'eted', prefix: 'eted', kind: 'blocks' },
