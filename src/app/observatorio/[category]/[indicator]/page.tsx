@@ -103,12 +103,20 @@ export default function IndicatorDetailPage() {
         const family = allIndicators.filter(
           (ind) => ind.id === parentId || ind.parent_indicator_id === parentId
         )
+        const parentIndicator = family.find((ind) => ind.id === parentId)
+        const breakdownLabel = (ind: IndicatorWithData) => {
+          if (ind.id === parentId) return `Total · ${ind.entity?.name ?? ind.name}`
+          // Partida del mismo total: "Financiamiento — Aportes del gobierno" → "Aportes del gobierno"
+          if (parentIndicator && ind.name.startsWith(`${parentIndicator.name} — `)) {
+            return ind.name.slice(parentIndicator.name.length + 3)
+          }
+          // Desglose por empresa: el nombre de la empresa
+          if (ind.entity && ind.entity.id !== parentIndicator?.entity?.id) return ind.entity.name
+          return ind.name.split(' — ').slice(1).join(' — ') || ind.name
+        }
         setBreakdowns(
           family.length > 1
-            ? family.map((ind) => ({
-                slug: ind.slug,
-                label: ind.id === parentId ? `Total · ${ind.entity?.name ?? ind.name}` : ind.name.split(' — ').slice(1).join(' — ') || ind.name,
-              }))
+            ? family.map((ind) => ({ slug: ind.slug, label: breakdownLabel(ind) }))
             : []
         )
 
