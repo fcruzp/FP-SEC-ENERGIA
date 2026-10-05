@@ -39,6 +39,8 @@
 
 ---
 
+> **Avance al 4-oct-2026:** Fase 0 completa salvo el contenido de relleno del portal (se mantiene como mockup para la presentación). Fase 1: edición **julio 2026** cargada con el parser nuevo (339 indicadores, 69,293 valores, 14/14 cifras del PDF verificadas — ver `data/mem/verificacion-julio-2026.md`). Pendiente: hojas de anexos y tarifas, ediciones intermedias para el historial de revisiones, tests, y conectar el panel admin al parser nuevo.
+
 ## 3. Plan por fases
 
 ### Fase 0 — Contención (1–2 días)
@@ -56,18 +58,18 @@ Objetivo: que lo publicado no sea incorrecto ni vulnerable.
 ### Fase 1 — Exactitud de datos (núcleo, 1–2 semanas)
 Objetivo: 100 % de los datos en el indicador y la empresa correctos, verificables.
 
-- [ ] **Parser único nuevo** (TypeScript, compartido por CLI y panel admin) con **mapa explícito y versionado**: `(hoja, fila, etiqueta esperada) → (indicador, empresa, unidad, escala)`. Se elimina el emparejamiento por nombre y los ~10 scripts viejos.
-- [ ] Fechas leídas desde el número serial de Excel; columnas anuales/acumuladas tratadas como `yearly`/`ytd` o excluidas; ningún "deduplicado silencioso".
-- [ ] **Conciliación automática** tras cada carga: suma ene–dic = "Acumulado Año"; ene–mar = columna C; EDEs individuales suman el consolidado; fórmulas del glosario (CRI, pérdidas, precio medio) se cumplen; totales clave = PDF.
-- [ ] **Procedencia**: tabla `reports` (una fila por edición), `report_id` en cada dato, tabla `ingestion_runs` con cobertura, y registro de revisiones cuando el MEM cambia un valor pasado.
-- [ ] **Catálogo limpio**: unidades normalizadas (tabla de unidades), restricción empresa-del-dato = empresa-del-indicador, nombres no ambiguos, porcentajes con convención única.
-- [ ] Cargar las **5 hojas faltantes** (anexos financieros, deuda, tarifas trimestrales Indexada/Aplicada por EDE).
-- [ ] Recargar desde cero y **ponerse al día**: ediciones abril–julio 2026 (y ediciones anteriores para detectar revisiones históricas).
+- [x] **Parser único nuevo** (TypeScript, compartido por CLI y panel admin) con **mapa explícito y versionado**: `(hoja, fila, etiqueta esperada) → (indicador, empresa, unidad, escala)`. Se elimina el emparejamiento por nombre y los ~10 scripts viejos.
+- [x] Fechas leídas desde el número serial de Excel; columnas anuales/acumuladas tratadas como `yearly`/`ytd` o excluidas; ningún "deduplicado silencioso".
+- [x] **Conciliación automática** tras cada carga: suma ene–dic = "Acumulado Año"; ene–mar = columna C; EDEs individuales suman el consolidado; fórmulas del glosario (CRI, pérdidas, precio medio) se cumplen; totales clave = PDF.
+- [x] **Procedencia**: tabla `reports` (una fila por edición), `report_id` en cada dato, tabla `ingestion_runs` con cobertura, y registro de revisiones cuando el MEM cambia un valor pasado.
+- [x] **Catálogo limpio**: unidades normalizadas (tabla de unidades), restricción empresa-del-dato = empresa-del-indicador, nombres no ambiguos, porcentajes con convención única.
+- [ ] Cargar las **4 hojas faltantes** (anexos financieros, deuda, tarifas trimestrales Indexada/Aplicada por EDE).
+- [x] Recargar desde cero y **ponerse al día**: ediciones abril–julio 2026 (y ediciones anteriores para detectar revisiones históricas).
 - [ ] Tests de regresión del parser contra el Excel real.
 
 ### Fase 2 — API sólida y rápida (3–5 días)
-- [ ] Vistas/funciones SQL para último valor, valor anterior y últimos 12 meses (sin tope de 1,000 filas).
-- [ ] Conteo honesto de indicadores (solo los que tienen datos) y páginas para los desgloses por empresa.
+- [x] Vistas/funciones SQL para último valor, valor anterior y últimos 12 meses (sin tope de 1,000 filas).
+- [x] Conteo honesto de indicadores (solo los que tienen datos) y páginas para los desgloses por empresa.
 - [ ] Caché: los datos cambian una vez al mes; revalidar al cargar una edición nueva.
 - [ ] Validación de parámetros (zod), actualizar `xlsx` (vulnerabilidades conocidas), límite de tamaño de archivo.
 - [ ] Arreglar el panel admin (hoy probablemente "dice éxito" sin insertar nada).
