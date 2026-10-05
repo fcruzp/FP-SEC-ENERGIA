@@ -136,7 +136,12 @@ export interface CatalogEntry {
   note?: string
 }
 
-export interface CatalogRow { entry: CatalogEntry; source: SheetRow }
+export interface CatalogRow {
+  entry: CatalogEntry
+  source: SheetRow
+  /** La partida existe en el catálogo pero no en esta edición del Excel (variante de formato) */
+  absent?: boolean
+}
 
 export function slugify(text: string): string {
   return text

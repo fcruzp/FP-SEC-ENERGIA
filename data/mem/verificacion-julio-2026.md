@@ -40,19 +40,33 @@
 - La hoja CDEEE solo tiene datos hasta enero 2024.
 - En CDEEE, la etiqueta "EgeHaina (Larimar) II" aparece en dos filas con valores distintos; se cargan como series separadas.
 
+## Anexo de resultados financieros (flujo de caja, US$ MM)
+
+Se carga desde la hoja "Anexo Res Financieros" con plantillas explícitas por empresa (EDEs, Edenorte, Edesur, Edeeste, EGEHID, ETED, EGPC): 339 partidas. Cada edición trae solo los meses del año en curso (enero → mes de la edición).
+
+| Verificación (edición julio) | Comparaciones | Diferencias |
+|---|---|---|
+| Totales = suma de sus partidas; balances = su fórmula; EDEs = Edenorte + Edesur + Edeeste | 1,239 | 0 |
+| Columna "Acumulado" = suma de los meses | 339 | 0 |
+
+Las ediciones de marzo y abril usaban otro formato en el bloque EGPC (sin la fila "3. Gastos Totales"); se reconocen con una variante explícita de la plantilla.
+
+Totales EDEs enero–julio 2026: aportes del Gobierno US$ 1,126.9 MM · ingresos US$ 1,188.7 MM · gastos US$ 2,153.8 MM · balance operacional US$ −965.1 MM.
+
 ## Historial de ediciones cargadas y revisiones del MEM
 
 Las ediciones se cargaron en orden (marzo → julio 2026). En cada carga se compara cada valor con el de la edición anterior; los cambios quedan en la tabla `data_point_revisions`.
 
 | Edición | Hoja EDE | Valores | Valores revisados respecto a la edición anterior |
 |---|---|---|---|
-| Marzo 2026 | `EDE's` | 68,209 | — |
-| Abril 2026 | `EDE` (renombrada solo en esta edición) | 68,480 | 28 |
-| Mayo 2026 | `EDE's` | 68,751 | 0 |
-| Junio 2026 (vf) | `EDE's` | 69,022 | 68 |
-| Julio 2026 | `EDE's` | 69,293 | 0 |
+| Marzo 2026 | `EDE's` | 69,223 | — |
+| Abril 2026 | `EDE` (renombrada solo en esta edición) | 69,832 | 35 |
+| Mayo 2026 | `EDE's` | 70,446 | 16 |
+| Junio 2026 (vf) | `EDE's` | 71,056 | 96 |
+| Julio 2026 | `EDE's` | 71,666 | 0 |
 
 Revisiones relevantes:
 
 - **Abril 2026:** clientes facturados de Edesur en ene–dic 2025 rebajados en ≈78,000 (≈8 %); el total EDEs se ajusta igual. Gastos operativos de EGPC de marzo 2026: 2.51 → 3.47 US$ MM.
+- **Mayo 2026:** aportes del Gobierno de marzo 2026 corregidos: Edesur 32.5 → 42.4 US$ MM (total EDEs 177.0 → 186.9). Ajustes menores en ingresos de EGEHID de abril.
 - **Junio 2026:** reclasificación de la generación de 2025 entre gas natural (−40 a −57 GWh/mes) y fuel oil No. 6 (+38 a +57 GWh/mes), con su efecto en la composición de la matriz. Ajustes menores en FETE, inversiones y disponibilidad de 2026.

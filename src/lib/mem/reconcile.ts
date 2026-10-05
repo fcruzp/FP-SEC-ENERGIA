@@ -86,17 +86,80 @@ export function checkEdeBreakdowns(rows: CatalogRow[]): CheckResult {
   return result
 }
 
-/** Estructura: cada fila del catálogo trae datos y no hay fechas repetidas. */
-export function checkCoverage(rows: CatalogRow[]): CheckResult {
+/** Relaciones contables del anexo financiero: totales = suma de partidas; balances = su fórmula. */
+export function checkLineRelations(rows: CatalogRow[], relations: { slug: string; kind: string; terms: [number, string][] }[]): CheckResult {
   const result: CheckResult = {
-    check: 'cobertura',
-    description: 'Cada indicador del catálogo tiene valores mensuales en el Excel.',
-    compared: rows.length,
+    check: 'partidas_cuadran',
+    description: 'En el anexo financiero, cada total suma sus partidas, cada balance cumple su fórmula y las EDEs suman el total, mes a mes.',
+    compared: 0,
+    mismatches: 0,
+    samples: [],
+    keys: [],
+  }
+  const bySlug = new Map(rows.map(r => [r.entry.slug, r]))
+  for (const rel of relations) {
+    const target = bySlug.get(rel.slug)
+    if (!target) throw new Error(`Relación con indicador inexistente: ${rel.slug}`)
+    for (const [date, total] of target.source.monthly) {
+      let sum = 0
+      let complete = true
+      for (const [sign, slug] of rel.terms) {
+        const term = bySlug.get(slug)
+        if (!term) throw new Error(`Relación ${rel.slug}: término inexistente ${slug}`)
+        const v = term.source.monthly.get(date)?.value
+        if (v === undefined) { complete = false; break }
+        sum += sign * v
+      }
+      if (!complete) continue
+      result.compared++
+      if (Math.abs(sum - total.value) > tolerance(total.value)) {
+        result.mismatches++
+        result.keys.push(`${rel.slug}|${date}`)
+        if (result.samples.length < 15) {
+          result.samples.push(`${rel.slug} ${date}: ${rel.kind}=${fmt(sum)} vs Excel=${fmt(total.value)} (${total.cell})`)
+        }
+      }
+    }
+  }
+  return result
+}
+
+/** Columna "Acumulado" del Excel = suma de los meses del año. */
+export function checkAccumulated(rows: CatalogRow[], accumulated: Map<string, { value: number; cell: string }>): CheckResult {
+  const result: CheckResult = {
+    check: 'acumulado_anual',
+    description: 'La columna "Acumulado" del anexo financiero coincide con la suma de los meses.',
+    compared: 0,
     mismatches: 0,
     samples: [],
     keys: [],
   }
   for (const { entry, source } of rows) {
+    const acc = accumulated.get(entry.slug)
+    if (!acc) continue
+    const sum = [...source.monthly.values()].reduce((s, v) => s + v.value, 0)
+    result.compared++
+    if (Math.abs(sum - acc.value) > tolerance(acc.value)) {
+      result.mismatches++
+      result.keys.push(entry.slug)
+      if (result.samples.length < 15) result.samples.push(`${entry.slug}: meses=${fmt(sum)} vs acumulado=${fmt(acc.value)} (${acc.cell})`)
+    }
+  }
+  return result
+}
+
+/** Estructura: cada fila del catálogo trae datos y no hay fechas repetidas. */
+export function checkCoverage(rows: CatalogRow[]): CheckResult {
+  const result: CheckResult = {
+    check: 'cobertura',
+    description: 'Cada indicador del catálogo tiene valores mensuales en el Excel.',
+    compared: rows.filter(r => !r.absent).length,
+    mismatches: 0,
+    samples: [],
+    keys: [],
+  }
+  for (const { entry, source, absent } of rows) {
+    if (absent) continue
     if (source.monthly.size === 0) {
       result.mismatches++
       result.keys.push(entry.slug)

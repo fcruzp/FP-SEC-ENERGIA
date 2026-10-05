@@ -5,7 +5,9 @@
  */
 import { readSheet, readWorkbook } from './workbook'
 import { buildSheetCatalog, MEM_SHEETS, resolveSheetName, type CatalogEntry, type CatalogRow } from './catalog'
-import { checkAnnualTotals, checkCoverage, checkEdeBreakdowns, type CheckResult } from './reconcile'
+import { checkAccumulated, checkAnnualTotals, checkCoverage, checkEdeBreakdowns, checkLineRelations, type CheckResult } from './reconcile'
+import { ANNEX_SHEET, readFinancialAnnex, type LineRelation } from './annex-financial'
+import type { CellValue } from './workbook'
 
 export const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
@@ -19,7 +21,16 @@ export function editionFromFilename(name: string): string {
 export interface SheetSummary { sheet: string; actualName: string; indicators: number; firstMonth: string; lastMonth: string }
 
 /** Lee el Excel y construye el catálogo con los valores de cada fila. */
-export function extractWorkbook(data: ArrayBuffer | Buffer): { rows: CatalogRow[]; sheets: SheetSummary[] } {
+export interface Extraction {
+  rows: CatalogRow[]
+  sheets: SheetSummary[]
+  /** Relaciones contables del anexo financiero (totales y balances) */
+  relations: LineRelation[]
+  /** Columna "Acumulado" del anexo financiero */
+  accumulated: Map<string, CellValue>
+}
+
+export function extractWorkbook(data: ArrayBuffer | Buffer): Extraction {
   const wb = readWorkbook(data)
   const rows: CatalogRow[] = []
   const sheets: SheetSummary[] = []
@@ -36,7 +47,18 @@ export function extractWorkbook(data: ArrayBuffer | Buffer): { rows: CatalogRow[
       lastMonth: sheet.months[sheet.months.length - 1],
     })
   }
-  return { rows, sheets }
+  // Anexo de resultados financieros (meses del año en curso)
+  const annex = readFinancialAnnex(wb, ANNEX_SHEET, rows.length + 1)
+  rows.push(...annex.rows)
+  const annexMonths = annex.rows.flatMap(r => [...r.source.monthly.keys()]).sort()
+  sheets.push({
+    sheet: ANNEX_SHEET,
+    actualName: ANNEX_SHEET,
+    indicators: annex.rows.length,
+    firstMonth: annexMonths[0],
+    lastMonth: annexMonths[annexMonths.length - 1],
+  })
+  return { rows, sheets, relations: annex.relations, accumulated: annex.accumulated }
 }
 
 /** Campos del catálogo que deben mantenerse estables entre ediciones. */
@@ -73,8 +95,16 @@ export interface CheckOutcome {
 }
 
 /** Ejecuta las verificaciones; una diferencia no registrada como anomalía conocida hace fallar la carga. */
-export function runChecks(rows: CatalogRow[], known: KnownAnomaly[]): { outcomes: CheckOutcome[]; ok: boolean } {
-  const outcomes = [checkCoverage(rows), checkAnnualTotals(rows), checkEdeBreakdowns(rows)].map(result => {
+export function runChecks(extraction: Extraction, known: KnownAnomaly[]): { outcomes: CheckOutcome[]; ok: boolean } {
+  const { rows } = extraction
+  const results = [
+    checkCoverage(rows),
+    checkAnnualTotals(rows),
+    checkEdeBreakdowns(rows),
+    checkLineRelations(rows, extraction.relations),
+    checkAccumulated(rows, extraction.accumulated),
+  ]
+  const outcomes = results.map(result => {
     const knownHere = known.filter(k => k.check === result.check && result.keys.includes(k.key))
     const unexpected = result.keys.filter(key => !knownHere.some(k => k.key === key))
     return { result, known: knownHere, unexpected, ok: unexpected.length === 0 }

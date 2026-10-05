@@ -55,7 +55,7 @@ describe('edición julio 2026', () => {
   })
 
   test('verificaciones de conciliación sin diferencias inesperadas', () => {
-    const { ok, outcomes } = runChecks(julio.rows, known)
+    const { ok, outcomes } = runChecks(julio, known)
     expect(ok).toBe(true)
     expect(outcomes.find(o => o.result.check === 'edes_suman_total')!.result.mismatches).toBe(0)
   })
@@ -104,6 +104,37 @@ describe('edición abril 2026 (hoja "EDE" en lugar de "EDE\'s")', () => {
     const abril = extractWorkbook(readFileSync(ABRIL))
     expect(abril.sheets.find(s => s.sheet === "EDE's")!.actualName).toBe('EDE')
     expect(compareCatalog(abril.rows.map(r => r.entry), catalog)).toEqual([])
+  })
+})
+
+describe('anexo de resultados financieros (julio 2026)', () => {
+  test('solo trae los meses ejecutados (enero a julio)', () => {
+    const annex = julio.sheets.find(s => s.sheet === 'Anexo Res Financieros')!
+    expect(annex.firstMonth).toBe('2026-01-01')
+    expect(annex.lastMonth).toBe('2026-07-01')
+  })
+
+  test('aportes del Gobierno a las EDEs, enero–julio 2026', () => {
+    // Celdas del Excel: 113, 156.75, 186.876, 161, 181.833, 160.9, 166.5
+    expect(Number(sumYtd('rf-edes-financiamiento-aportes-del-gobierno', 2026, 7).toFixed(3))).toBe(1126.859)
+  })
+
+  test('las partidas cuadran: totales, balances y EDEs vs total', () => {
+    const { outcomes } = runChecks(julio, known)
+    const relations = outcomes.find(o => o.result.check === 'partidas_cuadran')!
+    expect(relations.result.compared).toBeGreaterThan(1000)
+    expect(relations.result.mismatches).toBe(0)
+    expect(outcomes.find(o => o.result.check === 'acumulado_anual')!.result.mismatches).toBe(0)
+  })
+})
+
+describe('formatos anteriores del anexo financiero', () => {
+  test('marzo 2026: EGPC sin "Gastos Totales" se reconoce con la variante y cuadra', () => {
+    const marzo = extractWorkbook(readFileSync(resolve(ROOT, 'data/mem/Informe-de-Desempeno-Anexos._-marzo-2026.xlsx')))
+    expect(compareCatalog(marzo.rows.map(r => r.entry), catalog)).toEqual([])
+    const absent = marzo.rows.filter(r => r.absent).map(r => r.entry.slug)
+    expect(absent).toEqual(['rf-egpc-gastos-totales'])
+    expect(runChecks(marzo, known).ok).toBe(true)
   })
 })
 
