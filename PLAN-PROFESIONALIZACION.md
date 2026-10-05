@@ -39,7 +39,7 @@
 
 ---
 
-> **Avance al 4-oct-2026:** Fase 0 completa salvo el contenido de relleno del portal (se mantiene como mockup para la presentación). Fase 1: edición **julio 2026** cargada con el parser nuevo (339 indicadores, 69,293 valores, 14/14 cifras del PDF verificadas — ver `data/mem/verificacion-julio-2026.md`). Pendiente: hojas de anexos y tarifas, ediciones intermedias para el historial de revisiones, tests, y conectar el panel admin al parser nuevo.
+> **Avance al 5-oct-2026:** Fase 0 completa salvo el contenido de relleno del portal (se mantiene como mockup para la presentación). Fase 1: ediciones **marzo a julio 2026** cargadas en orden con el parser nuevo (678 indicadores, 71,666 valores; 14/14 cifras del PDF verificadas; 147 revisiones del MEM registradas; 28 pruebas automáticas). Incluye el **anexo de resultados financieros** (aportes del Gobierno, CAPEX y balances por empresa). Ver `data/mem/verificacion-julio-2026.md`. Pendiente: hojas de deuda y tarifas, y conectar el panel admin al parser nuevo.
 
 ## 3. Plan por fases
 
