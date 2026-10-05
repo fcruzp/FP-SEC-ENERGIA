@@ -129,7 +129,7 @@ Flujo diario para el equipo: entrar a `/admin/contenido` → "Nueva noticia" →
 
 ## 6. Análisis con IA (OpenRouter + GPT Luna)
 
-- Modelos disponibles hoy en OpenRouter: `openai/gpt-6-luna`, `openai/gpt-6-luna-pro`, `openai/gpt-5.6-luna` (y variantes). **Propuesta: `openai/gpt-6-luna`**, configurable por variable de entorno (`OPENROUTER_MODEL`).
+- Modelos disponibles hoy en OpenRouter: `openai/gpt-6-luna`, `openai/gpt-6-luna-pro`, `openai/gpt-5.6-luna` (y variantes). **Elegido: `openai/gpt-6-luna`** (el más barato: US$0.10 / US$0.50 por millón de tokens de entrada / salida, frente a US$0.20 / US$1.20 de `gpt-5.6-luna`). Configurable por variable de entorno (`OPENROUTER_MODEL`).
 - Uso: botón "Analizar con IA" en cada indicador → resumen en lenguaje claro de tendencia, contexto y comparación entre EDEs.
 - Reglas de exactitud: la IA **solo recibe los datos reales del indicador** (con fechas y fuente) y debe citarlos; la respuesta se marca como "Análisis generado por IA"; se guarda en `ai_analysis_logs` y se cachea por indicador y edición del informe (una llamada por mes, no por visita); límite de uso por visitante.
 - Requiere: `OPENROUTER_API_KEY` en `.env.local` y en Netlify.
