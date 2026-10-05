@@ -104,7 +104,13 @@ export default function IndicatorDetailPage() {
           (ind) => ind.id === parentId || ind.parent_indicator_id === parentId
         )
         const parentIndicator = family.find((ind) => ind.id === parentId)
+        // Series hermanas que comparten nombre base: "Tarifa BTS1 · Energía — Aplicada · Edenorte" → "Aplicada · Edenorte"
+        const baseOf = (name: string) => (name.includes(' — ') ? name.slice(0, name.lastIndexOf(' — ')) : null)
+        const suffixOf = (name: string) => name.slice(name.lastIndexOf(' — ') + 3)
+        const parentBase = parentIndicator ? baseOf(parentIndicator.name) : null
+        const sharedBase = parentBase && family.filter((ind) => baseOf(ind.name) === parentBase).length > 1
         const breakdownLabel = (ind: IndicatorWithData) => {
+          if (sharedBase && baseOf(ind.name) === parentBase) return suffixOf(ind.name)
           if (ind.id === parentId) return `Total · ${ind.entity?.name ?? ind.name}`
           // Partida del mismo total: "Financiamiento — Aportes del gobierno" → "Aportes del gobierno"
           if (parentIndicator && ind.name.startsWith(`${parentIndicator.name} — `)) {

@@ -90,7 +90,7 @@ export function checkEdeBreakdowns(rows: CatalogRow[]): CheckResult {
 export function checkLineRelations(rows: CatalogRow[], relations: { slug: string; kind: string; terms: [number, string][] }[]): CheckResult {
   const result: CheckResult = {
     check: 'partidas_cuadran',
-    description: 'En el anexo financiero, cada total suma sus partidas, cada balance cumple su fórmula y las EDEs suman el total, mes a mes.',
+    description: 'En los anexos financiero y de deuda, cada total suma sus partidas, cada balance cumple su fórmula y las EDEs suman el total, mes a mes.',
     compared: 0,
     mismatches: 0,
     samples: [],
@@ -128,7 +128,7 @@ export function checkLineRelations(rows: CatalogRow[], relations: { slug: string
 export function checkAccumulated(rows: CatalogRow[], accumulated: Map<string, { value: number; cell: string }>): CheckResult {
   const result: CheckResult = {
     check: 'acumulado_anual',
-    description: 'La columna "Acumulado" del anexo financiero coincide con la suma de los meses.',
+    description: 'Los totales del año del Excel (columna "Acumulado" del anexo financiero y fila "Total" de pagos) coinciden con la suma de los meses.',
     compared: 0,
     mismatches: 0,
     samples: [],

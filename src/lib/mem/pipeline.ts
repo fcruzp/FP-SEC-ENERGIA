@@ -7,6 +7,8 @@ import { readSheet, readWorkbook } from './workbook'
 import { buildSheetCatalog, MEM_SHEETS, resolveSheetName, type CatalogEntry, type CatalogRow } from './catalog'
 import { checkAccumulated, checkAnnualTotals, checkCoverage, checkEdeBreakdowns, checkLineRelations, type CheckResult } from './reconcile'
 import { ANNEX_SHEET, readFinancialAnnex, type LineRelation } from './annex-financial'
+import { DEBT_SHEET, readDebtAnnex } from './annex-debt'
+import { NEW_TARIFF_SHEET, OLD_TARIFF_SHEET, readTariffs } from './tariffs'
 import type { CellValue } from './workbook'
 
 export const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -26,8 +28,12 @@ export interface Extraction {
   sheets: SheetSummary[]
   /** Relaciones contables del anexo financiero (totales y balances) */
   relations: LineRelation[]
-  /** Columna "Acumulado" del anexo financiero */
+  /** Columna "Acumulado" del anexo financiero y total anual de la tabla de pagos */
   accumulated: Map<string, CellValue>
+  /** Mes de la foto de deuda: debe coincidir con la edición del informe */
+  snapshotMonth: string
+  /** Observaciones de la lectura (p. ej. períodos tarifarios duplicados) */
+  notes: string[]
 }
 
 export function extractWorkbook(data: ArrayBuffer | Buffer): Extraction {
@@ -58,7 +64,37 @@ export function extractWorkbook(data: ArrayBuffer | Buffer): Extraction {
     firstMonth: annexMonths[0],
     lastMonth: annexMonths[annexMonths.length - 1],
   })
-  return { rows, sheets, relations: annex.relations, accumulated: annex.accumulated }
+  // Anexo de deuda y pagos (fotos al cierre del mes y pagos del año en curso)
+  const debt = readDebtAnnex(wb, DEBT_SHEET, rows.length + 1)
+  rows.push(...debt.rows)
+  sheets.push({
+    sheet: DEBT_SHEET,
+    actualName: DEBT_SHEET,
+    indicators: debt.rows.length,
+    firstMonth: `${debt.snapshotMonth.slice(0, 4)}-01-01`,
+    lastMonth: debt.snapshotMonth,
+  })
+
+  // Tarifas: régimen anterior (2013–2019) y nuevo (desde 2020), hasta el mes de la edición
+  const tariffs = readTariffs(wb, debt.snapshotMonth, rows.length + 1)
+  rows.push(...tariffs.rows)
+  const tariffMonths = tariffs.rows.flatMap(r => [...r.source.monthly.keys()]).sort()
+  sheets.push({
+    sheet: 'Regímenes tarifarios',
+    actualName: `${OLD_TARIFF_SHEET} + ${NEW_TARIFF_SHEET}`,
+    indicators: tariffs.rows.length,
+    firstMonth: tariffMonths[0],
+    lastMonth: tariffMonths[tariffMonths.length - 1],
+  })
+
+  return {
+    rows,
+    sheets,
+    relations: [...annex.relations, ...debt.relations],
+    accumulated: new Map([...annex.accumulated, ...debt.accumulated]),
+    snapshotMonth: debt.snapshotMonth,
+    notes: tariffs.overlaps.map(o => `Tarifas: períodos solapados con valores idénticos (${o})`),
+  }
 }
 
 /** Campos del catálogo que deben mantenerse estables entre ediciones. */
@@ -85,7 +121,13 @@ export function compareCatalog(current: CatalogEntry[], expected: CatalogEntry[]
   return diffs
 }
 
-export interface KnownAnomaly { check: string; key: string; explanation: string }
+export interface KnownAnomaly {
+  check: string
+  key: string
+  explanation: string
+  /** Si se indica, la anomalía solo se acepta en esa edición ('YYYY-MM-01') */
+  edition?: string
+}
 
 export interface CheckOutcome {
   result: CheckResult
@@ -95,7 +137,8 @@ export interface CheckOutcome {
 }
 
 /** Ejecuta las verificaciones; una diferencia no registrada como anomalía conocida hace fallar la carga. */
-export function runChecks(extraction: Extraction, known: KnownAnomaly[]): { outcomes: CheckOutcome[]; ok: boolean } {
+export function runChecks(extraction: Extraction, allKnown: KnownAnomaly[]): { outcomes: CheckOutcome[]; ok: boolean } {
+  const known = allKnown.filter(k => !k.edition || k.edition === extraction.snapshotMonth)
   const { rows } = extraction
   const results = [
     checkCoverage(rows),

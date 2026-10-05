@@ -39,7 +39,7 @@
 
 ---
 
-> **Avance al 5-oct-2026:** Fase 0 completa salvo el contenido de relleno del portal (se mantiene como mockup para la presentación). Fase 1: ediciones **marzo a julio 2026** cargadas en orden con el parser nuevo (678 indicadores, 71,666 valores; 14/14 cifras del PDF verificadas; 147 revisiones del MEM registradas; 28 pruebas automáticas). Incluye el **anexo de resultados financieros** (aportes del Gobierno, CAPEX y balances por empresa). Ver `data/mem/verificacion-julio-2026.md`. Pendiente: hojas de deuda y tarifas, y conectar el panel admin al parser nuevo.
+> **Avance al 5-oct-2026:** Fase 0 completa salvo el contenido de relleno del portal (se mantiene como mockup para la presentación). Fase 1: ediciones **marzo a julio 2026** cargadas en orden con el parser nuevo con **las 11 hojas del informe** (918 indicadores, 98,430 valores; 14/14 cifras del PDF verificadas; 147 revisiones del MEM registradas; 34 pruebas automáticas): series operativas desde 2009, anexo de resultados financieros (aportes del Gobierno, CAPEX, balances), deuda y pagos a generadoras, y tarifas 2013–2026. Ver `data/mem/verificacion-julio-2026.md`. Pendiente de Fase 1: conectar el panel admin al parser nuevo.
 
 ## 3. Plan por fases
 
@@ -64,7 +64,7 @@ Objetivo: 100 % de los datos en el indicador y la empresa correctos, verificable
 - [x] **Procedencia**: tabla `reports` (una fila por edición), `report_id` en cada dato, tabla `ingestion_runs` con cobertura, y registro de revisiones cuando el MEM cambia un valor pasado.
 - [x] **Catálogo limpio**: unidades normalizadas (tabla de unidades), restricción empresa-del-dato = empresa-del-indicador, nombres no ambiguos, porcentajes con convención única.
 - [x] Anexo de resultados financieros (plantillas explícitas y conciliación contable).
-- [ ] Hojas de **deuda con generadoras** y **tarifas** (régimen nuevo trimestral Referencia/Aplicada por EDE; régimen anterior mensual).
+- [x] Hojas de **deuda con generadoras** (deuda corriente, pagos, balance pendiente) y **tarifas** (serie continua 2013–2026, aplicada y de referencia por EDE).
 - [x] Ediciones intermedias (mar–jun 2026) para el historial de revisiones.
 - [x] Pruebas automáticas del parser (bun test).
 - [x] Recargar desde cero y **ponerse al día**: ediciones abril–julio 2026 (y ediciones anteriores para detectar revisiones históricas).

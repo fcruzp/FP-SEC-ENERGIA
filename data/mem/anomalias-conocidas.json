@@ -13,5 +13,29 @@
     "check": "meses_vs_total_anual",
     "key": "egpc-total-inversiones|2025",
     "explanation": "En el Excel del MEM la celda del total anual 2025 (EGPC!HS45) vale 0, aunque los meses de 2025 suman 0.848 US$ MM. Se usan los valores mensuales."
+  },
+  {
+    "check": "acumulado_anual",
+    "key": "pagos-edes-compra-energia",
+    "edition": "2026-04-01",
+    "explanation": "Edición abril 2026: la fila de mayo (aún no ejecutado) repite los pagos a CTPC de abril (66.976 US$ MM) y la fila Total (Anexo Deuda!F315) los suma. Se cargan solo enero–abril, que sí cuadran con las ediciones siguientes."
+  },
+  {
+    "check": "acumulado_anual",
+    "key": "pagos-edes-compra-energia-edenorte",
+    "edition": "2026-04-01",
+    "explanation": "Edición abril 2026: la fila de mayo repite los pagos a CTPC de abril (27.933) y la fila Total (Anexo Deuda!C315) los suma."
+  },
+  {
+    "check": "acumulado_anual",
+    "key": "pagos-edes-compra-energia-edesur",
+    "edition": "2026-04-01",
+    "explanation": "Edición abril 2026: la fila de mayo repite los pagos a CTPC de abril (16.078) y la fila Total (Anexo Deuda!D315) los suma."
+  },
+  {
+    "check": "acumulado_anual",
+    "key": "pagos-edes-compra-energia-edeeste",
+    "edition": "2026-04-01",
+    "explanation": "Edición abril 2026: la fila de mayo repite los pagos a CTPC de abril (22.965) y la fila Total (Anexo Deuda!E315) los suma."
   }
 ]

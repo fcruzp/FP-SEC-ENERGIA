@@ -128,12 +128,53 @@ describe('anexo de resultados financieros (julio 2026)', () => {
   })
 })
 
+describe('anexo de deuda (julio 2026)', () => {
+  test('la foto de deuda es del mes de la edición', () => {
+    expect(julio.snapshotMonth).toBe('2026-07-01')
+  })
+
+  test('deuda corriente de las EDEs con generadoras al cierre de julio', () => {
+    expect(Number(value('deuda-edes-corriente', '2026-07-01')!.toFixed(3))).toBe(179.039)
+    // "Grupo AES" es subtotal de AES Andrés + AES DPP + EGE Itabo
+    expect(Number(value('deuda-edes-corriente-grupo-aes', '2026-07-01')!.toFixed(3))).toBe(56.811)
+  })
+
+  test('pagos de las EDEs por compra de energía, enero–julio = fila Total del Excel', () => {
+    expect(Number(sumYtd('pagos-edes-compra-energia', 2026, 7).toFixed(3))).toBe(1928.181)
+  })
+})
+
+describe('tarifas (régimen anterior + nuevo)', () => {
+  const tariffs = julio.rows.filter(r => r.entry.slug.startsWith('tarifa-'))
+
+  test('168 series continuas de julio 2013 a julio 2026, sin huecos', () => {
+    expect(tariffs.length).toBe(168)
+    expect(tariffs.every(r => r.source.monthly.size === 157)).toBe(true)
+  })
+
+  test('BTS1 primer bloque: aplicada congelada en 4.44 hasta oct-2021, 5.97 en jul-2026; referencia 16.80', () => {
+    expect(value('tarifa-bts1-energia-0-200-aplicada-edenorte', '2013-07-01')).toBe(4.44)
+    expect(value('tarifa-bts1-energia-0-200-aplicada-edenorte', '2021-10-01')).toBe(4.44)
+    expect(value('tarifa-bts1-energia-0-200-aplicada-edenorte', '2026-07-01')).toBe(5.97)
+    expect(value('tarifa-bts1-energia-0-200-referencia-edenorte', '2026-07-01')).toBe(16.8)
+  })
+
+  test('el período duplicado abr–may / abr–jun 2026 se verifica idéntico', () => {
+    expect(julio.notes.some(n => n.includes('abr - may 26'))).toBe(true)
+  })
+})
+
 describe('formatos anteriores del anexo financiero', () => {
   test('marzo 2026: EGPC sin "Gastos Totales" se reconoce con la variante y cuadra', () => {
     const marzo = extractWorkbook(readFileSync(resolve(ROOT, 'data/mem/Informe-de-Desempeno-Anexos._-marzo-2026.xlsx')))
     expect(compareCatalog(marzo.rows.map(r => r.entry), catalog)).toEqual([])
     const absent = marzo.rows.filter(r => r.absent).map(r => r.entry.slug)
-    expect(absent).toEqual(['rf-egpc-gastos-totales'])
+    // También faltan las dos generadoras que el MEM agregó desde mayo 2026
+    expect(absent).toEqual([
+      'rf-egpc-gastos-totales',
+      'deuda-edes-corriente-la-reina-s-a-s',
+      'deuda-edes-corriente-materias-primas-sas-maprica',
+    ])
     expect(runChecks(marzo, known).ok).toBe(true)
   })
 })

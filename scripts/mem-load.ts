@@ -63,6 +63,11 @@ async function main() {
     const alias = s.actualName !== s.sheet ? ` (hoja "${s.actualName}")` : ''
     console.log(`   ${s.sheet.padEnd(22)} ${String(s.indicators).padStart(3)} indicadores · ${s.firstMonth} → ${s.lastMonth}${alias}`)
   }
+  extraction.notes.forEach(n => console.log(`   ℹ️  ${n}`))
+  if (extraction.snapshotMonth !== edition) {
+    console.error(`\n❌ La foto de deuda del Excel es de ${extraction.snapshotMonth}, pero el archivo dice ser la edición ${edition}.`)
+    process.exit(4)
+  }
   const catalog = rows.map(r => r.entry)
 
   if (!existsSync(CATALOG_FILE) || acceptCatalog) {
