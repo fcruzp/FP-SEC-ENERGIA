@@ -57,7 +57,8 @@ async function main() {
   console.log(`📄 ${sourceFile}\n   edición ${edition} · sha256 ${sha256.slice(0, 16)}…`)
 
   // ── 1. Estructura y catálogo ──
-  const { rows, sheets } = extractWorkbook(buffer)
+  const extraction = extractWorkbook(buffer)
+  const { rows, sheets } = extraction
   for (const s of sheets) {
     const alias = s.actualName !== s.sheet ? ` (hoja "${s.actualName}")` : ''
     console.log(`   ${s.sheet.padEnd(22)} ${String(s.indicators).padStart(3)} indicadores · ${s.firstMonth} → ${s.lastMonth}${alias}`)
@@ -80,7 +81,7 @@ async function main() {
 
   // ── 2. Verificaciones ──
   const known: KnownAnomaly[] = existsSync(KNOWN_FILE) ? JSON.parse(readFileSync(KNOWN_FILE, 'utf-8')) : []
-  const { outcomes, ok: checksOk } = runChecks(rows, known)
+  const { outcomes, ok: checksOk } = runChecks(extraction, known)
   const checks = outcomes.map(o => o.result)
   const failed = !checksOk
   console.log('\n🔎 Verificaciones')
@@ -155,7 +156,7 @@ async function main() {
     }
 
     // Indicadores de las hojas cargadas que ya no están en el catálogo: se eliminan
-    const sheets = MEM_SHEETS.map(s => s.category)
+    const sheets = [...new Set(catalog.map(c => c.category))]
     const removed = await db.query(
       `DELETE FROM indicators i USING indicator_categories c
         WHERE c.id = i.category_id AND c.slug = ANY($1) AND NOT (i.slug = ANY($2)) RETURNING i.slug`,

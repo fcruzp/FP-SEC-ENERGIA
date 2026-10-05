@@ -310,7 +310,9 @@ export function readFinancialAnnex(wb: XLSX.WorkBook, sheetName: string, startOr
         }
       }
       const acc = r !== undefined && accumulatedCol >= 0 ? at(r, accumulatedCol) : undefined
-      if (acc?.t === 'n') accumulated.set(slug, { value: acc.v as number, cell: `${sheetName}!${XLSX.utils.encode_cell({ r, c: accumulatedCol })}` })
+      if (r !== undefined && acc?.t === 'n') {
+        accumulated.set(slug, { value: acc.v as number, cell: `${sheetName}!${XLSX.utils.encode_cell({ r, c: accumulatedCol })}` })
+      }
 
       // Padre: en las EDEs individuales, la misma partida del total EDEs; si no, la partida superior
       const parent = def.breakdownOf
