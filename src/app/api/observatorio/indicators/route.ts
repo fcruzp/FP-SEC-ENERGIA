@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
-import type { Indicator, IndicatorCategory, Entity } from '@/lib/supabase-types'
+import { enrichWithStats, fetchIndicatorStats } from '@/lib/indicator-stats'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       `)
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
+      .range(0, 4999)
 
     // Filter by category slug
     if (categorySlug) {
@@ -87,80 +88,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Error al obtener indicadores' }, { status: 500 })
     }
 
-    // If with_data, fetch latest data point for each indicator
+    // If with_data, add latest/previous values and sparkline from indicator_stats
     if (withData && indicators && indicators.length > 0) {
-      const indicatorIds = indicators.map(i => i.id)
-
-      // Build a map of indicator_id -> entity_id for filtering
-      const indicatorEntityMap: Record<string, string | null> = {}
-      for (const ind of indicators) {
-        indicatorEntityMap[ind.id] = ind.entity_id
-      }
-
-      // MEMORY-OPTIMIZED: Fetch recent data points with a smart limit
-      // Instead of loading ALL 60K+ data points, fetch the most recent 2500 rows
-      // which covers enough data for latest/previous per indicator
-      const { data: dataPoints } = await supabase
-        .from('data_points')
-        .select('indicator_id, value, date, period_type, entity_id')
-        .in('indicator_id', indicatorIds)
-        .order('date', { ascending: false })
-        .limit(2500)
-
-      // Group by indicator_id and take the latest, filtered by the indicator's entity
-      const latestByIndicator: Record<string, { value: number; date: string }> = {}
-      if (dataPoints) {
-        for (const dp of dataPoints) {
-          if (!latestByIndicator[dp.indicator_id]) {
-            // Only consider data points that match the indicator's entity
-            const indicatorEntityId = indicatorEntityMap[dp.indicator_id]
-            if (indicatorEntityId) {
-              if (dp.entity_id === indicatorEntityId) {
-                latestByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
-              }
-            } else {
-              if (!dp.entity_id) {
-                latestByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
-              }
-            }
-          }
-        }
-      }
-
-      // Get previous data point for change calculation (same entity filter)
-      const previousByIndicator: Record<string, { value: number; date: string }> = {}
-      if (dataPoints) {
-        for (const dp of dataPoints) {
-          const latest = latestByIndicator[dp.indicator_id]
-          if (latest && dp.date !== latest.date && !previousByIndicator[dp.indicator_id]) {
-            const indicatorEntityId = indicatorEntityMap[dp.indicator_id]
-            const matchesEntity = indicatorEntityId
-              ? dp.entity_id === indicatorEntityId
-              : !dp.entity_id
-
-            if (matchesEntity) {
-              previousByIndicator[dp.indicator_id] = { value: dp.value, date: dp.date }
-            }
-          }
-        }
-      }
-
-      // Enrich indicators with data
-      const enriched = indicators.map(ind => {
-        const latest = latestByIndicator[ind.id]
-        const previous = previousByIndicator[ind.id]
-        return {
-          ...ind,
-          latest_value: latest?.value ?? null,
-          latest_date: latest?.date ?? null,
-          previous_value: previous?.value ?? null,
-          change: latest && previous ? latest.value - previous.value : null,
-          change_pct: latest && previous && previous.value !== 0
-            ? ((latest.value - previous.value) / Math.abs(previous.value)) * 100
-            : null,
-        }
-      })
-
+      const stats = await fetchIndicatorStats()
+      const enriched = indicators
+        .map(ind => enrichWithStats(ind, stats.get(ind.id)))
+        .filter(ind => ind.latest_value !== null)
       return NextResponse.json({ indicators: enriched })
     }
 

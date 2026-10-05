@@ -62,6 +62,15 @@ export async function GET() {
  * }
  */
 export async function POST(request: NextRequest) {
+  // Desactivado: este flujo usaba el parser anterior (emparejamiento por nombre), incompatible
+  // con el catálogo nuevo. Las ediciones del MEM se cargan con scripts/mem-load.ts hasta que
+  // el backoffice use el mismo parser.
+  if (process.env.LEGACY_XLS_UPLOAD !== 'enabled') {
+    return NextResponse.json(
+      { error: 'La carga desde el panel está desactivada temporalmente. Usa scripts/mem-load.ts.' },
+      { status: 410 },
+    )
+  }
   try {
     const body = await request.json()
 

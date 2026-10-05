@@ -1,0 +1,41 @@
+# Verificación de la carga — Informe de Desempeño EEE, edición julio 2026
+
+- **Fuente:** Ministerio de Energía y Minas (MEM), publicado el 22-sep-2026
+  - Excel: https://mem.gob.do/wp-content/uploads/2026/09/Informe-de-Desempeno-Anexos._-julio-2026.xlsx
+  - PDF: https://mem.gob.do/wp-content/uploads/2026/09/Informe_Desempeno_EEE_julio_2026-.pdf
+- **Carga:** `bun scripts/mem-load.ts` el 4-oct-2026 · 339 indicadores · 69,293 valores mensuales (ene-2009 → jul-2026)
+
+## Verificaciones automáticas (en cada carga)
+
+| Verificación | Comparaciones | Diferencias |
+|---|---|---|
+| Cada indicador del catálogo tiene datos | 339 | 0 |
+| Suma de meses = total anual del Excel (GWh, US$ MM, RD$ MM) | 3,648 | 3 (anomalías de la fuente, ver `anomalias-conocidas.json`) |
+| Edenorte + Edesur + Edeeste = total EDEs, mes a mes | 5,908 | 0 |
+
+## Cotejo contra el resumen ejecutivo del PDF
+
+| Dato del PDF | PDF | Base de datos | |
+|---|---|---|---|
+| Energía comprada EDEs ene–jul (GWh) | 12,072.1 | 12,072.1 | ✅ |
+| Energía facturada EDEs ene–jul (GWh) | 7,257.2 | 7,257.2 | ✅ |
+| Factura compra EDEs ene–jul (US$ MM) | 1,925.6 | 1,925.6 | ✅ |
+| Facturación venta EDEs ene–jul (US$ MM) | 1,229.9 | 1,229.9 | ✅ |
+| Cobros EDEs ene–jul (US$ MM) | 1,156.6 | 1,156.6 | ✅ |
+| Gastos operativos EDEs ene–jul (US$ MM) | 266.8 | 266.8 | ✅ |
+| Inversiones EDEs ene–jul (US$ MM) | 133.2 | 133.2 | ✅ |
+| Energía facturada EGEHID ene–jul (GWh) | 885.0 | 885.0 | ✅ |
+| Pérdidas año móvil jul-26 (%) | 39.2 | 39.2 | ✅ |
+| Cobranza año móvil jul-26 (%) | 95.4 | 95.4 | ✅ |
+| CRI año móvil jul-26 (%) | 58.0 | 58.0 | ✅ |
+| Índice de recuperación de energía año móvil jul-26 (%) | 57.7 | 57.7 | ✅ |
+| Tasa de cambio jul-26 (RD$/US$) | 58.88 | 58.88 | ✅ |
+| Factura compra EDEs jul-26 (US$ MM) | 317.67 | 317.67 | ✅ |
+
+**14 de 14 cifras coinciden.**
+
+## Observaciones sobre la fuente
+
+- El costo marginal de potencia figura en el Excel como cUS$/kW-mes, pero sus valores (≈ 9–11) corresponden a US$/kW-mes. Se mantiene la unidad publicada con una nota en la ficha del indicador hasta confirmarlo.
+- La hoja CDEEE solo tiene datos hasta enero 2024.
+- En CDEEE, la etiqueta "EgeHaina (Larimar) II" aparece en dos filas con valores distintos; se cargan como series separadas.

@@ -4,7 +4,7 @@ import SourceAttribution from '@/components/observatorio/SourceAttribution'
 import { getSource } from '@/lib/sources'
 import { formatDateOnly } from '@/lib/dates'
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   TrendingUp,
@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import ObservatorioHeader from '@/components/observatorio/ObservatorioHeader'
 import TimeSeriesChart from '@/components/observatorio/TimeSeriesChart'
-import EntitySelector from '@/components/observatorio/EntitySelector'
+import BreakdownSelector, { type BreakdownOption } from '@/components/observatorio/BreakdownSelector'
 import DateRangeFilter from '@/components/observatorio/DateRangeFilter'
 import DataTableView from '@/components/observatorio/DataTableView'
 import CategoryIcon from '@/components/observatorio/CategoryIcon'
@@ -28,7 +28,6 @@ import type {
   IndicatorCategory,
   IndicatorWithData,
   DataPoint,
-  Entity,
   ChartType,
 } from '@/lib/supabase-types'
 
@@ -51,17 +50,17 @@ const chartTypeLabels: Record<string, string> = {
 
 export default function IndicatorDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const categorySlug = params.category as string
   const indicatorSlug = params.indicator as string
 
   const [category, setCategory] = useState<IndicatorCategory | null>(null)
   const [indicator, setIndicator] = useState<IndicatorWithData | null>(null)
   const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [entities, setEntities] = useState<Entity[]>([])
+  const [breakdowns, setBreakdowns] = useState<BreakdownOption[]>([])
   const [loading, setLoading] = useState(true)
   const [chartLoading, setChartLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedEntity, setSelectedEntity] = useState<string>('all')
   const [dateRange, setDateRange] = useState<{ from?: string; to?: string } | null>(null)
   const initialFetchDone = useRef(false)
 
@@ -98,22 +97,22 @@ export default function IndicatorDetailPage() {
 
         setIndicator(foundIndicator)
 
-        // Fetch entities
-        const entRes = await fetch('/api/observatorio/entities')
-        const entData = await entRes.json()
-        const allEntities: Entity[] = entData.entities || []
-        setEntities(allEntities)
+        // Desgloses: el total del indicador y sus series por empresa o componente
+        const allIndicators: IndicatorWithData[] = indData.indicators || []
+        const parentId = foundIndicator.parent_indicator_id ?? foundIndicator.id
+        const family = allIndicators.filter(
+          (ind) => ind.id === parentId || ind.parent_indicator_id === parentId
+        )
+        setBreakdowns(
+          family.length > 1
+            ? family.map((ind) => ({
+                slug: ind.slug,
+                label: ind.id === parentId ? `Total · ${ind.entity?.name ?? ind.name}` : ind.name.split(' — ').slice(1).join(' — ') || ind.name,
+              }))
+            : []
+        )
 
-        // Pre-select the indicator's own entity (not "all")
-        const defaultEntity = foundIndicator.entity?.slug || 'all'
-        setSelectedEntity(defaultEntity)
-
-        // Fetch initial data points with the correct entity
-        let url = `/api/observatorio/data-points?indicator_slug=${indicatorSlug}`
-        if (defaultEntity !== 'all') {
-          url += `&entity_slug=${defaultEntity}`
-        }
-        const dpRes = await fetch(url)
+        const dpRes = await fetch(`/api/observatorio/data-points?indicator_slug=${indicatorSlug}`)
         const dpData = await dpRes.json()
         if (!dpData.error) {
           setDataPoints(dpData.data_points || [])
@@ -134,16 +133,13 @@ export default function IndicatorDetailPage() {
 
   // Fetch data points (chart data) — only triggered by user changes
   const fetchDataPoints = useCallback(
-    async (entitySlug?: string, range?: { from?: string; to?: string } | null) => {
+    async (range?: { from?: string; to?: string } | null) => {
       if (!indicatorSlug) return
 
       try {
         setChartLoading(true)
 
         let url = `/api/observatorio/data-points?indicator_slug=${indicatorSlug}`
-        if (entitySlug && entitySlug !== 'all') {
-          url += `&entity_slug=${entitySlug}`
-        }
         if (range?.from) {
           url += `&from=${range.from}`
         }
@@ -171,15 +167,15 @@ export default function IndicatorDetailPage() {
     [indicatorSlug]
   )
 
-  // Re-fetch when user changes entity or date range (skip the initial automatic one)
+  // Re-fetch when user changes the date range (skip the initial automatic one)
   useEffect(() => {
     if (initialFetchDone.current) {
-      fetchDataPoints(selectedEntity, dateRange)
+      fetchDataPoints(dateRange)
     }
-  }, [selectedEntity, dateRange, fetchDataPoints])
+  }, [dateRange, fetchDataPoints])
 
-  const handleEntityChange = (value: string) => {
-    setSelectedEntity(value)
+  const handleBreakdownChange = (slug: string) => {
+    if (slug !== indicatorSlug) router.push(`/observatorio/${categorySlug}/${slug}`)
   }
 
   const handleDateRangeChange = (range: { from?: string; to?: string } | null) => {
@@ -363,12 +359,12 @@ export default function IndicatorDetailPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                {/* Entity selector */}
-                {entities.length > 0 && (
-                  <EntitySelector
-                    entities={entities}
-                    value={selectedEntity}
-                    onChange={handleEntityChange}
+                {/* Total y desgloses */}
+                {breakdowns.length > 0 && (
+                  <BreakdownSelector
+                    options={breakdowns}
+                    value={indicatorSlug}
+                    onChange={handleBreakdownChange}
                   />
                 )}
 

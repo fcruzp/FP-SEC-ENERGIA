@@ -1,0 +1,17 @@
+[
+  {
+    "check": "meses_vs_total_anual",
+    "key": "cdeee-inversiones|2021",
+    "explanation": "En el Excel del MEM la celda del total anual 2021 (CDEEE!GX77) vale 0, aunque los meses de 2021 suman 8.345 US$ MM. Se usan los valores mensuales."
+  },
+  {
+    "check": "meses_vs_total_anual",
+    "key": "egpc-total-inversiones|2024",
+    "explanation": "En el Excel del MEM la celda del total anual 2024 (EGPC!HR45) vale 0, aunque los meses de 2024 suman 4.291 US$ MM. Se usan los valores mensuales."
+  },
+  {
+    "check": "meses_vs_total_anual",
+    "key": "egpc-total-inversiones|2025",
+    "explanation": "En el Excel del MEM la celda del total anual 2025 (EGPC!HS45) vale 0, aunque los meses de 2025 suman 0.848 US$ MM. Se usan los valores mensuales."
+  }
+]

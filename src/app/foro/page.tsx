@@ -55,12 +55,12 @@ const TOPICS: Topic[] = [
     official: true,
     title: '¿Cómo reducir las pérdidas de las distribuidoras? Abrimos la consulta',
     excerpt:
-      'Las EDEs cerraron marzo 2026 con 38,7 % de pérdidas (año móvil). Queremos escuchar propuestas concretas de la ciudadanía antes de presentar nuestro plan.',
+      'Las EDEs cerraron julio 2026 con 39,2 % de pérdidas (año móvil). Queremos escuchar propuestas concretas de la ciudadanía antes de presentar nuestro plan.',
     author: 'Secretaría de Energía',
     time: 'hace 2 días',
     votes: 128,
     views: 2340,
-    indicator: { label: 'Pérdidas EDEs (año móvil)', value: '38,7 %', href: '/observatorio' },
+    indicator: { label: 'Pérdidas EDEs (año móvil)', value: '39,2 %', href: '/observatorio/empresas-distribuidoras/edes-perdidas-ano-movil' },
     comments: [
       {
         author: 'María R.',
@@ -86,14 +86,14 @@ const TOPICS: Topic[] = [
   {
     id: 2,
     category: 'renovables',
-    title: 'La generación renovable llegó a 23 % en marzo. ¿Vamos al ritmo correcto?',
+    title: 'La generación renovable fue 23,3 % en julio. ¿Vamos al ritmo correcto?',
     excerpt:
       'Solar y eólica crecen, pero el gas natural y el carbón siguen siendo más de la mitad de la generación. ¿Qué meta es realista para 2030?',
     author: 'Luis A.',
     time: 'hace 5 horas',
     votes: 64,
     views: 980,
-    indicator: { label: 'Generación renovable (mar 2026)', value: '23,1 %', href: '/observatorio' },
+    indicator: { label: 'Generación renovable (jul 2026)', value: '23,3 %', href: '/observatorio/variables-relevantes/generacion-total' },
     comments: [
       {
         author: 'Carolina F.',
@@ -132,14 +132,14 @@ const TOPICS: Topic[] = [
   {
     id: 5,
     category: 'perdidas',
-    title: 'Cobranza al 96,7 %: ¿por qué el CRI sigue por debajo de 60 %?',
+    title: 'Cobranza al 95,4 %: ¿por qué el CRI sigue por debajo de 60 %?',
     excerpt:
       'Si se cobra casi todo lo facturado, el problema está en la energía que nunca se factura. El CRI combina ambas cosas.',
     author: 'Economista_RD',
     time: 'hace 4 días',
     votes: 53,
     views: 860,
-    indicator: { label: 'CRI EDEs (año móvil)', value: '59,3 %', href: '/observatorio' },
+    indicator: { label: 'CRI EDEs (año móvil)', value: '58,0 %', href: '/observatorio/empresas-distribuidoras/edes-cri-ano-movil' },
     comments: [],
   },
 ]

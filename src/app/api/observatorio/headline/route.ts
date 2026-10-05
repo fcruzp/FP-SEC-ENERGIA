@@ -5,20 +5,22 @@ export const dynamic = 'force-dynamic'
 
 /** Indicadores clave de la portada. Todos provienen del MEM. */
 const HEADLINE = [
-  { key: 'perdidas', slug: 'perdidas-ano-movil-porcentaje', label: 'Pérdidas EDEs (año móvil)' },
-  { key: 'cri', slug: 'cri-ano-movil-porcentaje', label: 'CRI EDEs (año móvil)' },
-  { key: 'cobranzas', slug: 'cobranzas-ano-movil-porcentaje', label: 'Cobranza EDEs (año móvil)' },
+  { key: 'perdidas', slug: 'edes-perdidas-ano-movil', label: 'Pérdidas EDEs (año móvil)' },
+  { key: 'cri', slug: 'edes-cri-ano-movil', label: 'CRI EDEs (año móvil)' },
+  { key: 'cobranzas', slug: 'edes-cobranzas-ano-movil', label: 'Cobranza EDEs (año móvil)' },
 ] as const
 
 /** Participación renovable = hidráulica + renovable no convencional (eólica, solar, biomasa). */
-const RENEWABLE_SLUGS = ['composicion-hidraulica-pp', 'composicion-total-renovable-no-convencional-pp']
+const RENEWABLE_SLUGS = ['participacion-hidraulica-en-la-generacion', 'participacion-total-renovable-no-convencional-en-la-generacion']
 
 /** Generación por tipo de combustible (GWh). */
 const GENERATION = [
   { slug: 'generacion-gas-natural', label: 'Gas natural', renewable: false },
   { slug: 'generacion-carbon-mineral', label: 'Carbón', renewable: false },
-  { slug: 'generacion-fuel-oil-6', label: 'Fuel oil', renewable: false },
-  { slug: 'generacion-solar-fv', label: 'Solar', renewable: true },
+  { slug: 'generacion-fuel-oil-no-6', label: 'Fuel oil No. 6', renewable: false },
+  { slug: 'generacion-fuel-oil-no-2', label: 'Fuel oil No. 2', renewable: false },
+  { slug: 'generacion-fuel-oil-no-2-y-no-6', label: 'Fuel oil No. 2 y 6', renewable: false },
+  { slug: 'generacion-solar-fotovoltaica', label: 'Solar', renewable: true },
   { slug: 'generacion-hidraulica', label: 'Hidráulica', renewable: true },
   { slug: 'generacion-eolica', label: 'Eólica', renewable: true },
   { slug: 'generacion-biomasa', label: 'Biomasa', renewable: true },
@@ -120,6 +122,7 @@ export async function GET() {
         to,
         sources: genSeries
           .map(g => ({ label: g.label, renewable: g.renewable, gwh: g.points.reduce((sum, p) => sum + p.value, 0) }))
+          .filter(g => g.gwh > 0)
           .sort((a, b) => b.gwh - a.gwh),
       }
     }

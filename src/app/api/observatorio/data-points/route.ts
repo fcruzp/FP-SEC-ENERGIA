@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
       .select('*')
       .eq('indicator_id', indicator.id)
       .order('date', { ascending: true })
+      .range(0, 4999)
 
     // Filter by entity
     if (entitySlug) {

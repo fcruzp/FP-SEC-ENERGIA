@@ -17,7 +17,7 @@ for (const line of envContent.split('\n')) {
   if (match && !process.env[match[1]]) process.env[match[1]] = match[2].trim().replace(/^"|"$/g, '');
 }
 
-const FILES = ['000_users_prereq.sql', '001_observatorio_foro_schema.sql', '002_seed_indicators.sql', '004_unidades_porcentaje.sql'];
+const FILES = ['000_users_prereq.sql', '001_observatorio_foro_schema.sql', '002_seed_indicators.sql', '004_unidades_porcentaje.sql', '005_procedencia_y_ediciones.sql', '006_vista_resumen_indicadores.sql'];
 
 async function main() {
   if (!process.env.SUPABASE_DB_URL) {
