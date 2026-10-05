@@ -123,11 +123,11 @@ Hoy todo ese contenido está escrito a mano dentro del código. Procedimiento pr
 
 1. **Tablas en Supabase**: `news`, `documents`, `events`, `team_members` (título, fecha, resumen, cuerpo, imagen, estado borrador/publicado, autor).
 2. **Archivos** (PDF, fotos) en **Supabase Storage**, con enlaces públicos.
-3. **Panel en `/admin/contenido`** (protegido): formulario para crear, editar, programar y publicar; vista previa antes de publicar.
+3. **Pestaña "Contenido" dentro de `/admin`** (protegido): formulario para crear, editar, programar y publicar; vista previa antes de publicar.
 4. **El portal lee de esas tablas**: lo publicado aparece al instante; lo marcado como borrador no.
 5. **Roles**: editor (crea borradores) y administrador (publica). Se reemplaza la clave única de `/admin` por cuentas individuales con Supabase Auth.
 
-Flujo diario para el equipo: entrar a `/admin/contenido` → "Nueva noticia" → escribir, subir foto → "Publicar". Sin tocar código ni pedir un despliegue.
+Flujo diario para el equipo: entrar a `/admin` → pestaña "Contenido" → "Nueva noticia" → escribir, subir foto → "Publicar". Sin tocar código ni pedir un despliegue.
 
 ## 6. Análisis con IA (OpenRouter + GPT Luna)
 

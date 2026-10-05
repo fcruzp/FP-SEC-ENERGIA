@@ -16,10 +16,10 @@ import {
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/admin/observatorio', tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/observatorio?tab=upload', tab: 'upload', label: 'Cargar Datos', icon: Upload },
-  { href: '/admin/observatorio?tab=indicators', tab: 'indicators', label: 'Indicadores', icon: BarChart3 },
-  { href: '/admin/observatorio?tab=data', tab: 'data', label: 'Datos', icon: Database },
+  { href: '/admin', tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin?tab=upload', tab: 'upload', label: 'Cargar Datos', icon: Upload },
+  { href: '/admin?tab=indicators', tab: 'indicators', label: 'Indicadores', icon: BarChart3 },
+  { href: '/admin?tab=data', tab: 'data', label: 'Datos', icon: Database },
 ]
 
 function AdminSidebar() {
@@ -48,7 +48,7 @@ function AdminSidebar() {
           Administración
         </div>
         {navItems.map((item) => {
-          const isActive = pathname === '/admin/observatorio' && currentTab === item.tab
+          const isActive = pathname === '/admin' && currentTab === item.tab
           return (
             <Link
               key={item.href}
