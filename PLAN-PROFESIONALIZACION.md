@@ -63,7 +63,10 @@ Objetivo: 100 % de los datos en el indicador y la empresa correctos, verificable
 - [x] **Conciliación automática** tras cada carga: suma ene–dic = "Acumulado Año"; ene–mar = columna C; EDEs individuales suman el consolidado; fórmulas del glosario (CRI, pérdidas, precio medio) se cumplen; totales clave = PDF.
 - [x] **Procedencia**: tabla `reports` (una fila por edición), `report_id` en cada dato, tabla `ingestion_runs` con cobertura, y registro de revisiones cuando el MEM cambia un valor pasado.
 - [x] **Catálogo limpio**: unidades normalizadas (tabla de unidades), restricción empresa-del-dato = empresa-del-indicador, nombres no ambiguos, porcentajes con convención única.
-- [ ] Cargar las **4 hojas faltantes** (anexos financieros, deuda, tarifas trimestrales Indexada/Aplicada por EDE).
+- [x] Anexo de resultados financieros (plantillas explícitas y conciliación contable).
+- [ ] Hojas de **deuda con generadoras** y **tarifas** (régimen nuevo trimestral Referencia/Aplicada por EDE; régimen anterior mensual).
+- [x] Ediciones intermedias (mar–jun 2026) para el historial de revisiones.
+- [x] Pruebas automáticas del parser (bun test).
 - [x] Recargar desde cero y **ponerse al día**: ediciones abril–julio 2026 (y ediciones anteriores para detectar revisiones históricas).
 - [ ] Tests de regresión del parser contra el Excel real.
 
