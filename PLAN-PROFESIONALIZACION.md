@@ -44,13 +44,14 @@
 ### Fase 0 — Contención (1–2 días)
 Objetivo: que lo publicado no sea incorrecto ni vulnerable.
 
-- [ ] Proteger `/admin` y `/api/admin/*` (login con Supabase Auth + rol admin; mínimo inmediato: Basic Auth por middleware).
-- [ ] Corregir fechas: una única función de fechas en UTC usada por gráficos, tablas y filtros.
-- [ ] Mostrar porcentajes correctamente (×100) y quitar la unidad duplicada en títulos.
-- [ ] Atribución correcta: "Fuente: Ministerio de Energía y Minas (MEM) — Informe de Desempeño de las Empresas Eléctricas Estatales, edición marzo 2026", con enlace a mem.gob.do.
-- [ ] Portada: quitar o conectar a datos reales las cifras fijas; retirar "Monitoreo en tiempo real"; retirar equipo/eventos/documentos de relleno hasta tener contenido real.
-- [ ] GitHub Action: keep-alive diario + `pg_dump` semanal (backup).
-- [ ] Commit de lo hecho hasta hoy (setup-db, prerequisito users).
+- [x] Proteger `/admin` y `/api/admin/*` (login con Supabase Auth + rol admin; mínimo inmediato: Basic Auth por middleware).
+- [x] Corregir fechas: una única función de fechas en UTC usada por gráficos, tablas y filtros.
+- [x] Mostrar porcentajes correctamente (×100) y quitar la unidad duplicada en títulos.
+- [x] Atribución correcta: "Fuente: Ministerio de Energía y Minas (MEM) — Informe de Desempeño de las Empresas Eléctricas Estatales, edición marzo 2026", con enlace a mem.gob.do.
+- [x] Portada: cifras fijas reemplazadas por datos reales del MEM; retirado "Monitoreo en tiempo real".
+- [ ] Portada: retirar equipo/eventos/documentos de relleno hasta tener contenido real.
+- [x] GitHub Action: keep-alive diario + `pg_dump` semanal (backup).
+- [x] Commit de lo hecho hasta hoy (setup-db, prerequisito users).
 
 ### Fase 1 — Exactitud de datos (núcleo, 1–2 semanas)
 Objetivo: 100 % de los datos en el indicador y la empresa correctos, verificables.
@@ -104,14 +105,35 @@ Inspirado en Our World in Data, Ember, Energía Abierta (Chile) y ESIOS (España
 
 ---
 
-## 4. Decisiones que necesito de ti
+## 4. Decisiones tomadas (4-oct-2026)
 
-1. **Foro ciudadano**: nunca se usó. ¿Lo eliminamos (recomendado) o lo dejamos para más adelante?
-2. **Contenido del portal**: ¿quiénes son el equipo real? ¿Hay noticias, documentos y eventos reales para publicar?
-3. **Alcance de fuentes**: ¿quieres incorporar el Organismo Coordinador y demás fuentes (Fase 4), o el Observatorio se limita al informe del MEM?
-4. **Hosting**: ¿seguimos en Netlify?
-5. **Análisis con IA** (estaba planeado con OpenRouter): ¿sigue en los planes?
+| Tema | Decisión |
+|---|---|
+| Foro ciudadano | Se mantiene, **parqueado**. Mockup navegable en `/foro` para mostrar al cliente. |
+| Contenido del portal | Habrá equipo real (pendiente). Se construye un **gestor de contenido** (ver §5). |
+| Fuentes | Se sigue con el **MEM**. Se explora el **Organismo Coordinador (OC)**. Regla: **cada dato muestra su fuente** (MEM u OC). |
+| Hosting | **Netlify**. |
+| Análisis con IA | **Sí**, vía **OpenRouter** con un modelo **GPT Luna** de OpenAI (ver §6). |
 
-## 5. Orden recomendado
+## 5. Gestor de contenido (noticias, documentos, eventos, equipo)
+
+Hoy todo ese contenido está escrito a mano dentro del código. Procedimiento propuesto:
+
+1. **Tablas en Supabase**: `news`, `documents`, `events`, `team_members` (título, fecha, resumen, cuerpo, imagen, estado borrador/publicado, autor).
+2. **Archivos** (PDF, fotos) en **Supabase Storage**, con enlaces públicos.
+3. **Panel en `/admin/contenido`** (protegido): formulario para crear, editar, programar y publicar; vista previa antes de publicar.
+4. **El portal lee de esas tablas**: lo publicado aparece al instante; lo marcado como borrador no.
+5. **Roles**: editor (crea borradores) y administrador (publica). Se reemplaza la clave única de `/admin` por cuentas individuales con Supabase Auth.
+
+Flujo diario para el equipo: entrar a `/admin/contenido` → "Nueva noticia" → escribir, subir foto → "Publicar". Sin tocar código ni pedir un despliegue.
+
+## 6. Análisis con IA (OpenRouter + GPT Luna)
+
+- Modelos disponibles hoy en OpenRouter: `openai/gpt-6-luna`, `openai/gpt-6-luna-pro`, `openai/gpt-5.6-luna` (y variantes). **Propuesta: `openai/gpt-6-luna`**, configurable por variable de entorno (`OPENROUTER_MODEL`).
+- Uso: botón "Analizar con IA" en cada indicador → resumen en lenguaje claro de tendencia, contexto y comparación entre EDEs.
+- Reglas de exactitud: la IA **solo recibe los datos reales del indicador** (con fechas y fuente) y debe citarlos; la respuesta se marca como "Análisis generado por IA"; se guarda en `ai_analysis_logs` y se cachea por indicador y edición del informe (una llamada por mes, no por visita); límite de uso por visitante.
+- Requiere: `OPENROUTER_API_KEY` en `.env.local` y en Netlify.
+
+## 7. Orden recomendado
 
 Fase 0 → Fase 1 → Fase 2 → Fase 3, con la Fase 6 en paralelo. La Fase 1 es la que convierte el proyecto en "exacto"; sin ella, todo lo demás pule datos que pueden estar en el lugar equivocado.
