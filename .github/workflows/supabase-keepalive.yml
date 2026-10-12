@@ -21,12 +21,19 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Faltan los secrets SUPABASE_URL y/o SUPABASE_ANON_KEY en GitHub (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          # Solo la cabecera apikey: funciona con claves anon (JWT) y con las nuevas sb_publishable_
           status=$(curl -s -o /dev/null -w "%{http_code}" \
             "$SUPABASE_URL/rest/v1/indicator_categories?select=id&limit=1" \
-            -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+            -H "apikey: $SUPABASE_ANON_KEY")
           echo "HTTP $status"
-          test "$status" = "200"
+          if [ "$status" != "200" ]; then
+            echo "::error::Supabase respondió HTTP $status. Revisa que SUPABASE_URL y SUPABASE_ANON_KEY sean los del proyecto actual."
+            exit 1
+          fi
 
   backup:
     # Solo los lunes, o al ejecutarlo manualmente
@@ -48,6 +55,10 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Falta el secret SUPABASE_DB_URL en GitHub; no se puede hacer la copia de seguridad."
+            exit 1
+          fi
           /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" --schema=public --no-owner --no-privileges \
             | gzip > "backup-$(date -u +%Y-%m-%d).sql.gz"
           ls -lh backup-*.sql.gz
