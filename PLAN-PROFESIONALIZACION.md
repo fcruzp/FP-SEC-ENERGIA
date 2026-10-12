@@ -1,10 +1,43 @@
 # Plan de profesionalización — Portal Secretaría de Energía FP + Observatorio Energético
 
-*Fecha: 4 de octubre de 2026 · Basado en 5 auditorías: frontend, backend/seguridad, exactitud de datos, fuentes externas, historia del proyecto.*
+*Creado el 4 de octubre de 2026 a partir de 5 auditorías (frontend, backend/seguridad, exactitud de datos, fuentes externas, historia del proyecto). Última actualización: 11 de octubre de 2026.*
 
 ---
 
-## 1. Diagnóstico en una página
+## 0. Estado actual (11-oct-2026)
+
+| Fase | Estado | Resumen |
+|---|---|---|
+| 0 · Contención | ✅ Completa | `/admin` protegido, fechas y porcentajes correctos, fuente MEM citada, portada con datos reales, keep-alive y backup funcionando. El contenido de relleno del portal se mantiene **a propósito** como mockup para la presentación. |
+| 1 · Exactitud de datos | ✅ Completa | Las 11 hojas del informe del MEM, ediciones marzo→julio 2026: 918 indicadores, 98,430 valores, 147 correcciones del MEM registradas, 14/14 cifras del PDF verificadas, 35 pruebas. Carga desde `/admin` o script en ~4–6 s. |
+| 2 · API sólida | 🟡 Parcial | Hecho: vista `indicator_stats` (sin tope de filas), conteo honesto, panel de carga. Falta: caché, validación con zod, actualizar `xlsx`. |
+| 3 · Observatorio profesional | ✅ Completa | Ficha técnica, metodología, correcciones públicas, CSV, calendario, SEO, accesibilidad. Falta solo la API de datos abiertos (opcional). |
+| 4 · Automatización y nuevas fuentes | ⬜ Pendiente | Detector de ediciones nuevas del MEM, Organismo Coordinador, BCRD, MICM, SIE, Hacienda. |
+| 5 · Portal institucional | 🟡 Parcial | Teaser con datos reales hecho. Falta: gestor de contenido (§5), contenido real, suscripción, video ligero. |
+| 6 · Ingeniería y operación | 🟡 Parcial | Hecho: tipos verificados en el build, pruebas, keep-alive/backup, guía de operación. Falta: limpieza del scaffold, lint en el build, CI, despliegue en Netlify. |
+| IA (§6) | ⬜ Pendiente | OpenRouter con `openai/gpt-6-luna`. |
+
+### Pendientes que dependen de Francisco
+
+- [ ] **Netlify**: configurar las variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`, `ADMIN_USER`, `ADMIN_PASSWORD` y redesplegar (ver [GUIA-OPERACION.md](GUIA-OPERACION.md)). Sin esto el sitio publicado apunta a la base antigua.
+- [ ] Biografía real de **Juan Gómez** (la actual no está verificada). Los otros tres miembros del equipo son de ejemplo.
+- [ ] Contenido real de noticias, documentos y eventos (o seguir con mockup hasta el gestor de contenido).
+- [ ] `OPENROUTER_API_KEY` cuando se haga el análisis con IA.
+- [ ] Decidir si el repositorio de GitHub debe ser **privado** (los backups son descargables si es público; hoy los datos son públicos, pero no lo serán cuando haya usuarios o suscriptores).
+- [x] Secrets de GitHub del keep-alive (funcionando desde el 11-oct-2026).
+
+### Pendientes técnicos conocidos
+
+- Confirmar con el MEM o el OC la **unidad del costo marginal de potencia** (el Excel dice cUS$/kW-mes; los valores corresponden a US$/kW-mes). Hoy se muestra la unidad publicada con una nota.
+- En Netlify, comprobar que la carga desde `/admin` termina dentro del límite de tiempo de las funciones (≈6 s medidos desde la PC; límite de 10 s en el plan gratuito, 26 s ampliable). Si no, cargar con el script.
+- Panel `/admin`: las pestañas "Indicadores" y "Datos" son casi solo de lectura; "datos recientes" ordena por fecha de carga (muestra 2009 primero).
+- Código obsoleto por retirar: `scripts/full-load.cjs`, `scripts/insert-*.js/ts`, `scripts/load-sheet.mjs`, `scripts/full-data-load.mjs`, `scripts/dry-run.cjs`, `scripts/match-report.cjs`, `scripts/generate-sql-seed.ts`, `scripts/seed-xls-data.ts`, `src/lib/parse-xls.ts` y la ruta `/api/admin/parse-xls` (desactivada, responde 410), `download/003_*.sql` y los JSON de extracción (usan identificadores de la base antigua).
+- La categoría "Régimen Tarifario Anterior" quedó vacía (las tarifas 2013–2019 ahora están dentro de "Régimen Tarifario"); se puede borrar.
+- El historial de git contiene un `.env` antiguo con claves del **proyecto de Supabase anterior** (perdido). No afecta al proyecto actual, pero conviene saberlo si el repositorio es público.
+
+---
+
+## 1. Diagnóstico inicial (4-oct-2026, ya resuelto en su mayoría)
 
 **Lo que está bien**
 - Los **números individuales son fieles al Excel**: 48/48 valores muestreados idénticos; los totales de Q1-2026 cuadran con el PDF del MEM (compra EDEs 4,479.6 GWh, pérdidas 38.7 %, CRI 59.3 %, etc.).
@@ -39,8 +72,6 @@
 
 ---
 
-> **Avance al 5-oct-2026:** Fase 0 completa salvo el contenido de relleno del portal (se mantiene como mockup para la presentación). Fase 1: ediciones **marzo a julio 2026** cargadas en orden con el parser nuevo con **las 11 hojas del informe** (918 indicadores, 98,430 valores; 14/14 cifras del PDF verificadas; 147 revisiones del MEM registradas; 34 pruebas automáticas): series operativas desde 2009, anexo de resultados financieros (aportes del Gobierno, CAPEX, balances), deuda y pagos a generadoras, y tarifas 2013–2026. Ver `data/mem/verificacion-julio-2026.md`. **Fase 1 completa:** las ediciones nuevas se cargan desde el panel `/admin` (validar → cargar) o con `bun scripts/mem-load.ts`; una edición nueva se carga en segundos y registra las correcciones del MEM.
-
 ## 3. Plan por fases
 
 ### Fase 0 — Contención (1–2 días)
@@ -51,7 +82,7 @@ Objetivo: que lo publicado no sea incorrecto ni vulnerable.
 - [x] Mostrar porcentajes correctamente (×100) y quitar la unidad duplicada en títulos.
 - [x] Atribución correcta: "Fuente: Ministerio de Energía y Minas (MEM) — Informe de Desempeño de las Empresas Eléctricas Estatales, edición marzo 2026", con enlace a mem.gob.do.
 - [x] Portada: cifras fijas reemplazadas por datos reales del MEM; retirado "Monitoreo en tiempo real".
-- [ ] Portada: retirar equipo/eventos/documentos de relleno hasta tener contenido real.
+- [—] Portada: equipo/eventos/documentos de relleno. **Decisión (4-oct): se mantienen visibles como mockup** para la presentación; se reemplazan con el gestor de contenido.
 - [x] GitHub Action: keep-alive diario + `pg_dump` semanal (backup).
 - [x] Commit de lo hecho hasta hoy (setup-db, prerequisito users).
 
@@ -68,7 +99,7 @@ Objetivo: 100 % de los datos en el indicador y la empresa correctos, verificable
 - [x] Ediciones intermedias (mar–jun 2026) para el historial de revisiones.
 - [x] Pruebas automáticas del parser (bun test).
 - [x] Recargar desde cero y **ponerse al día**: ediciones abril–julio 2026 (y ediciones anteriores para detectar revisiones históricas).
-- [ ] Tests de regresión del parser contra el Excel real.
+- [x] Tests de regresión del parser contra el Excel real (`tests/mem-parser.test.ts`: cifras del PDF, estructura, variantes de formato, deuda, tarifas).
 
 ### Fase 2 — API sólida y rápida (3–5 días)
 - [x] Vistas/funciones SQL para último valor, valor anterior y últimos 12 meses (sin tope de 1,000 filas).
@@ -97,16 +128,20 @@ Inspirado en Our World in Data, Ember, Energía Abierta (Chile) y ESIOS (España
 - [ ] **Contraste externo** con Ember / OLADE para detectar discrepancias.
 
 ### Fase 5 — Portal institucional (en paralelo, depende de contenido)
-- [ ] Teaser del Observatorio en portada alimentado con datos reales.
+- [x] Teaser del Observatorio en portada alimentado con datos reales (`/api/observatorio/headline`).
+- [ ] **Gestor de contenido** (pestaña "Contenido" en `/admin`, ver §5).
 - [ ] Equipo, noticias, documentos y eventos reales (necesita material de la Secretaría).
 - [ ] Formulario de suscripción funcional.
 - [ ] Rendimiento: video del hero de 14 MB → versión ligera con póster.
 
 ### Fase 6 — Ingeniería y operación (transversal)
 - [ ] Limpieza: Prisma/SQLite, carpetas `skills/`, `examples/`, `mini-services/`, `.zscripts/`, Caddyfile, ~30 capturas de prueba, dependencias sin uso.
-- [ ] Activar chequeo de tipos y lint en el build (hoy `ignoreBuildErrors: true`).
-- [ ] CI en GitHub: tipos, lint, tests del parser.
-- [ ] Despliegue (Netlify) con variables de entorno nuevas; revisar que el historial de git no exponga claves del proyecto anterior.
+- [x] Chequeo de tipos en el build (se quitó `ignoreBuildErrors`; 0 errores de TypeScript).
+- [ ] Lint en el build (hoy hay ~30 reglas desactivadas en `eslint.config.mjs`).
+- [ ] CI en GitHub: tipos, lint y `bun test tests` en cada push.
+- [ ] Despliegue (Netlify) con variables de entorno nuevas (ver "Pendientes que dependen de Francisco").
+- [x] Guía de operación con todos los enlaces ([GUIA-OPERACION.md](GUIA-OPERACION.md)) y README.
+- [x] Keep-alive diario y backup semanal de Supabase (GitHub Actions), funcionando.
 
 ---
 
@@ -142,3 +177,18 @@ Flujo diario para el equipo: entrar a `/admin` → pestaña "Contenido" → "Nue
 ## 7. Orden recomendado
 
 Fase 0 → Fase 1 → Fase 2 → Fase 3, con la Fase 6 en paralelo. La Fase 1 es la que convierte el proyecto en "exacto"; sin ella, todo lo demás pule datos que pueden estar en el lugar equivocado.
+
+**Siguientes pasos sugeridos (11-oct-2026):**
+1. Desplegar en Netlify con las variables nuevas (desbloquea mostrar el sitio publicado).
+2. Para la presentación: **análisis con IA** (§6) o **gestor de contenido** (§5).
+3. Antes de abrir el sitio al público: resto de la Fase 2 (caché, zod, `xlsx`) y limpieza de la Fase 6.
+4. Fase 4: detector automático de ediciones del MEM y datos del Organismo Coordinador.
+
+## 8. Bitácora
+
+| Fecha | Hito |
+|---|---|
+| 4-oct-2026 | Repo clonado; base de Supabase nueva; 5 auditorías; plan creado; Fase 0 (fechas, porcentajes, fuente, `/admin` protegido, portada real, mockup del foro, keep-alive). |
+| 4/5-oct-2026 | Fase 1: parser nuevo con catálogo explícito; edición julio 2026; luego las 11 hojas, ediciones marzo→julio en orden con historial de correcciones; carga desde `/admin`. |
+| 5-oct-2026 | Fase 3: ficha técnica, metodología, correcciones públicas, CSV, calendario, SEO, accesibilidad. |
+| 11-oct-2026 | Keep-alive y backup funcionando (secrets de GitHub); guía de operación y README. |
