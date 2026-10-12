@@ -197,6 +197,8 @@ body:not(.admin-layout)::-webkit-scrollbar-thumb { background: var(--green-prima
 .dark body:not(.admin-layout)::-webkit-scrollbar-thumb { background: #2d9e5f; }
 
 body:not(.admin-layout) section { padding: 120px 2rem; max-width: 100vw; overflow-x: hidden; }
+/* Swagger UI (/desarrolladores) usa <section> internamente: sin el relleno del portal */
+body:not(.admin-layout) .swagger-host section { padding: revert; max-width: none; overflow-x: visible; }
 .section-inner { max-width: 1400px; margin: 0 auto; }
 
 .section-label {

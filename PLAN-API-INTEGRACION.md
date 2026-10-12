@@ -2,6 +2,8 @@
 
 *Creado el 11 de octubre de 2026. Parte del [Plan de profesionalización](PLAN-PROFESIONALIZACION.md) (Fase 7).*
 
+> **Estado (12-oct-2026): 7A, 7B y 7D implementadas; 7C lista salvo la prueba con Sky.** API en `/api/v1` (9 endpoints), Swagger UI en `/desarrolladores`, pestaña "Integraciones" en `/admin`, script `scripts/api-key.ts`, migración `download/007_api_integracion.sql` aplicada, 55 pruebas. Guía para desarrolladores e integración con Sky: [docs/api/README.md](docs/api/README.md). Pendiente: crear la llave de Sky, configurarla en Sky y hacer la prueba de punta a punta.
+
 ## 1. Objetivo
 
 Publicar en Netlify una **API de solo lectura, versionada y protegida** para que otras aplicaciones consulten los datos del sector eléctrico del Observatorio. El primer consumidor es **Sky**: un agente que razona con IA a través de OpenRouter y que hoy busca información en internet y en redes sociales. Con esta API, Sky podrá responder preguntas como *"¿cómo van las pérdidas de Edesur este año?"* con **datos oficiales y citando la fuente**, en lugar de depender de lo que encuentre en la web.
@@ -113,10 +115,10 @@ Nombres en español, coherentes con el resto del sitio y con lo que verá Sky.
 
 | Fase | Contenido | Esfuerzo |
 |---|---|---|
-| **7A · Base segura** | Migración `007_api_integracion.sql` (`api_clients`, `api_request_log`, contador de uso). Ayudante `requireApiKey(scope)`. Script `bun scripts/api-key.ts create/list/revoke`. Endpoints `meta`, `resumen`, `indicadores`, `indicadores/{slug}` y `serie`. Errores RFC 9457. Pruebas de autenticación (sin llave, llave inválida, revocada, expirada, sin permiso). | 2–3 días |
-| **7B · Completa** | `comparar`, `correcciones`, límite de uso, auditoría, `openapi.json`, validación zod en todo. Pruebas de contrato contra el OpenAPI. | 2 días |
-| **7C · Sky** | `sky-tools.json`, guía para desarrolladores (`docs/api/README.md` con ejemplos `curl`), llave de Sky creada y entregada, prueba de punta a punta. | 1 día |
-| **7D · Gestión** | Pestaña **"Integraciones"** en `/admin`: crear llave (mostrada una vez), revocar, rotar, ver uso por día y errores. | 1–2 días |
+| **7A · Base segura** ✅ | Migración `007_api_integracion.sql` (`api_clients`, `api_request_log`, contador de uso). Ayudante `requireApiKey(scope)`. Script `bun scripts/api-key.ts create/list/revoke`. Endpoints `meta`, `resumen`, `indicadores`, `indicadores/{slug}` y `serie`. Errores RFC 9457. Pruebas de autenticación (sin llave, llave inválida, revocada, expirada, sin permiso). | 2–3 días |
+| **7B · Completa** ✅ | `comparar`, `correcciones`, límite de uso, auditoría, `openapi.json`, validación zod en todo. Pruebas de contrato contra el OpenAPI. | 2 días |
+| **7C · Sky** 🟡 | `sky-tools.json`, guía para desarrolladores (`docs/api/README.md` con ejemplos `curl`), llave de Sky creada y entregada, prueba de punta a punta. | 1 día |
+| **7D · Gestión** ✅ | Pestaña **"Integraciones"** en `/admin`: crear llave (mostrada una vez), revocar, rotar, ver uso por día y errores. | 1–2 días |
 | **7E · Opcional** | Servidor MCP, nivel público de datos abiertos y endpoints del Organismo Coordinador cuando exista la Fase 4. | — |
 
 **Requisito previo:** el sitio debe estar desplegado en Netlify con las variables de la base nueva (pendiente en el §0 del plan principal). Se puede construir y probar en local antes.

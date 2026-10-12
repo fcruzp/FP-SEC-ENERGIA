@@ -1,0 +1,112 @@
+{
+  "descripcion": "Herramientas para agentes (formato de function calling de OpenAI/OpenRouter) que llaman a la API del Observatorio Energético. Cada herramienta indica el endpoint HTTP en x-http. Ver docs/api/README.md.",
+  "base_url_env": "FP_ENERGIA_API_URL",
+  "api_key_env": "FP_ENERGIA_API_KEY",
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "energia_resumen",
+        "description": "Panorama actual del sector eléctrico dominicano con datos oficiales del MEM: generación, costo marginal, participación renovable, compra de energía, pérdidas, cobranza, CRI, precios de compra y venta, clientes, déficit de las distribuidoras, deuda con generadoras, precios de combustibles y tasa de cambio. Incluye último valor, mes anterior, hace 12 meses, variaciones y desglose por empresa (Edenorte, Edesur, Edeeste). Úsala primero para cualquier pregunta general sobre el sector.",
+        "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+      },
+      "x-http": { "method": "GET", "path": "/resumen" }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "energia_buscar_indicadores",
+        "description": "Busca indicadores del Observatorio por texto, categoría o empresa y devuelve su slug exacto, unidad y último valor. Úsala para encontrar el slug antes de pedir una serie o una ficha. Ejemplos de texto: 'perdidas', 'cobranza', 'subsidio', 'deuda', 'tarifa bts1', 'punta catalina'.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "q": { "type": "string", "description": "Texto a buscar (mínimo 2 caracteres; sin importar acentos)" },
+            "categoria": { "type": "string", "description": "Slug de categoría: variables-relevantes, empresas-distribuidoras, cdeee, egehid, eted, egpc-punta-catalina, resultados-financieros, deuda-generadoras, regimen-tarifario" },
+            "entidad": { "type": "string", "description": "Slug de empresa: edenorte, edesur, edeeste, edes-consolidado, egehid, eted, egpc, cdeee, o una generadora" },
+            "incluir_desgloses": { "type": "boolean", "description": "Incluir desgloses por empresa o concepto (por defecto false)" },
+            "limite": { "type": "integer", "description": "Máximo de resultados (1–500, por defecto 100)" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "x-http": { "method": "GET", "path": "/indicadores", "query": ["q", "categoria", "entidad", "incluir_desgloses", "limite"] }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "energia_ficha_indicador",
+        "description": "Ficha de un indicador por su slug exacto: definición, fórmula, fuente primaria, desgloses disponibles (con sus slugs), cobertura temporal, último valor, anterior, hace 12 meses y variaciones.",
+        "parameters": {
+          "type": "object",
+          "properties": { "slug": { "type": "string", "description": "Slug exacto, p. ej. edes-perdidas-ano-movil" } },
+          "required": ["slug"],
+          "additionalProperties": false
+        }
+      },
+      "x-http": { "method": "GET", "path": "/indicadores/{slug}" }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "energia_serie",
+        "description": "Serie mensual histórica de un indicador (desde 2009 en muchos casos). Cada punto trae periodo (AAAA-MM), valor, la edición del informe del MEM de la que proviene y la celda del Excel.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "slug": { "type": "string", "description": "Slug exacto del indicador" },
+            "desde": { "type": "string", "description": "Primer mes, formato AAAA-MM" },
+            "hasta": { "type": "string", "description": "Último mes, formato AAAA-MM" }
+          },
+          "required": ["slug"],
+          "additionalProperties": false
+        }
+      },
+      "x-http": { "method": "GET", "path": "/indicadores/{slug}/serie", "query": ["desde", "hasta"] }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "energia_comparar",
+        "description": "Compara hasta 6 indicadores mes a mes (p. ej. pérdidas de Edenorte, Edesur y Edeeste). Los meses sin dato vienen como null; nunca se interpolan.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "slugs": { "type": "string", "description": "Slugs exactos separados por coma, p. ej. edes-perdidas-ano-movil-edenorte,edes-perdidas-ano-movil-edesur,edes-perdidas-ano-movil-edeeste" },
+            "desde": { "type": "string", "description": "Primer mes, formato AAAA-MM" },
+            "hasta": { "type": "string", "description": "Último mes, formato AAAA-MM" }
+          },
+          "required": ["slugs"],
+          "additionalProperties": false
+        }
+      },
+      "x-http": { "method": "GET", "path": "/comparar", "query": ["slugs", "desde", "hasta"] }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "energia_correcciones",
+        "description": "Valores que el Ministerio de Energía y Minas corrigió al publicar ediciones nuevas de su informe (valor anterior, valor nuevo y ediciones).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "slug": { "type": "string", "description": "Solo de este indicador" },
+            "edicion": { "type": "string", "description": "Solo las hechas por esta edición, formato AAAA-MM" },
+            "limite": { "type": "integer", "description": "Máximo de resultados (por defecto 200)" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "x-http": { "method": "GET", "path": "/correcciones", "query": ["slug", "edicion", "limite"] }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "energia_fuentes",
+        "description": "Fuentes de datos del Observatorio, ediciones del informe cargadas, edición vigente, fecha de la próxima publicación esperada y totales.",
+        "parameters": { "type": "object", "properties": {}, "additionalProperties": false }
+      },
+      "x-http": { "method": "GET", "path": "/meta" }
+    }
+  ],
+  "instruccion_de_sistema_sugerida": "Para datos del sector eléctrico dominicano usa primero las herramientas energia_*: son datos oficiales del Ministerio de Energía y Minas (MEM). Busca el slug exacto con energia_buscar_indicadores antes de pedir series. Cita siempre la fuente con el texto de meta.fuente.cita y menciona el mes del dato (periodo). Los porcentajes vienen en escala 0–100 y la variación de un porcentaje está en puntos porcentuales. No mezcles estas cifras con números de redes sociales o prensa sin aclarar el origen de cada una."
+}

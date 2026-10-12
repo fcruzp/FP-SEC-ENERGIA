@@ -513,6 +513,8 @@ export default function ObservatorioPage() {
             <Link href="/observatorio/metodologia" className="text-[#1a6b3c] dark:text-[#4ade80] underline underline-offset-2">Metodología</Link>
             {' · '}
             <Link href="/observatorio/correcciones" className="text-[#1a6b3c] dark:text-[#4ade80] underline underline-offset-2">Registro de correcciones del MEM</Link>
+            {' · '}
+            <Link href="/desarrolladores" className="text-[#1a6b3c] dark:text-[#4ade80] underline underline-offset-2">API para desarrolladores</Link>
           </p>
         </div>
       </div>

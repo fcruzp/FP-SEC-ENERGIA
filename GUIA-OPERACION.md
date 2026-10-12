@@ -105,6 +105,29 @@ Agrega `--dry-run` para solo verificar sin escribir nada.
 
 ---
 
+## 5b. API para otras aplicaciones (Sky y otros)
+
+| Qué | Enlace |
+|---|---|
+| Documentación interactiva (Swagger) | https://energia-fp.netlify.app/desarrolladores |
+| Contrato OpenAPI | https://energia-fp.netlify.app/api/v1/openapi.json |
+| Gestión de llaves | https://energia-fp.netlify.app/admin?tab=integrations |
+| Guía técnica e integración con Sky | [docs/api/README.md](docs/api/README.md) |
+
+**Dar acceso a una aplicación:**
+1. Entra a `/admin` → pestaña **"Integraciones"** → escribe el nombre de la aplicación (p. ej. "Sky") → **Crear llave**.
+2. Pulsa **Copiar**. La llave se muestra **una sola vez**.
+3. Pégala en las variables de entorno de esa aplicación como `FP_ENERGIA_API_KEY`, nunca en el código ni en un chat.
+
+**Quitar el acceso:** usa **Revocar** en la misma pestaña. Tiene efecto inmediato.
+
+**Cambiar la llave sin cortar el servicio:**
+1. Pulsa **Rotar**: se crea una llave nueva y la anterior sigue funcionando.
+2. Cambia la llave en la aplicación.
+3. Revoca la anterior.
+
+---
+
 ## 6. Páginas del sitio
 
 | Página | Dirección | ¿Pide clave? |
@@ -114,6 +137,7 @@ Agrega `--dry-run` para solo verificar sin escribir nada.
 | Metodología | `/observatorio/metodologia` | No |
 | Correcciones del MEM | `/observatorio/correcciones` | No |
 | Foro (vista previa) | `/foro` | No |
+| API para desarrolladores | `/desarrolladores` | No (para probar los datos se necesita una llave) |
 | Panel de administración | `/admin` | Sí (`ADMIN_USER` / `ADMIN_PASSWORD`) |
 
 En tu PC, con el servidor de desarrollo encendido, todas están en `http://localhost:3000`.
@@ -125,5 +149,7 @@ En tu PC, con el servidor de desarrollo encendido, todas están en `http://local
 | Documento | Para qué |
 |---|---|
 | [PLAN-PROFESIONALIZACION.md](PLAN-PROFESIONALIZACION.md) | Plan por fases y avance |
+| [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md) | Diseño de la API de integración (Fase 7) |
+| [docs/api/README.md](docs/api/README.md) | Guía de la API y de la integración con Sky |
 | [data/mem/verificacion-julio-2026.md](data/mem/verificacion-julio-2026.md) | Cómo se verificaron los datos (cotejo con el PDF, correcciones del MEM, anomalías) |
 | [data/mem/anomalias-conocidas.json](data/mem/anomalias-conocidas.json) | Errores detectados en los Excel del MEM |

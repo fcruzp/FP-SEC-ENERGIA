@@ -16,7 +16,7 @@
 | 5 · Portal institucional | 🟡 Parcial | Teaser con datos reales hecho. Falta: gestor de contenido (§5), contenido real, suscripción, video ligero. |
 | 6 · Ingeniería y operación | 🟡 Parcial | Hecho: tipos verificados en el build, pruebas, keep-alive/backup, guía de operación. Falta: limpieza del scaffold, lint en el build, CI, despliegue en Netlify. |
 | IA (§6) | ⬜ Pendiente | OpenRouter con `openai/gpt-6-luna`. |
-| 7 · API de integración | ⬜ Planificada | API `/api/v1` de solo lectura con llaves por aplicación, para que el agente **Sky** (y otros) consulten los datos citando la fuente. Plan detallado: [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md). |
+| 7 · API de integración | 🟡 Casi completa | API `/api/v1` de solo lectura (9 endpoints) con llaves por aplicación (hash, permisos, vencimiento, límite de uso, auditoría), Swagger UI en `/desarrolladores` y pestaña "Integraciones" en `/admin`. Falta: llave de Sky y prueba de punta a punta. Plan: [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md) · guía: [docs/api/README.md](docs/api/README.md). |
 
 ### Pendientes que dependen de Francisco
 
@@ -194,3 +194,4 @@ Fase 0 → Fase 1 → Fase 2 → Fase 3, con la Fase 6 en paralelo. La Fase 1 es
 | 4/5-oct-2026 | Fase 1: parser nuevo con catálogo explícito; edición julio 2026; luego las 11 hojas, ediciones marzo→julio en orden con historial de correcciones; carga desde `/admin`. |
 | 5-oct-2026 | Fase 3: ficha técnica, metodología, correcciones públicas, CSV, calendario, SEO, accesibilidad. |
 | 11-oct-2026 | Keep-alive y backup funcionando (secrets de GitHub); guía de operación y README. Plan de la API de integración (Fase 7) para el agente Sky. |
+| 12-oct-2026 | Sitio desplegado en Netlify (Francisco). Fase 7: API `/api/v1`, llaves por aplicación, Swagger UI en `/desarrolladores`, pestaña "Integraciones", herramientas para Sky; 55 pruebas. |

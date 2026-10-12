@@ -13,10 +13,11 @@ Next.js 16 (App Router, Turbopack) + React 19 + Tailwind 4 + shadcn/ui + Rechart
 ```bash
 bun install
 bunx next dev -p 3000          # servidor local (también en .claude/launch.json como "dev")
-bun test tests                 # 35 pruebas (parser contra los Excel reales, CSV)
+bun test tests                 # 55 pruebas (parser contra los Excel reales, CSV, API v1)
 node node_modules/typescript/bin/tsc --noEmit -p .   # debe dar 0 errores (el build verifica tipos)
 bun scripts/mem-load.ts --file data/mem/<xlsx> --source-url <url> --pdf-url <url> --published AAAA-MM-DD [--dry-run] [--accept-catalog]
-node scripts/setup-db.cjs      # crea el esquema en una base vacía (migraciones 000,001,002,004,005,006)
+node scripts/setup-db.cjs      # crea el esquema en una base vacía (migraciones 000,001,002,004,005,006,007)
+bun scripts/api-key.ts create --name "<app>" | list | revoke --prefix <prefijo>   # llaves de /api/v1
 ```
 
 `.env.local` (no versionado): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL` (Postgres, session pooler), `ADMIN_USER`, `ADMIN_PASSWORD`. Proyecto de Supabase actual: `ehkbefrcfbnwuusnuhpz` (el anterior, `vdkifczcjezcfqmdzkow`, se perdió).
@@ -58,6 +59,14 @@ Migraciones en `download/` (000 `users` previo, 001 esquema, 002 catálogo antig
 - Fechas de solo-día: usar `src/lib/dates.ts` (`parseDateOnly`, `formatDateOnly`); `new Date('2026-03-01')` muestra febrero en UTC-4.
 - `globals.css` tiene una regla global que agrega mucho padding a `<section>`: en páginas nuevas usar `<div>`.
 - El contenido del portal (equipo, noticias, eventos, documentos) es **mockup a propósito** hasta el gestor de contenido; no ocultarlo.
+
+## API de integración (/api/v1)
+
+API pública de solo lectura para otras aplicaciones (primer consumidor: el agente **Sky** de Francisco, vía OpenRouter). Guía: [docs/api/README.md](docs/api/README.md); diseño: [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md).
+- Código en `src/lib/api-v1/`: `keys.ts` (formato `fpe_live_…`, hash SHA-256), `access.ts` (decisión pura de acceso, probada), `http.ts` (`apiRoute(scope, handler)`: llave → `api_authenticate` RPC → permisos/límite → handler → envoltura `{data, meta}`, errores RFC 9457, auditoría con `after()`), `catalog.ts` (catálogo + `indicator_stats` en memoria 5 min, `memSource` con `cita`), `params.ts` (zod), `openapi.ts` (contrato; **mantener sincronizado**: una prueba compara rutas y contrato), `version.ts`.
+- Rutas en `src/app/api/v1/` (nombres en español). `/api/v1/openapi.json` y `/api/v1` son públicos; el resto exige `Authorization: Bearer`. `proxy.ts` NO protege `/api/v1` (la autenticación está en `apiRoute`).
+- Llaves: tabla `api_clients` (solo hash), `api_rate_counters`, `api_request_log` (90 días), función `api_authenticate` — migración `download/007_api_integracion.sql`. Gestión: `/admin` → Integraciones (`/api/admin/api-keys`) o `bun scripts/api-key.ts create|list|revoke`. La llave completa se muestra una sola vez; nunca escribirla en docs ni en el chat.
+- Documentación interactiva: `/desarrolladores` (Swagger UI 5.17.14 desde jsDelivr). Herramientas para agentes: `docs/api/sky-tools.json` (probadas contra el contrato).
 
 ## Decisiones del dueño
 

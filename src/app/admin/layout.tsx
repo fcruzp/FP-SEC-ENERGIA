@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Settings,
   Loader2,
+  KeyRound,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +21,7 @@ const navItems = [
   { href: '/admin?tab=upload', tab: 'upload', label: 'Cargar Datos', icon: Upload },
   { href: '/admin?tab=indicators', tab: 'indicators', label: 'Indicadores', icon: BarChart3 },
   { href: '/admin?tab=data', tab: 'data', label: 'Datos', icon: Database },
+  { href: '/admin?tab=integrations', tab: 'integrations', label: 'Integraciones', icon: KeyRound },
 ]
 
 function AdminSidebar() {

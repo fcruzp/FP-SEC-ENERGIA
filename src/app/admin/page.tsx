@@ -21,6 +21,7 @@ import {
   CalendarDays,
   Clock,
   Zap,
+  KeyRound,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import EditionUpload from '@/components/admin/EditionUpload'
+import ApiKeysManager from '@/components/admin/ApiKeysManager'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -242,11 +244,13 @@ function ObservatorioAdminContent() {
     { value: 'upload', label: 'Cargar', icon: Upload },
     { value: 'indicators', label: 'Indicadores', icon: BarChart3 },
     { value: 'data', label: 'Datos', icon: Database },
+    { value: 'integrations', label: 'API', icon: KeyRound },
   ]
 
   return (
     <div className="min-h-screen">
-      <Tabs defaultValue={defaultTab} className="flex flex-col h-full">
+      {/* key: al cambiar ?tab= desde la barra lateral se muestra esa pestaña */}
+      <Tabs key={defaultTab} defaultValue={defaultTab} className="flex flex-col h-full">
         {/* Mobile tab navigation */}
         <div className="md:hidden px-4 pt-2">
           <TabsList className="w-full bg-[#0d1f3c] border border-white/[0.06] h-auto p-1">
@@ -634,6 +638,23 @@ function ObservatorioAdminContent() {
                 )}
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+
+        {/* ═══════════════════════════════════════════════
+           TAB: Integraciones (llaves de la API /api/v1)
+           ═══════════════════════════════════════════════ */}
+        <TabsContent value="integrations" className="flex-1 p-4 md:p-8">
+          <div className="max-w-5xl mx-auto space-y-6">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+                Integraciones
+              </h1>
+              <p className="text-slate-400 text-sm mt-1">
+                Llaves de la API de datos (/api/v1) para otras aplicaciones, como el agente Sky. Cada llave es de solo lectura y se puede revocar en cualquier momento.
+              </p>
+            </div>
+            <ApiKeysManager />
           </div>
         </TabsContent>
       </Tabs>

@@ -6,7 +6,7 @@ export const revalidate = 3600
 
 /** Portal, páginas del Observatorio, categorías e indicadores principales con datos. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pages: MetadataRoute.Sitemap = ['', '/observatorio', '/observatorio/metodologia', '/observatorio/correcciones', '/multimedia']
+  const pages: MetadataRoute.Sitemap = ['', '/observatorio', '/observatorio/metodologia', '/observatorio/correcciones', '/desarrolladores', '/multimedia']
     .map(path => ({ url: `${BASE}${path}`, changeFrequency: 'monthly', priority: path === '' ? 1 : 0.8 }))
   if (!isSupabaseConfigured) return pages
 
