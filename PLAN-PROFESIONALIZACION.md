@@ -16,7 +16,7 @@
 | 5 · Portal institucional | 🟡 Parcial | Teaser con datos reales hecho. Falta: gestor de contenido (§5), contenido real, suscripción, video ligero. |
 | 6 · Ingeniería y operación | 🟡 Parcial | Hecho: tipos verificados en el build, pruebas, keep-alive/backup, guía de operación. Falta: limpieza del scaffold, lint en el build, CI, despliegue en Netlify. |
 | IA (§6) | ⬜ Pendiente | OpenRouter con `openai/gpt-6-luna`. |
-| 7 · API de integración | 🟡 Casi completa | API `/api/v1` de solo lectura (9 endpoints) con llaves por aplicación (hash, permisos, vencimiento, límite de uso, auditoría), Swagger UI en `/desarrolladores` y pestaña "Integraciones" en `/admin`. Falta: llave de Sky y prueba de punta a punta. Plan: [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md) · guía: [docs/api/README.md](docs/api/README.md). |
+| 7 · API de integración | 🟡 Casi completa | API `/api/v1` de solo lectura (9 endpoints) con llaves por aplicación (hash, permisos, vencimiento, límite de uso, auditoría), Swagger UI en `/desarrolladores` y pestaña "Integraciones" en `/admin`. Falta: llave de Skay y prueba de punta a punta. Plan: [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md) · guía: [docs/api/README.md](docs/api/README.md). |
 
 ### Pendientes que dependen de Francisco
 
@@ -184,7 +184,7 @@ Fase 0 → Fase 1 → Fase 2 → Fase 3, con la Fase 6 en paralelo. La Fase 1 es
 2. Para la presentación: **análisis con IA** (§6) o **gestor de contenido** (§5).
 3. Antes de abrir el sitio al público: resto de la Fase 2 (caché, zod, `xlsx`) y limpieza de la Fase 6.
 4. Fase 4: detector automático de ediciones del MEM y datos del Organismo Coordinador.
-5. Fase 7: API de integración para Sky ([PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md)); se puede construir en local y publicar junto con el despliegue en Netlify.
+5. Fase 7: API de integración para Skay ([PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md)); se puede construir en local y publicar junto con el despliegue en Netlify.
 
 ## 8. Bitácora
 
@@ -193,5 +193,5 @@ Fase 0 → Fase 1 → Fase 2 → Fase 3, con la Fase 6 en paralelo. La Fase 1 es
 | 4-oct-2026 | Repo clonado; base de Supabase nueva; 5 auditorías; plan creado; Fase 0 (fechas, porcentajes, fuente, `/admin` protegido, portada real, mockup del foro, keep-alive). |
 | 4/5-oct-2026 | Fase 1: parser nuevo con catálogo explícito; edición julio 2026; luego las 11 hojas, ediciones marzo→julio en orden con historial de correcciones; carga desde `/admin`. |
 | 5-oct-2026 | Fase 3: ficha técnica, metodología, correcciones públicas, CSV, calendario, SEO, accesibilidad. |
-| 11-oct-2026 | Keep-alive y backup funcionando (secrets de GitHub); guía de operación y README. Plan de la API de integración (Fase 7) para el agente Sky. |
-| 12-oct-2026 | Sitio desplegado en Netlify (Francisco). Fase 7: API `/api/v1`, llaves por aplicación, Swagger UI en `/desarrolladores`, pestaña "Integraciones", herramientas para Sky; 55 pruebas. |
+| 11-oct-2026 | Keep-alive y backup funcionando (secrets de GitHub); guía de operación y README. Plan de la API de integración (Fase 7) para el agente Skay. |
+| 12-oct-2026 | Sitio desplegado en Netlify (Francisco). Fase 7: API `/api/v1`, llaves por aplicación, Swagger UI en `/desarrolladores`, pestaña "Integraciones", herramientas para Skay; 55 pruebas. |

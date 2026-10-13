@@ -182,7 +182,7 @@ export default function ApiKeysManager() {
           <div className="grid md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="k-name" className="text-slate-300 text-xs">Aplicación *</Label>
-              <Input id="k-name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Sky" className={inputClass} />
+              <Input id="k-name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Skay" className={inputClass} />
             </div>
             <div>
               <Label htmlFor="k-contact" className="text-slate-300 text-xs">Responsable</Label>

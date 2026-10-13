@@ -30,7 +30,7 @@ describe('llaves', () => {
 
 describe('evaluateAccess', () => {
   const ok: AuthResult = {
-    status: 'ok', client_id: 'c1', client_name: 'Sky', scopes: ['read:catalog', 'read:data'],
+    status: 'ok', client_id: 'c1', client_name: 'Skay', scopes: ['read:catalog', 'read:data'],
     allowed_ips: null, limit_minute: 60, limit_day: 10000, used_minute: 1, used_day: 1, reset_minute: null,
   }
 
@@ -109,8 +109,8 @@ describe('OpenAPI', () => {
     expect(routes.sort()).toEqual(Object.keys(spec.paths).sort())
   })
 
-  test('las herramientas de Sky coinciden con el contrato', async () => {
-    const tools = (await Bun.file('docs/api/sky-tools.json').json()).tools
+  test('las herramientas de Skay coinciden con el contrato', async () => {
+    const tools = (await Bun.file('docs/api/skay-tools.json').json()).tools
     expect(tools.length).toBe(7)
     for (const tool of tools) {
       const op = spec.paths[tool['x-http'].path]?.get

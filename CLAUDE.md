@@ -62,11 +62,11 @@ Migraciones en `download/` (000 `users` previo, 001 esquema, 002 catálogo antig
 
 ## API de integración (/api/v1)
 
-API pública de solo lectura para otras aplicaciones (primer consumidor: el agente **Sky** de Francisco, vía OpenRouter). Guía: [docs/api/README.md](docs/api/README.md); diseño: [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md).
+API pública de solo lectura para otras aplicaciones (primer consumidor: el agente **Skay** de Francisco, vía OpenRouter). Guía: [docs/api/README.md](docs/api/README.md); diseño: [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md).
 - Código en `src/lib/api-v1/`: `keys.ts` (formato `fpe_live_…`, hash SHA-256), `access.ts` (decisión pura de acceso, probada), `http.ts` (`apiRoute(scope, handler)`: llave → `api_authenticate` RPC → permisos/límite → handler → envoltura `{data, meta}`, errores RFC 9457, auditoría con `after()`), `catalog.ts` (catálogo + `indicator_stats` en memoria 5 min, `memSource` con `cita`), `params.ts` (zod), `openapi.ts` (contrato; **mantener sincronizado**: una prueba compara rutas y contrato), `version.ts`.
 - Rutas en `src/app/api/v1/` (nombres en español). `/api/v1/openapi.json` y `/api/v1` son públicos; el resto exige `Authorization: Bearer`. `proxy.ts` NO protege `/api/v1` (la autenticación está en `apiRoute`).
 - Llaves: tabla `api_clients` (solo hash), `api_rate_counters`, `api_request_log` (90 días), función `api_authenticate` — migración `download/007_api_integracion.sql`. Gestión: `/admin` → Integraciones (`/api/admin/api-keys`) o `bun scripts/api-key.ts create|list|revoke`. La llave completa se muestra una sola vez; nunca escribirla en docs ni en el chat.
-- Documentación interactiva: `/desarrolladores` (Swagger UI 5.17.14 desde jsDelivr). Herramientas para agentes: `docs/api/sky-tools.json` (probadas contra el contrato).
+- Documentación interactiva: `/desarrolladores` (Swagger UI 5.17.14 desde jsDelivr). Herramientas para agentes: `docs/api/skay-tools.json` (probadas contra el contrato).
 
 ## Decisiones del dueño
 

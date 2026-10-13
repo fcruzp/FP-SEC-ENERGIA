@@ -2,7 +2,7 @@
  * Gestión de llaves de la API de integración (/api/v1) desde la terminal.
  * (También se gestionan en /admin, pestaña "Integraciones".)
  *
- *   bun scripts/api-key.ts create --name "Sky" [--contact "..."] [--days 365|0] [--scopes read:catalog,read:data,read:revisions]
+ *   bun scripts/api-key.ts create --name "Skay" [--contact "..."] [--days 365|0] [--scopes read:catalog,read:data,read:revisions]
  *   bun scripts/api-key.ts list
  *   bun scripts/api-key.ts revoke --prefix fpe_live_XXXXXXX
  *

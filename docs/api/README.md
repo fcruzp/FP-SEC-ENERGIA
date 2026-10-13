@@ -12,7 +12,7 @@ API de **solo lectura** con los datos oficiales del sector eléctrico dominicano
 Las llaves las emite el administrador del Observatorio, una por aplicación:
 
 - **Desde el panel:** `/admin` → pestaña **Integraciones** → "Nueva llave". La llave se muestra **una sola vez**.
-- **Desde la terminal:** `bun scripts/api-key.ts create --name "Sky" --contact "..."`. También existen `list` y `revoke --prefix fpe_live_XXXXXXX`.
+- **Desde la terminal:** `bun scripts/api-key.ts create --name "Skay" --contact "..."`. También existen `list` y `revoke --prefix fpe_live_XXXXXXX`.
 
 Formato: `fpe_live_` + 32 caracteres. En la base solo queda su huella SHA-256, así que si se pierde se emite otra.
 
@@ -73,17 +73,17 @@ Por defecto: 60 peticiones por minuto y 10,000 por día por llave. Se pueden aju
 
 Cabeceras de cada respuesta: `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` y `X-Request-Id`.
 
-## 3. Integración con Sky (agente con OpenRouter)
+## 3. Integración con Skay (agente con OpenRouter)
 
-1. **Variables de entorno de Sky:**
+1. **Variables de entorno de Skay:**
    ```
    FP_ENERGIA_API_URL=https://energia-fp.netlify.app/api/v1
    FP_ENERGIA_API_KEY=fpe_live_…
    ```
-2. **Herramientas:** [`sky-tools.json`](sky-tools.json) trae 7 herramientas en formato de *function calling* de OpenAI/OpenRouter (`energia_resumen`, `energia_buscar_indicadores`, `energia_ficha_indicador`, `energia_serie`, `energia_comparar`, `energia_correcciones`, `energia_fuentes`). Cada una indica en `x-http` el endpoint que debe llamar. Se pasan en `tools` de la petición a OpenRouter.
+2. **Herramientas:** [`skay-tools.json`](skay-tools.json) trae 7 herramientas en formato de *function calling* de OpenAI/OpenRouter (`energia_resumen`, `energia_buscar_indicadores`, `energia_ficha_indicador`, `energia_serie`, `energia_comparar`, `energia_correcciones`, `energia_fuentes`). Cada una indica en `x-http` el endpoint que debe llamar. Se pasan en `tools` de la petición a OpenRouter.
 3. **Ejecutor de herramientas** (TypeScript, ejemplo):
    ```ts
-   import spec from './sky-tools.json'
+   import spec from './skay-tools.json'
 
    export async function runEnergiaTool(name: string, args: Record<string, unknown>) {
      const tool = spec.tools.find(t => t.function.name === name)
@@ -100,8 +100,8 @@ Cabeceras de cada respuesta: `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimi
      return await res.json() // en errores también es JSON (problem+json): el modelo puede leer "detail"
    }
    ```
-4. **Instrucción de sistema:** usar el campo `instruccion_de_sistema_sugerida` de `sky-tools.json`. En resumen: usar primero `energia_*`, buscar el slug exacto, citar `meta.fuente.cita` con el mes del dato y no mezclar con cifras de redes sin aclarar el origen.
-5. **Prueba:** preguntar a Sky *"¿Cuáles son las pérdidas de Edeeste en el último año móvil y cómo se comparan con Edenorte?"*. Debe responder con las cifras de `/resumen` (julio 2026: Edeeste 56.5 %, Edenorte 26.0 %) y citar la edición de julio 2026 del MEM.
+4. **Instrucción de sistema:** usar el campo `instruccion_de_sistema_sugerida` de `skay-tools.json`. En resumen: usar primero `energia_*`, buscar el slug exacto, citar `meta.fuente.cita` con el mes del dato y no mezclar con cifras de redes sin aclarar el origen.
+5. **Prueba:** preguntar a Skay *"¿Cuáles son las pérdidas de Edeeste en el último año móvil y cómo se comparan con Edenorte?"*. Debe responder con las cifras de `/resumen` (julio 2026: Edeeste 56.5 %, Edenorte 26.0 %) y citar la edición de julio 2026 del MEM.
 
 ## 4. Operación
 

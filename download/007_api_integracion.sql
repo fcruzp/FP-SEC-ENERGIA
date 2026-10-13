@@ -13,7 +13,7 @@
 
 CREATE TABLE IF NOT EXISTS api_clients (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name                  TEXT NOT NULL,                 -- aplicación consumidora, p. ej. "Sky"
+  name                  TEXT NOT NULL,                 -- aplicación consumidora, p. ej. "Skay"
   description           TEXT,
   contact               TEXT,                          -- responsable de la aplicación
   key_prefix            TEXT NOT NULL UNIQUE,          -- p. ej. fpe_live_7Hq2xK9 (para identificarla en pantalla)

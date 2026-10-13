@@ -651,7 +651,7 @@ function ObservatorioAdminContent() {
                 Integraciones
               </h1>
               <p className="text-slate-400 text-sm mt-1">
-                Llaves de la API de datos (/api/v1) para otras aplicaciones, como el agente Sky. Cada llave es de solo lectura y se puede revocar en cualquier momento.
+                Llaves de la API de datos (/api/v1) para otras aplicaciones, como el agente Skay. Cada llave es de solo lectura y se puede revocar en cualquier momento.
               </p>
             </div>
             <ApiKeysManager />
