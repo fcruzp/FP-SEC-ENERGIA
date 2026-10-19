@@ -4,7 +4,7 @@ La tarea [**Supabase keep-alive y backup**](https://github.com/fcruzp/FP-SEC-ENE
 
 | Trabajo | Cuándo (hora de RD) | Qué hace |
 |---|---|---|
-| **keepalive** | Todos los días, 07:17 | Una consulta liviana con la clave pública para que Supabase no pause el proyecto. Además es un **centinela**: si la tabla cerrada `users` devuelve filas, la tarea se pone en rojo porque alguien abrió sus políticas. |
+| **keepalive** | Todos los días, 07:17 | Una consulta liviana con la clave pública, que además es un **centinela**: si la tabla cerrada `users` devuelve filas, la tarea se pone en rojo porque alguien abrió sus políticas. Después escribe un **latido** real en Postgres (tabla `keepalive_heartbeat`), porque Supabase avisó de una pausa aunque la consulta respondía bien todos los días. |
 | **backup** | Los lunes, 07:47 | `pg_dump` del esquema `public`, comprimido, **verificado** (gzip íntegro, tablas críticas, filas de datos) y **restaurado de prueba** en un Postgres vacío. Se guarda 90 días como artefacto. |
 
 Los cron de GitHub van en UTC; RD es UTC−4 todo el año. Para correrla a mano: abre la tarea → **Run workflow** → **Run workflow**. No uses "Re-run jobs" de una ejecución vieja, porque re-ejecuta el commit viejo.
@@ -99,7 +99,7 @@ La copia se hace con `--no-privileges`, así que **no trae los permisos**. En un
 Desde la carpeta del repositorio:
 
 ```bash
-psql "CADENA_DEL_SESSION_POOLER" -v ON_ERROR_STOP=1 -f download/005_procedencia_y_ediciones.sql -f download/007_api_integracion.sql -f download/008_mcp.sql
+psql "CADENA_DEL_SESSION_POOLER" -v ON_ERROR_STOP=1 -f download/005_procedencia_y_ediciones.sql -f download/007_api_integracion.sql -f download/008_mcp.sql -f download/009_keepalive_heartbeat.sql
 ```
 
 Estas migraciones se pueden repetir sin dañar datos: rehacen `REVOKE`, `GRANT` y funciones y no tocan los datos cargados.

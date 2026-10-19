@@ -42,6 +42,12 @@ jobs:
         # La tabla y el porqué del centinela están documentados en el script: si users se abre a
         # propósito, cambia KEEPALIVE_TABLE a otra tabla cerrada; NO quites la comprobación.
         run: bash scripts/ci/supabase-keepalive.sh
+      - name: Latido con escritura real en Postgres
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        # Supabase avisó de una pausa aunque la consulta REST respondía 200 a diario: una lectura vacía
+        # puede no contar como actividad. Una escritura sí. El psql que trae el runner basta para esto.
+        run: bash scripts/ci/supabase-heartbeat.sh
 
   backup:
     if: github.event_name == 'workflow_dispatch' || github.event.schedule == '47 11 * * 1'
