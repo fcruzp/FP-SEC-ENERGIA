@@ -1,71 +1,98 @@
-# Mantiene activo el proyecto de Supabase (el plan gratuito se pausa tras 7 días
-# sin actividad) y guarda una copia de seguridad semanal de la base de datos.
+# Protege el proyecto de Supabase: lo mantiene despierto y lo respalda.
 #
-# Secrets requeridos (Settings → Secrets and variables → Actions):
-#   SUPABASE_URL       URL del proyecto (https://xxxx.supabase.co)
-#   SUPABASE_ANON_KEY  clave pública (publishable / anon)
-#   SUPABASE_DB_URL    cadena de conexión Postgres (Session pooler) — solo para el backup
+# POR QUÉ EXISTE: en el plan gratuito Supabase PAUSA el proyecto tras 7 días sin actividad, y uno
+# pausado mucho tiempo puede no restaurarse. Ya se perdió una base entera (el proyecto anterior,
+# vdkifczcjezcfqmdzkow). Sin copias propias, perder la cuenta es perder los datos.
+#
+# Secrets: deben ser REPOSITORY secrets (Settings → Secrets and variables → Actions → pestaña
+# "Secrets" → New repository secret). Los Environment secrets NO los ve este workflow.
+#   SUPABASE_URL       https://<ref>.supabase.co
+#   SUPABASE_ANON_KEY  clave pública (anon o sb_publishable_…)
+#   SUPABASE_DB_URL    cadena del «Session pooler», puerto 5432 (solo para el backup)
+# Guía completa (de dónde sale cada secret, descargar y restaurar): docs/RESPALDO-SUPABASE.md
+#
+# Para probar: Actions → «Supabase keep-alive y backup» → Run workflow (corre ambos trabajos).
+# NO uses «Re-run jobs» de una ejecución vieja: re-ejecuta el commit viejo, con el workflow viejo.
+# Los cron solo corren desde la rama por defecto (main).
 name: Supabase keep-alive y backup
 
 on:
   schedule:
-    - cron: '17 11 * * *'   # diario, 07:17 hora de RD
+    # Los cron de GitHub van en UTC. República Dominicana es UTC−4 todo el año (sin horario de verano).
+    - cron: '17 11 * * *'   # keep-alive: todos los días a las 07:17 hora de RD
+    - cron: '47 11 * * 1'   # backup: los lunes a las 07:47 hora de RD
   workflow_dispatch:
+
+# Nada de esto escribe en el repositorio: el backup se guarda como artefacto, no como commit
+permissions:
+  contents: read
 
 jobs:
   keepalive:
+    # El lunes también corre: la consulta diaria es la que cuenta como actividad
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 11 * * *'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Consulta liviana a la API
+      - uses: actions/checkout@v4
+      - name: Consulta liviana con la clave pública (+ centinela de RLS)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "::error::Faltan los secrets SUPABASE_URL y/o SUPABASE_ANON_KEY en GitHub (Settings → Secrets and variables → Actions)."
-            exit 1
-          fi
-          # Solo la cabecera apikey: funciona con claves anon (JWT) y con las nuevas sb_publishable_
-          status=$(curl -s -o /dev/null -w "%{http_code}" \
-            "$SUPABASE_URL/rest/v1/indicator_categories?select=id&limit=1" \
-            -H "apikey: $SUPABASE_ANON_KEY")
-          echo "HTTP $status"
-          if [ "$status" != "200" ]; then
-            echo "::error::Supabase respondió HTTP $status. Revisa que SUPABASE_URL y SUPABASE_ANON_KEY sean los del proyecto actual."
-            exit 1
-          fi
+        # La tabla y el porqué del centinela están documentados en el script: si users se abre a
+        # propósito, cambia KEEPALIVE_TABLE a otra tabla cerrada; NO quites la comprobación.
+        run: bash scripts/ci/supabase-keepalive.sh
 
   backup:
-    # Solo los lunes, o al ejecutarlo manualmente
-    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 11 * * *'
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '47 11 * * 1'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      # Postgres vacío y desechable para RESTAURAR la copia y comprobar que sirve.
+      # Debe ser de la misma versión mayor que el servidor de Supabase (hoy 17).
+      restore:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: restore
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
-      - name: Decidir si toca backup
-        id: day
-        run: echo "run=$([ "$(date -u +%u)" = "1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
-      - name: Instalar cliente de Postgres 17
-        if: steps.day.outputs.run == 'yes'
-        run: |
-          sudo install -d /usr/share/postgresql-common/pgdg
-          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
-          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
-          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
-      - name: pg_dump del esquema public
-        if: steps.day.outputs.run == 'yes'
+      - uses: actions/checkout@v4
+
+      - name: Instalar el cliente de Postgres de la versión del servidor
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        # El runner trae un pg_dump más viejo que el servidor y pg_dump se niega con
+        # "server version mismatch". Se pregunta la versión al servidor (psql del runner basta para eso)
+        # y se instala esa misma versión desde el repositorio oficial pgdg.
         run: |
+          set -euo pipefail
           if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "::error::Falta el secret SUPABASE_DB_URL en GitHub; no se puede hacer la copia de seguridad."
-            exit 1
+            echo "::error::Falta el secret SUPABASE_DB_URL (REPOSITORY secret, cadena del Session pooler)."; exit 1
           fi
-          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" --schema=public --no-owner --no-privileges \
-            | gzip > "backup-$(date -u +%Y-%m-%d).sql.gz"
-          ls -lh backup-*.sql.gz
-      - name: Guardar backup como artefacto
-        if: steps.day.outputs.run == 'yes'
+          major="$(psql "$SUPABASE_DB_URL" -X -tA -c 'show server_version_num' | awk '{print int($1/10000)}')"
+          echo "Servidor Postgres ${major}"
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq "postgresql-client-${major}"
+          echo "/usr/lib/postgresql/${major}/bin" >> "$GITHUB_PATH"
+
+      - name: pg_dump, verificación y restauración de prueba
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          RESTORE_TEST_URL: postgresql://postgres:restore@localhost:5433/postgres
+          OUT_DIR: backup
+        run: bash scripts/ci/supabase-backup.sh
+
+      - name: Guardar la copia como artefacto (90 días)
         uses: actions/upload-artifact@v4
         with:
-          name: supabase-backup-${{ github.run_id }}
-          path: backup-*.sql.gz
+          name: supabase-backup-${{ github.run_number }}
+          path: backup/*.sql.gz
           retention-days: 90
+          if-no-files-found: error   # una copia que no se guardó es un fallo, no un aviso

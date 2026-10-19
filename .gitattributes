@@ -1,0 +1,2 @@
+# Los scripts de shell los ejecuta GitHub Actions en Linux: con saltos de línea CRLF fallan
+*.sh text eol=lf
