@@ -7,6 +7,7 @@ import { TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { IndicatorWithData } from '@/lib/supabase-types'
 import SparklineChart from './SparklineChart'
+import { getDefinition } from '@/lib/mem/definitions'
 
 interface IndicatorCardProps {
   indicator: IndicatorWithData
@@ -30,6 +31,7 @@ export default function IndicatorCard({
   const isUp = indicator.change !== null && indicator.change > 0
   const isDown = indicator.change !== null && indicator.change < 0
   const hasData = indicator.latest_value !== null && indicator.latest_value !== undefined
+  const description = getDefinition(indicator.slug)?.definition ?? indicator.description
 
   const displayValue = hasData
     ? indicator.latest_value!.toLocaleString('es-DO', { maximumFractionDigits: 2 })
@@ -64,6 +66,13 @@ export default function IndicatorCard({
                 {frequencyLabels[indicator.frequency] || indicator.frequency}
               </Badge>
             </div>
+
+            {/* Qué mide (la definición completa y la fórmula están en la ficha) */}
+            {description && (
+              <p className="-mt-1 mb-3 text-xs leading-snug text-[#6b7280] dark:text-[#8b949e] line-clamp-3">
+                {description}
+              </p>
+            )}
 
             {/* Value row */}
             <div className="flex items-end justify-between gap-3 mb-3">

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import KPICard from '@/components/observatorio/KPICard'
+import { getDefinition } from '@/lib/mem/definitions'
 import ObservatorioHeader from '@/components/observatorio/ObservatorioHeader'
 import DashboardOverviewChart from '@/components/observatorio/DashboardOverviewChart'
 import TrendMovers from '@/components/observatorio/TrendMovers'
@@ -408,7 +409,7 @@ export default function ObservatorioPage() {
                     change={ind.change}
                     changePct={ind.change_pct}
                     icon={ind.category?.icon || '📊'}
-                    description={ind.description}
+                    description={getDefinition(ind.slug)?.definition ?? ind.description}
                     featured={i === 1}
                     index={i}
                     categorySlug={ind.category?.slug}

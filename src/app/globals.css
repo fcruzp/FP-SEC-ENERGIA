@@ -740,6 +740,8 @@ nav.main-nav a.active {
 .kpi-card.featured { background: var(--green-deep); border-color: transparent; }
 .kpi-card.featured .kpi-val { color: white; }
 .kpi-card.featured .kpi-label { color: rgba(255, 255, 255, 0.6); }
+.kpi-desc { margin-top: 6px; font-size: 11.5px; line-height: 1.45; color: var(--gray-mid); opacity: 0.85; }
+.kpi-card.featured .kpi-desc { color: rgba(255, 255, 255, 0.6); opacity: 1; }
 .kpi-card.featured .kpi-icon { background: rgba(255, 255, 255, 0.1); }
 .kpi-card.featured .kpi-bar { background: rgba(255, 255, 255, 0.1); }
 .kpi-card.featured .kpi-bar-fill { background: var(--green-glow); }

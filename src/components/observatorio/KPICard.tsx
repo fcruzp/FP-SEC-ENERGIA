@@ -2,9 +2,8 @@
 
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
-import { TrendingUp, TrendingDown, Minus, Info, ArrowUpRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, ArrowUpRight } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   AreaChart,
   Area,
@@ -92,20 +91,6 @@ export default function KPICard({
                 }`}
               >
                 <span className="truncate">{title || label}</span>
-                {description && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className={`h-3 w-3 flex-shrink-0 cursor-help transition-colors ${
-                          featured ? 'text-white/30 hover:text-white/60' : 'text-[#9ca3af] hover:text-[#6b7280] dark:text-[#6b7280] dark:hover:text-[#8b949e]'
-                        }`} />
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="max-w-[260px] text-xs leading-relaxed">
-                        {description}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
               </div>
             </div>
           </div>
@@ -182,6 +167,17 @@ export default function KPICard({
             </div>
           )}
         </div>
+
+        {/* Qué mide el indicador (la definición completa y la fórmula están en la ficha) */}
+        {description && (
+          <p
+            className={`mt-2.5 text-[11.5px] leading-snug line-clamp-3 ${
+              featured ? 'text-white/70' : 'text-[#6b7280] dark:text-[#8b949e]'
+            }`}
+          >
+            {description}
+          </p>
+        )}
 
         {/* Progress bar */}
         <div

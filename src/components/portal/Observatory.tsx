@@ -24,12 +24,13 @@ interface Headline {
   source_file: string | null;
 }
 
-/** Icono y sentido "bueno" de cada indicador (sube = mejora, salvo pérdidas). */
-const STAT_META: Record<string, { icon: string; goodWhenUp: boolean }> = {
-  perdidas: { icon: '📉', goodWhenUp: false },
-  cri: { icon: '🔁', goodWhenUp: true },
-  cobranzas: { icon: '💲', goodWhenUp: true },
-  renovable: { icon: '🌱', goodWhenUp: true },
+/** Icono, sentido "bueno" (sube = mejora, salvo pérdidas) y qué mide cada indicador, en breve
+ *  (resumen de las definiciones de src/lib/mem/definitions.ts; la ficha completa está en el Observatorio). */
+const STAT_META: Record<string, { icon: string; goodWhenUp: boolean; desc: string }> = {
+  perdidas: { icon: '📉', goodWhenUp: false, desc: 'Energía comprada por las distribuidoras que no se factura, en los últimos 12 meses.' },
+  cri: { icon: '🔁', goodWhenUp: true, desc: 'Índice de Recuperación de Efectivo: parte del valor de la energía comprada que las distribuidoras cobran.' },
+  cobranzas: { icon: '💲', goodWhenUp: true, desc: 'Lo cobrado por venta de energía frente a lo facturado, en los últimos 12 meses.' },
+  renovable: { icon: '🌱', goodWhenUp: true, desc: 'Hidráulica más eólica, solar y biomasa, como parte de la generación del mes.' },
 };
 
 const SOURCE_COLORS = ['#1a6b3c', '#0f3d22', '#3db870', '#4ade80', '#06b6d4', '#0e7490', '#a3e635'];
@@ -121,6 +122,7 @@ export default function Observatory() {
                     </div>
                     <div className="kpi-val">{fmt(stat.value)}%</div>
                     <div className="kpi-label">{stat.label}</div>
+                    {STAT_META[stat.key]?.desc && <p className="kpi-desc">{STAT_META[stat.key].desc}</p>}
                     <div className="kpi-bar"><div className="kpi-bar-fill" style={{ width: `${Math.min(stat.value, 100)}%` }}></div></div>
                   </div>
                 );
@@ -134,6 +136,7 @@ export default function Observatory() {
                     </div>
                     <div className="kpi-val">{fmt(totalGwh, 0)} GWh</div>
                     <div className="kpi-label">Generación total ({periodLabel})</div>
+                    <p className="kpi-desc">Energía producida en el sistema eléctrico nacional interconectado en los últimos 12 meses.</p>
                     <div className="kpi-bar"><div className="kpi-bar-fill" style={{ width: '100%' }}></div></div>
                   </div>
                   <div className="kpi-card">
@@ -143,6 +146,7 @@ export default function Observatory() {
                     </div>
                     <div className="kpi-val">{fmt((renewableGwh / totalGwh) * 100)}%</div>
                     <div className="kpi-label">Participación renovable ({periodLabel})</div>
+                    <p className="kpi-desc">Parte de esa energía que vino de fuentes renovables (hidráulica, eólica, solar y biomasa).</p>
                     <div className="kpi-bar"><div className="kpi-bar-fill" style={{ width: `${(renewableGwh / totalGwh) * 100}%` }}></div></div>
                   </div>
                 </>
