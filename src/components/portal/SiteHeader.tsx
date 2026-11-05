@@ -33,6 +33,23 @@ export default function SiteHeader({ onMenuToggle, isMenuOpen }: SiteHeaderProps
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // En páginas internas (/multimedia, /equipo/…), los enlaces "#sección" del encabezado, el menú
+  // móvil y el pie apuntan a secciones de la portada: se redirigen a "/#sección".
+  useEffect(() => {
+    if (window.location.pathname === '/') return;
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement).closest?.('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!a) return;
+      const id = a.getAttribute('href')!.slice(1);
+      if (id && !document.getElementById(id)) {
+        e.preventDefault();
+        window.location.href = `/#${id}`;
+      }
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
+
   const navItems = [
     { id: 'hero', label: 'Inicio' },
     { id: 'about', label: 'Sobre Nosotros' },

@@ -1,13 +1,9 @@
 'use client';
 
-export default function Leadership() {
-  const team = [
-    { initials: 'JG', name: 'Ing. Juan Gomez', pos: 'Secretario de Energía', badge: 'Titular', bg: 'linear-gradient(135deg,#0a2e19,#1a6b3c)', photo: '/team/juan-gomez.jpg', desc: 'Doctor en Ingeniería Eléctrica con más de 20 años de experiencia en política energética regional. Ex-director de la CDEEE y consultor de organismos multilaterales en materia de transición energética.' },
-    { initials: 'MA', name: 'Ing. María Alonzo', pos: 'Directora de Energías Renovables', badge: 'Directora técnica', bg: 'linear-gradient(135deg,#0f4526,#2d9e5f)', desc: 'Especialista en sistemas fotovoltaicos y eólicos. Máster en Energías Renovables por la Universidad de Chile. Autora de múltiples estudios sobre potencial solar dominicano.' },
-    { initials: 'CP', name: 'Lic. Carlos Pimentel', pos: 'Director de Política Tarifaria', badge: 'Economista', bg: 'linear-gradient(135deg,#134e2a,#3db870)', desc: 'Economista energético con especialización en regulación de mercados eléctricos. Investigador asociado al INTEC y consultor del Banco Interamericano de Desarrollo.' },
-    { initials: 'LG', name: 'Dra. Laura Guerrero', pos: 'Directora de Sostenibilidad', badge: 'Analista', bg: 'linear-gradient(135deg,#0a2e19,#2d9e5f)', desc: 'Doctora en Ciencias Ambientales con enfoque en transición energética justa. Experta en financiamiento climático y mecanismos de carbono para economías emergentes.' },
-  ];
+import Link from 'next/link';
+import { TEAM } from '@/lib/team';
 
+export default function Leadership() {
   return (
     <section id="leadership">
       <div className="section-inner">
@@ -17,8 +13,9 @@ export default function Leadership() {
           <p className="section-desc">Profesionales especializados en política energética, ingeniería de sistemas eléctricos, economía y sostenibilidad ambiental.</p>
         </div>
         <div className="team-grid">
-          {team.map((m, i) => (
-            <div className="team-card fade-up" key={i}>
+          {TEAM.map((m) => {
+            const href = m.profile ? `/equipo/${m.slug}` : null;
+            const photo = (
               <div className="team-card-photo" style={{background: m.bg}}>
                 {m.photo ? (
                   <>
@@ -30,18 +27,24 @@ export default function Leadership() {
                 )}
                 <span className="team-badge">{m.badge}</span>
               </div>
-              <div className="team-card-body">
-                <h3>{m.name}</h3>
-                <div className="pos">{m.pos}</div>
-                <p>{m.desc}</p>
+            );
+            return (
+              <div className="team-card fade-up" key={m.slug}>
+                {href ? <Link href={href} aria-label={`Semblanza de ${m.name}`}>{photo}</Link> : photo}
+                <div className="team-card-body">
+                  <h3>{href ? <Link href={href} className="team-card-link">{m.name}</Link> : m.name}</h3>
+                  <div className="pos">{m.pos}</div>
+                  <p>{m.desc}</p>
+                  {href && <Link href={href} className="team-card-more">Ver semblanza completa →</Link>}
+                </div>
+                <div className="team-card-footer">
+                  <a className="social-btn" href="#" title="LinkedIn">💼</a>
+                  <a className="social-btn" href="#" title="Twitter">🐦</a>
+                  <a className="social-btn" href="#" title="Email">✉️</a>
+                </div>
               </div>
-              <div className="team-card-footer">
-                <a className="social-btn" href="#" title="LinkedIn">💼</a>
-                <a className="social-btn" href="#" title="Twitter">🐦</a>
-                <a className="social-btn" href="#" title="Email">✉️</a>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

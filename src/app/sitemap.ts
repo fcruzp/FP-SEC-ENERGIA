@@ -1,12 +1,13 @@
 import type { MetadataRoute } from 'next'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
+import { PROFILED } from '@/lib/team'
 
 const BASE = 'https://energia-fp.netlify.app'
 export const revalidate = 3600
 
 /** Portal, páginas del Observatorio, categorías e indicadores principales con datos. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pages: MetadataRoute.Sitemap = ['', '/observatorio', '/observatorio/metodologia', '/observatorio/correcciones', '/desarrolladores', '/multimedia']
+  const pages: MetadataRoute.Sitemap = ['', '/observatorio', '/observatorio/metodologia', '/observatorio/correcciones', '/desarrolladores', '/multimedia', ...PROFILED.map(m => `/equipo/${m.slug}`)]
     .map(path => ({ url: `${BASE}${path}`, changeFrequency: 'monthly', priority: path === '' ? 1 : 0.8 }))
   if (!isSupabaseConfigured) return pages
 
