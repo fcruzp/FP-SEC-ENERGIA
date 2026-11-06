@@ -103,6 +103,28 @@ export const TEAM: TeamMember[] = [
     },
   },
   {
+    slug: 'nelson-perdomo',
+    initials: 'NP',
+    name: 'Ing. Nelson Perdomo',
+    pos: 'Coordinador de la Mesa de Distribución',
+    badge: 'Mesa de Distribución',
+    bg: 'linear-gradient(135deg,#0a2e19,#2d9e5f)',
+    photo: '/team/nelson-perdomo.jpg',
+    desc: 'Ingeniero mecánico electricista (UASD) con maestría en Regulación Económica de la Industria Eléctrica. Experiencia en fiscalización de la calidad del servicio de distribución y comercialización de las empresas distribuidoras, y en consultoría y ejecución de proyectos eléctricos.',
+    profile: {
+      roles: ['Coordinador de la Mesa de Distribución de la Secretaría de Energía de la Fuerza del Pueblo'],
+      education: [
+        'Ingeniero Mecánico Electricista, Universidad Autónoma de Santo Domingo (UASD)',
+        'Maestría en Regulación Económica de la Industria Eléctrica',
+        'Especialidades en Gerencia de Proyectos y en Desarrollo Organizacional',
+      ],
+      experience: [
+        'Fiscalización de la calidad del servicio de distribución y comercialización de las empresas distribuidoras',
+        'Consultoría y ejecución de proyectos eléctricos',
+      ],
+    },
+  },
+  {
     slug: 'maria-alonzo',
     initials: 'MA',
     name: 'Ing. María Alonzo',
