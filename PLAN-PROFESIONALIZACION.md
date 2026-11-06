@@ -17,11 +17,12 @@
 | 6 · Ingeniería y operación | 🟡 Parcial | Hecho: tipos verificados en el build, pruebas, keep-alive/backup, guía de operación. Falta: limpieza del scaffold, lint en el build, CI, despliegue en Netlify. |
 | IA (§6) | ⬜ Pendiente | OpenRouter con `openai/gpt-6-luna`. |
 | 7 · API de integración | 🟡 Casi completa | API `/api/v1` de solo lectura (9 endpoints) con llaves por aplicación (hash, permisos, vencimiento, límite de uso, auditoría), Swagger UI en `/desarrolladores` y pestaña "Integraciones" en `/admin`. Falta: llave de Skay y prueba de punta a punta. Plan: [PLAN-API-INTEGRACION.md](PLAN-API-INTEGRACION.md) · guía: [docs/api/README.md](docs/api/README.md). |
+| 7E · Servidor MCP | 🟡 Listo en local | `/mcp` para Claude, ChatGPT y otros asistentes, sin cuentas, con límite global y cooldown. Falta: publicar y activar `MCP_ENABLED` en Netlify. Plan: [PLAN-MCP.md](PLAN-MCP.md). |
 
 ### Pendientes que dependen de Francisco
 
 - [x] **Netlify** (desplegado por Francisco, 12-oct-2026): configurar las variables `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`, `ADMIN_USER`, `ADMIN_PASSWORD` y redesplegar (ver [GUIA-OPERACION.md](GUIA-OPERACION.md)). Sin esto el sitio publicado apunta a la base antigua.
-- [ ] Biografía real de **Juan Gómez** (la actual no está verificada). Los otros tres miembros del equipo son de ejemplo.
+- [ ] Biografía real de **Juan Gómez** (la actual no está verificada). Equipo real con página de semblanza: Raúl Herrera, Leocadio Lebrón y Nelson Perdomo (`src/lib/team.ts`); los miembros de ejemplo se eliminaron el 5-nov-2026.
 - [ ] Contenido real de noticias, documentos y eventos (o seguir con mockup hasta el gestor de contenido).
 - [ ] `OPENROUTER_API_KEY` cuando se haga el análisis con IA.
 - [ ] Decidir si el repositorio de GitHub debe ser **privado** (los backups son descargables si es público; hoy los datos son públicos, pero no lo serán cuando haya usuarios o suscriptores).
@@ -195,3 +196,4 @@ Fase 0 → Fase 1 → Fase 2 → Fase 3, con la Fase 6 en paralelo. La Fase 1 es
 | 5-oct-2026 | Fase 3: ficha técnica, metodología, correcciones públicas, CSV, calendario, SEO, accesibilidad. |
 | 11-oct-2026 | Keep-alive y backup funcionando (secrets de GitHub); guía de operación y README. Plan de la API de integración (Fase 7) para el agente Skay. |
 | 12-oct-2026 | Sitio desplegado en Netlify (Francisco). Fase 7: API `/api/v1`, llaves por aplicación, Swagger UI en `/desarrolladores`, pestaña "Integraciones", herramientas para Skay; 55 pruebas. |
+| 13-oct-2026 | Servidor MCP `/mcp` sin autenticación: límite global con cooldown (30/min) y techo diario (1,000), pestaña MCP en `/admin`, recursos y prompts para descubrir los datos; construido y probado en local (77 pruebas). Plan de Netlify confirmado: Starter antiguo (cobra excesos). |

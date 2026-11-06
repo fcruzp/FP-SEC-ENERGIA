@@ -3,8 +3,8 @@
  * y las páginas /equipo/[slug].
  *
  * Solo las personas con `profile` tienen página propia: su contenido sale de la semblanza que
- * entregó cada una, sin agregar nada. Los miembros sin `profile` son de ejemplo (mockup) hasta
- * que llegue la información real, igual que la biografía de Juan Gómez (pendiente de verificar).
+ * entregó cada una, sin agregar nada. Juan Gómez aún no tiene página: su biografía está pendiente
+ * de verificar.
  */
 
 export interface TeamProfile {
@@ -123,33 +123,6 @@ export const TEAM: TeamMember[] = [
         'Consultoría y ejecución de proyectos eléctricos',
       ],
     },
-  },
-  {
-    slug: 'maria-alonzo',
-    initials: 'MA',
-    name: 'Ing. María Alonzo',
-    pos: 'Directora de Energías Renovables',
-    badge: 'Directora técnica',
-    bg: 'linear-gradient(135deg,#0f4526,#2d9e5f)',
-    desc: 'Especialista en sistemas fotovoltaicos y eólicos. Máster en Energías Renovables por la Universidad de Chile. Autora de múltiples estudios sobre potencial solar dominicano.',
-  },
-  {
-    slug: 'carlos-pimentel',
-    initials: 'CP',
-    name: 'Lic. Carlos Pimentel',
-    pos: 'Director de Política Tarifaria',
-    badge: 'Economista',
-    bg: 'linear-gradient(135deg,#134e2a,#3db870)',
-    desc: 'Economista energético con especialización en regulación de mercados eléctricos. Investigador asociado al INTEC y consultor del Banco Interamericano de Desarrollo.',
-  },
-  {
-    slug: 'laura-guerrero',
-    initials: 'LG',
-    name: 'Dra. Laura Guerrero',
-    pos: 'Directora de Sostenibilidad',
-    badge: 'Analista',
-    bg: 'linear-gradient(135deg,#0a2e19,#2d9e5f)',
-    desc: 'Doctora en Ciencias Ambientales con enfoque en transición energética justa. Experta en financiamiento climático y mecanismos de carbono para economías emergentes.',
   },
 ]
 
